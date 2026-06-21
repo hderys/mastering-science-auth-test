@@ -22,7 +22,7 @@
             align-items: center;
         }
         .container {
-            max-width: 450px;
+            max-width: 420px;
             width: 100%;
             background: white;
             border-radius: 24px;
@@ -31,28 +31,26 @@
         }
         h1 {
             color: #4a1d8c;
-            font-size: 1.4rem;
-            margin-bottom: 4px;
+            font-size: 1.3rem;
             text-align: center;
+            margin-bottom: 4px;
         }
         .subtitle {
             text-align: center;
             color: #888;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             margin-bottom: 20px;
         }
         .status-bar {
             background: #f0edf8;
             border-radius: 12px;
-            padding: 10px 14px;
+            padding: 8px 14px;
             margin-bottom: 16px;
             font-size: 0.8rem;
             color: #2e0f5a;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
         }
         .status-bar .dot {
             display: inline-block;
@@ -68,7 +66,7 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.4; }
         }
-        .user-info {
+        .user-box {
             background: #ede9fe;
             border-radius: 12px;
             padding: 10px 14px;
@@ -77,7 +75,7 @@
             color: #2e0f5a;
             display: none;
         }
-        .user-info.show { display: block; }
+        .user-box.show { display: block; }
         
         .form-group { margin-bottom: 14px; }
         .form-group label {
@@ -94,14 +92,8 @@
             border: 2px solid #e0d6f5;
             font-size: 0.95rem;
             outline: none;
-            transition: border-color 0.2s;
         }
         .form-group input:focus { border-color: #4a1d8c; }
-        .form-group .hint {
-            font-size: 0.7rem;
-            color: #999;
-            margin-top: 3px;
-        }
         
         .btn {
             width: 100%;
@@ -123,17 +115,12 @@
         .btn-outline { background: white; color: #4a1d8c; border: 2px solid #4a1d8c; }
         .btn-outline:hover { background: #f5f0ff; }
         .btn-sm { padding: 6px 14px; font-size: 0.8rem; width: auto; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .divider {
-            height: 1px;
-            background: #e0d6f5;
-            margin: 16px 0;
-        }
+        .divider { height: 1px; background: #e0d6f5; margin: 16px 0; }
         .text-center { text-align: center; }
         .text-sm { font-size: 0.8rem; color: #888; }
         .mt-8 { margin-top: 8px; }
-        .mt-12 { margin-top: 12px; }
+        .hidden { display: none !important; }
         
         .alert {
             padding: 10px 14px;
@@ -144,57 +131,9 @@
         .alert-success { background: #d4edda; color: #065f46; }
         .alert-danger { background: #f8d7da; color: #7f1d1d; }
         .alert-warning { background: #fef3c7; color: #7c5a00; }
-        .alert-info { background: #dbeafe; color: #1e40af; }
-        
-        .hidden { display: none !important; }
         
         .flex { display: flex; gap: 8px; }
         .flex .btn { flex: 1; }
-        
-        .password-display {
-            font-family: monospace;
-            font-size: 22px;
-            background: #f0f0f0;
-            padding: 8px 16px;
-            border-radius: 8px;
-            display: inline-block;
-            margin: 4px 0;
-            letter-spacing: 2px;
-        }
-        
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            padding: 20px;
-        }
-        .modal-overlay.show { display: flex; }
-        .modal-box {
-            background: white;
-            border-radius: 24px;
-            max-width: 420px;
-            width: 100%;
-            padding: 28px 24px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            text-align: center;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal-box h2 { color: #2e0f5a; margin-bottom: 4px; }
-        .modal-box .close-btn {
-            float: right;
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
-        .modal-box .close-btn:hover { color: #333; }
         
         .password-wrapper {
             position: relative;
@@ -215,13 +154,54 @@
             padding: 4px;
         }
         .toggle-btn:hover { color: #4a1d8c; }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: white;
+            border-radius: 24px;
+            max-width: 400px;
+            width: 90%;
+            padding: 28px 24px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .modal-box h2 { color: #2e0f5a; margin-bottom: 4px; }
+        .modal-box .close-btn {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        .modal-box .close-btn:hover { color: #333; }
+        .password-display {
+            font-family: monospace;
+            font-size: 22px;
+            background: #f0f0f0;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 8px 0;
+            letter-spacing: 2px;
+        }
     </style>
 </head>
 <body>
 
-<div class="container" id="app">
+<div class="container">
     <h1>🔐 密碼系統測試</h1>
-    <div class="subtitle">Mastering Science - Auth Test</div>
+    <div class="subtitle">測試登入 + 修改密碼 (VIP001 / NewPwd123)</div>
     
     <!-- 狀態列 -->
     <div class="status-bar">
@@ -233,35 +213,34 @@
     </div>
     
     <!-- 用戶資訊 -->
-    <div class="user-info" id="userInfo">
+    <div class="user-box" id="userBox">
         <div>👤 <span id="displayName">-</span> (<span id="displayId">-</span>)</div>
-        <div style="font-size:0.75rem; color:#888; margin-top:2px;">📚 班級：<span id="displayClass">-</span></div>
+        <div style="font-size:0.75rem; color:#888;">📚 班級：<span id="displayClass">-</span></div>
         <button class="btn btn-danger btn-sm" onclick="logout()" style="margin-top:6px; width:auto;">🚪 登出</button>
     </div>
     
     <!-- ===== 登入表單 ===== -->
-    <div id="loginForm">
+    <div id="loginSection">
         <div id="loginAlert"></div>
         <div class="form-group">
             <label>登入 ID（學號）</label>
-            <input type="text" id="loginUserId" placeholder="例如：VIP001 或 20240001">
+            <input type="text" id="loginUserId" placeholder="例如：VIP001" value="VIP001">
         </div>
         <div class="form-group">
             <label>密碼</label>
             <div class="password-wrapper">
-                <input type="password" id="loginPassword" placeholder="請輸入密碼">
+                <input type="password" id="loginPassword" placeholder="請輸入密碼" value="NewPwd123">
                 <button type="button" class="toggle-btn" id="toggleLoginPwd">👁️</button>
             </div>
         </div>
         <button class="btn btn-primary" id="loginBtn">🔒 登入</button>
         <div class="text-center mt-8">
             <button class="btn btn-outline btn-sm" id="forgotBtn" style="width:auto;">🔑 忘記密碼？</button>
-            <button class="btn btn-outline btn-sm" id="showRegisterBtn" style="width:auto;">📝 建立帳戶</button>
         </div>
     </div>
     
     <!-- ===== 忘記密碼 ===== -->
-    <div id="forgotForm" class="hidden">
+    <div id="forgotSection" class="hidden">
         <h3 style="color:#2e0f5a;">🔑 忘記密碼</h3>
         <div class="text-sm" style="margin-bottom:12px;">輸入學號和電話號碼驗證</div>
         <div id="forgotAlert"></div>
@@ -279,35 +258,8 @@
         </div>
     </div>
     
-    <!-- ===== 建立帳戶 ===== -->
-    <div id="registerForm" class="hidden">
-        <h3 style="color:#2e0f5a;">📝 建立帳戶</h3>
-        <div class="text-sm" style="margin-bottom:12px;">老師建立學生帳戶</div>
-        <div id="registerAlert"></div>
-        <div class="form-group">
-            <label>姓名</label>
-            <input type="text" id="regName" placeholder="陳小明">
-        </div>
-        <div class="form-group">
-            <label>學號（留空自動產生）</label>
-            <input type="text" id="regUserId" placeholder="例如：20240001">
-        </div>
-        <div class="form-group">
-            <label>班級</label>
-            <input type="text" id="regClass" placeholder="3A" value="VIP">
-        </div>
-        <div class="form-group">
-            <label>電話號碼</label>
-            <input type="text" id="regPhone" placeholder="91234567">
-        </div>
-        <div class="flex">
-            <button class="btn btn-outline" id="registerCancelBtn">取消</button>
-            <button class="btn btn-success" id="registerBtn">✅ 建立帳戶</button>
-        </div>
-    </div>
-    
     <!-- ===== 修改密碼（登入後顯示） ===== -->
-    <div id="changePwdForm" class="hidden">
+    <div id="changeSection" class="hidden">
         <div class="divider"></div>
         <h3 style="color:#2e0f5a;">🔐 修改密碼</h3>
         <div id="changeAlert"></div>
@@ -336,7 +288,7 @@
     </div>
 </div>
 
-<!-- ===== Modal 彈窗 ===== -->
+<!-- ===== Modal ===== -->
 <div class="modal-overlay" id="modal">
     <div class="modal-box">
         <button class="close-btn" onclick="closeModal()">✕</button>
@@ -371,25 +323,12 @@ let currentUser = null;
 // ============================================================
 // 🛠️ 工具函數
 // ============================================================
-function generateRandomPassword() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-    let pwd = '';
-    for (let i = 0; i < 8; i++) {
-        pwd += chars[Math.floor(Math.random() * chars.length)];
-    }
-    return pwd;
-}
-
 function getUsers() {
     const raw = localStorage.getItem('ms_chem_users');
     if (raw) {
         try { return JSON.parse(raw); } catch(e) { return { users: [] }; }
     }
     return { users: [] };
-}
-
-function saveUsers(users) {
-    localStorage.setItem('ms_chem_users', JSON.stringify(users));
 }
 
 function findUser(userId) {
@@ -402,8 +341,7 @@ function updateUser(userId, data) {
     const index = db.users.findIndex(u => u.userId === userId);
     if (index !== -1) {
         db.users[index] = { ...db.users[index], ...data };
-        saveUsers(db);
-        // 同步到 Firestore
+        localStorage.setItem('ms_chem_users', JSON.stringify(db));
         firebase.firestore().collection('users').doc(userId)
             .set(db.users[index], { merge: true })
             .catch(e => console.warn('⚠️ Firestore 更新失敗:', e.message));
@@ -412,15 +350,19 @@ function updateUser(userId, data) {
     return null;
 }
 
+function generateRandomPassword() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let pwd = '';
+    for (let i = 0; i < 8; i++) {
+        pwd += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return pwd;
+}
+
 function showAlert(id, type, msg) {
     const el = document.getElementById(id);
     if (!el) return;
-    const types = {
-        success: 'alert-success',
-        danger: 'alert-danger',
-        warning: 'alert-warning',
-        info: 'alert-info'
-    };
+    const types = { success: 'alert-success', danger: 'alert-danger', warning: 'alert-warning' };
     el.className = `alert ${types[type] || 'alert-info'}`;
     el.textContent = msg;
     el.style.display = 'block';
@@ -444,30 +386,27 @@ function updateStatus(status, text) {
     const dot = document.getElementById('statusDot');
     const textEl = document.getElementById('statusText');
     const timeEl = document.getElementById('statusTime');
-    
     dot.className = 'dot ' + status;
     textEl.textContent = text || '✅ 已連線';
     timeEl.textContent = new Date().toLocaleTimeString();
 }
 
-function updateUserUI() {
-    const info = document.getElementById('userInfo');
+function updateUI() {
+    const box = document.getElementById('userBox');
     if (currentUser) {
-        info.classList.add('show');
+        box.classList.add('show');
         document.getElementById('displayName').textContent = currentUser.name || '未知';
         document.getElementById('displayId').textContent = currentUser.userId || currentUser.id;
         document.getElementById('displayClass').textContent = currentUser.className || '-';
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('changePwdForm').classList.remove('hidden');
-        document.getElementById('registerForm').classList.add('hidden');
-        document.getElementById('forgotForm').classList.add('hidden');
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('changeSection').classList.remove('hidden');
+        document.getElementById('forgotSection').classList.add('hidden');
         updateStatus('online', '✅ 已登入：' + (currentUser.name || currentUser.userId));
     } else {
-        info.classList.remove('show');
-        document.getElementById('loginForm').style.display = 'block';
-        document.getElementById('changePwdForm').classList.add('hidden');
-        document.getElementById('registerForm').classList.add('hidden');
-        document.getElementById('forgotForm').classList.add('hidden');
+        box.classList.remove('show');
+        document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('changeSection').classList.add('hidden');
+        document.getElementById('forgotSection').classList.add('hidden');
         updateStatus('connecting', '⏳ 等待登入');
     }
 }
@@ -478,11 +417,10 @@ function updateUserUI() {
 document.getElementById('loginBtn').addEventListener('click', async function() {
     const userId = document.getElementById('loginUserId').value.trim();
     const password = document.getElementById('loginPassword').value.trim();
-    const alertId = 'loginAlert';
-    clearAlert(alertId);
+    clearAlert('loginAlert');
     
     if (!userId || !password) {
-        showAlert(alertId, 'warning', '⚠️ 請輸入學號和密碼');
+        showAlert('loginAlert', 'warning', '⚠️ 請輸入學號和密碼');
         return;
     }
     
@@ -492,43 +430,36 @@ document.getElementById('loginBtn').addEventListener('click', async function() {
         await auth.signInWithEmailAndPassword(email, password);
         console.log('✅ Auth 登入成功');
         
-        // 從 Firestore 或 localStorage 讀取用戶資料
+        // 讀取用戶資料
         let user = null;
         try {
             const doc = await firebase.firestore().collection('users').doc(userId).get();
-            if (doc.exists) {
-                user = doc.data();
-            }
+            if (doc.exists) user = doc.data();
         } catch(e) {}
-        
+        if (!user) user = findUser(userId);
         if (!user) {
-            user = findUser(userId);
-        }
-        
-        if (!user) {
-            showAlert(alertId, 'danger', '❌ 找不到用戶資料，請聯絡老師');
+            showAlert('loginAlert', 'danger', '❌ 找不到用戶資料');
             await auth.signOut();
             updateStatus('offline', '❌ 用戶資料不存在');
             return;
         }
         
         currentUser = user;
-        updateUserUI();
-        showAlert(alertId, 'success', '✅ 登入成功！歡迎 ' + user.name);
+        updateUI();
+        showAlert('loginAlert', 'success', '✅ 登入成功！歡迎 ' + user.name);
         document.getElementById('loginPassword').value = '';
         
     } catch(e) {
-        console.error('❌ 登入失敗:', e.code, e.message);
-        const msg = e.code === 'auth/user-not-found' ? '❌ 帳戶不存在，請確認學號' :
-                    e.code === 'auth/wrong-password' ? '❌ 密碼錯誤，請重新輸入' :
-                    e.code === 'auth/invalid-credential' ? '❌ 密碼錯誤，請重新輸入' :
-                    '❌ 登入失敗：' + e.message;
-        showAlert(alertId, 'danger', msg);
+        console.error('❌ 登入失敗:', e.code);
+        const msg = e.code === 'auth/user-not-found' ? '❌ 帳戶不存在' :
+                    e.code === 'auth/wrong-password' ? '❌ 密碼錯誤' :
+                    e.code === 'auth/invalid-credential' ? '❌ 密碼錯誤' :
+                    '❌ ' + e.message;
+        showAlert('loginAlert', 'danger', msg);
         updateStatus('offline', '❌ 登入失敗');
     }
 });
 
-// 按 Enter 登入
 document.getElementById('loginPassword').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') document.getElementById('loginBtn').click();
 });
@@ -537,71 +468,69 @@ document.getElementById('loginUserId').addEventListener('keypress', function(e) 
 });
 
 // ============================================================
-// 🔑 修改密碼（極簡版 + Fallback）
+// 🔑 修改密碼（✅ 核心測試重點）
 // ============================================================
 document.getElementById('changePwdBtn').addEventListener('click', async function() {
     const oldPwd = document.getElementById('changeOldPwd').value;
     const newPwd = document.getElementById('changeNewPwd').value;
     const confirmPwd = document.getElementById('changeConfirmPwd').value;
-    const alertId = 'changeAlert';
-    clearAlert(alertId);
+    clearAlert('changeAlert');
     
     if (newPwd.length < 6) {
-        showAlert(alertId, 'warning', '⚠️ 密碼至少 6 個字元');
+        showAlert('changeAlert', 'warning', '⚠️ 密碼至少 6 個字元');
         return;
     }
     if (newPwd !== confirmPwd) {
-        showAlert(alertId, 'warning', '❌ 兩次輸入的密碼不一致');
+        showAlert('changeAlert', 'warning', '❌ 兩次輸入的密碼不一致');
         return;
     }
     if (!currentUser) {
-        showAlert(alertId, 'danger', '❌ 請先登入');
+        showAlert('changeAlert', 'danger', '❌ 請先登入');
         return;
     }
     
     const userId = currentUser.userId || currentUser.id;
     const validOldPwd = currentUser.password || currentUser.initialPassword;
     if (oldPwd !== validOldPwd) {
-        showAlert(alertId, 'warning', '❌ 舊密碼不正確');
+        showAlert('changeAlert', 'warning', '❌ 舊密碼不正確');
         return;
     }
     
     try {
-        // 1. 更新 localStorage
+        // ✅ 1. 更新 localStorage
         updateUser(userId, { password: newPwd, isFirstLogin: false });
         currentUser = findUser(userId);
         
-        // 2. 更新 Firebase Auth（✅ 極簡版 + Fallback）
+        // ✅ 2. 更新 Firebase Auth（核心測試！）
         const email = userId + '@mastering-science.com';
         const fbUser = auth.currentUser;
         
         if (fbUser) {
-            // ✅ 直接更新
             await fbUser.updatePassword(newPwd);
-            console.log('✅ Firebase Auth 密碼已更新');
+            console.log('✅ Firebase Auth 已更新（直接更新）');
         } else {
-            // Fallback: 重新登入後更新
+            // Fallback：重新登入後更新
             console.warn('⚠️ 無已登入用戶，嘗試重新登入');
             const cred = await auth.signInWithEmailAndPassword(email, oldPwd);
             await cred.user.updatePassword(newPwd);
-            console.log('✅ Firebase Auth 密碼已更新（重新登入後）');
+            console.log('✅ Firebase Auth 已更新（重新登入後更新）');
         }
         
-        showAlert(alertId, 'success', '✅ 密碼已成功修改！');
+        showAlert('changeAlert', 'success', '✅ 密碼已成功修改！請用新密碼登入測試');
         document.getElementById('changeOldPwd').value = '';
         document.getElementById('changeNewPwd').value = '';
         document.getElementById('changeConfirmPwd').value = '';
         
     } catch(e) {
         console.error('❌ 修改密碼失敗:', e);
-        showAlert(alertId, 'danger', '❌ 修改密碼失敗：' + e.message);
+        showAlert('changeAlert', 'danger', '❌ 修改失敗：' + e.message);
     }
 });
 
 // ============================================================
 // 👁️ 密碼顯示切換
 // ============================================================
-function togglePassword(inputId, btn) {
+function togglePwd(inputId, btn) {
     const input = document.getElementById(inputId);
     if (input.type === 'password') {
         input.type = 'text';
@@ -613,204 +542,75 @@ function togglePassword(inputId, btn) {
 }
 
 document.getElementById('toggleLoginPwd').addEventListener('click', function() {
-    togglePassword('loginPassword', this);
+    togglePwd('loginPassword', this);
 });
 document.getElementById('toggleOldPwd').addEventListener('click', function() {
-    togglePassword('changeOldPwd', this);
+    togglePwd('changeOldPwd', this);
 });
 document.getElementById('toggleNewPwd').addEventListener('click', function() {
-    togglePassword('changeNewPwd', this);
+    togglePwd('changeNewPwd', this);
 });
 document.getElementById('toggleConfirmPwd').addEventListener('click', function() {
-    togglePassword('changeConfirmPwd', this);
+    togglePwd('changeConfirmPwd', this);
 });
 
 // ============================================================
-// 📝 忘記密碼
+// 🔑 忘記密碼（簡化版）
 // ============================================================
 document.getElementById('forgotBtn').addEventListener('click', function() {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('forgotForm').classList.remove('hidden');
-    document.getElementById('registerForm').classList.add('hidden');
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('forgotSection').classList.remove('hidden');
     clearAlert('forgotAlert');
-    document.getElementById('forgotUserId').value = '';
-    document.getElementById('forgotPhone').value = '';
 });
 
 document.getElementById('forgotCancelBtn').addEventListener('click', function() {
-    document.getElementById('forgotForm').classList.add('hidden');
-    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('forgotSection').classList.add('hidden');
+    document.getElementById('loginSection').style.display = 'block';
 });
 
 document.getElementById('forgotSubmitBtn').addEventListener('click', function() {
     const userId = document.getElementById('forgotUserId').value.trim();
     const phone = document.getElementById('forgotPhone').value.trim();
-    const alertId = 'forgotAlert';
-    clearAlert(alertId);
+    clearAlert('forgotAlert');
     
     if (!userId || !phone) {
-        showAlert(alertId, 'warning', '⚠️ 請輸入學號和電話號碼');
+        showAlert('forgotAlert', 'warning', '⚠️ 請輸入學號和電話號碼');
         return;
     }
     
     const user = findUser(userId);
     if (!user) {
-        showAlert(alertId, 'danger', '❌ 學號不存在');
+        showAlert('forgotAlert', 'danger', '❌ 學號不存在');
         return;
     }
     if (user.phone !== phone) {
-        showAlert(alertId, 'danger', '❌ 電話號碼不正確');
+        showAlert('forgotAlert', 'danger', '❌ 電話號碼不正確');
         return;
     }
     
     const newPwd = generateRandomPassword();
-    updateUser(userId, {
-        initialPassword: newPwd,
-        password: null,
-        isFirstLogin: true
-    });
+    updateUser(userId, { initialPassword: newPwd, password: null, isFirstLogin: true });
     
-    // 同時更新 Firebase Auth（用舊密碼登入後更新）
+    // 更新 Firebase Auth
     const email = userId + '@mastering-science.com';
     const oldPwd = user.password || user.initialPassword;
     auth.signInWithEmailAndPassword(email, oldPwd)
         .then(cred => cred.user.updatePassword(newPwd))
         .then(() => console.log('✅ Firebase Auth 已更新'))
-        .catch(() => {
-            // 如果帳戶不存在，建立
-            auth.createUserWithEmailAndPassword(email, newPwd)
-                .then(() => console.log('✅ Firebase Auth 帳戶已建立'))
-                .catch(e => console.warn('⚠️ Auth 建立失敗:', e.message));
-        });
+        .catch(() => auth.createUserWithEmailAndPassword(email, newPwd).catch(e => console.warn(e)));
     
     openModal(`
-        <div style="font-size:48px; margin-bottom:8px;">✅</div>
+        <div style="font-size:48px;">✅</div>
         <h2>密碼已重設</h2>
-        <div style="color:#888; font-size:14px; margin:8px 0;">👤 ${user.name}（${user.userId}）</div>
-        <div style="font-size:13px; color:#666;">新初始密碼：</div>
+        <div style="color:#888; margin:4px 0;">👤 ${user.name}（${user.userId}）</div>
+        <div style="font-size:13px; color:#666;">新密碼：</div>
         <div class="password-display">${newPwd}</div>
-        <div style="font-size:12px; color:#f59e0b; margin:8px 0;">⚠️ 請用此密碼登入，然後修改密碼</div>
-        <button class="btn btn-primary" onclick="closeModal()" style="margin-top:8px;">我知道了</button>
+        <div style="font-size:12px; color:#f59e0b; margin:8px 0;">⚠️ 請用此密碼登入</div>
+        <button class="btn btn-primary" onclick="closeModal()">我知道了</button>
     `);
     
-    document.getElementById('forgotForm').classList.add('hidden');
-    document.getElementById('loginForm').style.display = 'block';
-});
-
-// ============================================================
-// 📝 建立帳戶（極簡版 + 錯誤處理）
-// ============================================================
-document.getElementById('showRegisterBtn').addEventListener('click', function() {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('registerForm').classList.remove('hidden');
-    document.getElementById('forgotForm').classList.add('hidden');
-    clearAlert('registerAlert');
-});
-
-document.getElementById('registerCancelBtn').addEventListener('click', function() {
-    document.getElementById('registerForm').classList.add('hidden');
-    document.getElementById('loginForm').style.display = 'block';
-});
-
-document.getElementById('registerBtn').addEventListener('click', async function() {
-    const name = document.getElementById('regName').value.trim();
-    const customId = document.getElementById('regUserId').value.trim() || null;
-    const className = document.getElementById('regClass').value.trim() || 'VIP';
-    const phone = document.getElementById('regPhone').value.trim();
-    const alertId = 'registerAlert';
-    clearAlert(alertId);
-    
-    if (!name || !phone) {
-        showAlert(alertId, 'warning', '⚠️ 請填寫姓名和電話號碼');
-        return;
-    }
-    
-    // 產生學號
-    const db = getUsers();
-    let userId = customId;
-    if (!userId) {
-        const classUsers = db.users.filter(u => u.className === className);
-        const num = classUsers.length + 1;
-        userId = String(num).padStart(6, '0');
-    }
-    
-    // 檢查學號是否已存在
-    if (findUser(userId)) {
-        showAlert(alertId, 'danger', '❌ 學號 ' + userId + ' 已被使用');
-        return;
-    }
-    
-    const initialPassword = generateRandomPassword();
-    const user = {
-        userId: userId,
-        name: name,
-        className: className,
-        phone: phone,
-        initialPassword: initialPassword,
-        password: null,
-        isFirstLogin: true,
-        isTeacher: false,
-        managedClasses: [className],
-        createdAt: new Date().toISOString()
-    };
-    
-    try {
-        // 1. 儲存到 localStorage
-        db.users.push(user);
-        saveUsers(db);
-        
-        // 2. 儲存到 Firestore
-        await firebase.firestore().collection('users').doc(userId).set(user, { merge: true });
-        console.log('✅ 用戶已存入 Firestore');
-        
-        // 3. 建立 Firebase Auth（⚠️ 失敗會拋出錯誤）
-        const email = userId + '@mastering-science.com';
-        try {
-            await auth.createUserWithEmailAndPassword(email, initialPassword);
-            console.log('✅ Firebase Auth 帳戶已建立');
-        } catch(e) {
-            if (e.code === 'auth/email-already-in-use') {
-                console.log('ℹ️ Auth 帳戶已存在');
-            } else {
-                throw e;
-            }
-        }
-        
-        // 成功！
-        openModal(`
-            <div style="font-size:48px; margin-bottom:8px;">✅</div>
-            <h2>帳戶已建立！</h2>
-            <div style="text-align:left; line-height:2; font-size:15px; margin:12px 0;">
-                <div>👤 姓名：<strong>${name}</strong></div>
-                <div>🆔 學號：<strong style="color:#4a1d8c;">${userId}</strong></div>
-                <div>
-                    🔑 密碼：<span class="password-display" style="font-size:18px;">${initialPassword}</span>
-                    <button onclick="navigator.clipboard?.writeText('${initialPassword}')" style="
-                        background:#4a1d8c; color:white; border:none; padding:2px 12px; border-radius:20px; cursor:pointer; font-size:13px;
-                    ">📋 複製</button>
-                </div>
-                <div>
-                    🔗 登入網址：
-                    <span style="font-size:13px; color:#4a1d8c; word-break:break-all;">https://mastering-science-chem.pages.dev</span>
-                    <button onclick="navigator.clipboard?.writeText('https://mastering-science-chem.pages.dev')" style="
-                        background:#4a1d8c; color:white; border:none; padding:2px 12px; border-radius:20px; cursor:pointer; font-size:13px;
-                    ">📋 複製</button>
-                </div>
-            </div>
-            <div style="font-size:13px; color:#f59e0b; margin:8px 0;">⚠️ 學生第一次登入時會要求修改密碼</div>
-            <button class="btn btn-primary" onclick="closeModal(); document.getElementById('regName').value=''; document.getElementById('regUserId').value=''; document.getElementById('regPhone').value=''; document.getElementById('registerForm').classList.add('hidden'); document.getElementById('loginForm').style.display='block';" style="margin-top:8px;">
-                我知道了
-            </button>
-        `);
-        
-    } catch(e) {
-        console.error('❌ 建立帳戶失敗:', e);
-        // 如果 Auth 失敗，從 localStorage 移除用戶（回滾）
-        const db = getUsers();
-        db.users = db.users.filter(u => u.userId !== userId);
-        saveUsers(db);
-        showAlert(alertId, 'danger', '❌ 建立失敗：' + e.message);
-    }
+    document.getElementById('forgotSection').classList.add('hidden');
+    document.getElementById('loginSection').style.display = 'block';
 });
 
 // ============================================================
@@ -820,38 +620,22 @@ function logout() {
     if (confirm('確定要登出嗎？')) {
         auth.signOut();
         currentUser = null;
-        updateUserUI();
-        document.getElementById('loginForm').style.display = 'block';
-        document.getElementById('changePwdForm').classList.add('hidden');
+        updateUI();
         document.getElementById('loginPassword').value = '';
         updateStatus('connecting', '⏳ 已登出');
     }
 }
 
 // ============================================================
-// 🔥 監聽 Auth 狀態變化
+// 🔥 Auth 狀態監聽
 // ============================================================
 auth.onAuthStateChanged(function(user) {
-    if (user) {
-        console.log('✅ Auth 用戶已登入:', user.uid);
-        // 如果 currentUser 沒有被設置（例如頁面重整），嘗試恢復
-        if (!currentUser) {
-            // 從 email 提取 userId
-            const email = user.email;
-            if (email && email.endsWith('@mastering-science.com')) {
-                const userId = email.replace('@mastering-science.com', '');
-                const found = findUser(userId);
-                if (found) {
-                    currentUser = found;
-                    updateUserUI();
-                }
-            }
-        }
-    } else {
-        console.log('ℹ️ 無 Auth 用戶');
-        if (currentUser) {
-            currentUser = null;
-            updateUserUI();
+    if (user && !currentUser) {
+        const email = user.email;
+        if (email && email.endsWith('@mastering-science.com')) {
+            const userId = email.replace('@mastering-science.com', '');
+            const found = findUser(userId);
+            if (found) { currentUser = found; updateUI(); }
         }
     }
 });
@@ -860,28 +644,8 @@ auth.onAuthStateChanged(function(user) {
 // 🚀 初始化
 // ============================================================
 updateStatus('connecting', '⏳ 準備中...');
-updateUserUI();
-
-// 檢查是否有記住我
-const saved = localStorage.getItem('ms_chem_login');
-if (saved) {
-    try {
-        const data = JSON.parse(saved);
-        if (data.userId && data.password) {
-            document.getElementById('loginUserId').value = data.userId;
-            document.getElementById('loginPassword').value = data.password;
-            // 自動登入
-            setTimeout(() => document.getElementById('loginBtn').click(), 500);
-        }
-    } catch(e) {}
-}
-
-console.log('🚀 極簡密碼測試系統已啟動！');
-console.log('📌 測試重點：');
-console.log('  1. 登入（Firebase Auth）');
-console.log('  2. 修改密碼（localStorage + Auth 同步）');
-console.log('  3. 建立帳戶（localStorage + Firestore + Auth）');
-console.log('  4. 忘記密碼（重設 initialPassword + Auth）');
+updateUI();
+console.log('🚀 極簡密碼測試已啟動！用 VIP001 / NewPwd123 測試');
 </script>
 
 </body>
