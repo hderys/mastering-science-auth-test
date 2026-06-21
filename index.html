@@ -3,171 +3,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧪 密碼系統完整測試</title>
+    <title>🧪 密碼系統測試</title>
     <script src="https://cdn.jsdelivr.net/npm/firebase@12.15.0/firebase-app-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/firebase@12.15.0/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/firebase@12.15.0/firebase-auth-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; background: #f0edf8; padding: 16px; }
-        .container { max-width: 520px; margin: 0 auto; }
-        .card { background: white; border-radius: 16px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .card-title { font-weight: 700; font-size: 0.9rem; color: #2e0f5a; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .badge { font-size: 0.55rem; background: #4a1d8c; color: white; padding: 1px 10px; border-radius: 20px; font-weight: 600; }
-        .badge.ok { background: #10b981; }
-        .badge.fail { background: #dc2626; }
-        label { display: block; font-size: 0.7rem; font-weight: 600; color: #2e0f5a; margin-bottom: 2px; }
-        input { width: 100%; padding: 7px 10px; border-radius: 8px; border: 2px solid #e0d6f5; font-size: 0.85rem; outline: none; }
-        input:focus { border-color: #4a1d8c; }
-        .row { display: flex; gap: 6px; flex-wrap: wrap; }
-        .row .btn { flex: 1; min-width: 60px; }
-        .btn { padding: 7px 12px; border: none; border-radius: 40px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: 0.2s; text-align: center; }
-        .btn-p { background: #4a1d8c; color: white; }
-        .btn-p:hover { background: #3b1a6e; }
-        .btn-s { background: #10b981; color: white; }
-        .btn-s:hover { background: #059669; }
-        .btn-d { background: #dc2626; color: white; }
-        .btn-d:hover { background: #b91c1c; }
-        .btn-o { background: white; color: #4a1d8c; border: 2px solid #4a1d8c; }
-        .btn-o:hover { background: #f5f0ff; }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .alert { padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; margin-top: 6px; display: none; }
-        .alert-s { background: #d4edda; color: #065f46; display: block; }
-        .alert-d { background: #f8d7da; color: #7f1d1d; display: block; }
-        .alert-w { background: #fef3c7; color: #7c5a00; display: block; }
-        .alert-i { background: #dbeafe; color: #1e40af; display: block; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+        }
+        
+        /* 卡片 */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            margin-bottom: 16px;
+        }
+        .card-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #4a1d8c;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+        
+        /* 登入頁面 */
+        .login-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            text-align: center;
+        }
+        .login-sub {
+            text-align: center;
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 4px;
+            margin-bottom: 24px;
+        }
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e8ecf1;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #fafbfc;
+        }
+        .form-group input:focus { border-color: #4a1d8c; background: white; }
+        .form-group .hint { font-size: 0.65rem; color: #999; margin-top: 3px; }
+        
+        .btn {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-primary { background: #4a1d8c; color: white; }
+        .btn-primary:hover { background: #3b1a6e; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-outline { background: white; color: #4a1d8c; border: 2px solid #4a1d8c; }
+        .btn-outline:hover { background: #f5f0ff; }
+        .btn-sm { padding: 5px 14px; font-size: 0.7rem; width: auto; }
+        .btn-block { width: 100%; }
+        
+        .text-center { text-align: center; }
+        .text-sm { font-size: 0.8rem; color: #888; }
         .mt-1 { margin-top: 6px; }
         .mt-2 { margin-top: 12px; }
-        .flex { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .flex .btn { flex: 0 0 auto; }
-        .status { font-size: 0.7rem; color: #666; }
-        .pw { font-family: monospace; font-size: 1.1rem; background: #f0f0f0; padding: 2px 12px; border-radius: 6px; }
+        .flex { display: flex; gap: 8px; align-items: center; }
+        .flex .btn { flex: 1; }
         .hidden { display: none !important; }
-        .user-box { background: #ede9fe; border-radius: 10px; padding: 8px 12px; font-size: 0.8rem; color: #2e0f5a; margin-bottom: 8px; }
+        
+        .alert {
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+        .alert-success { background: #d1fae5; color: #065f46; }
+        .alert-danger { background: #fee2e2; color: #7f1d1d; }
+        .alert-warning { background: #fef3c7; color: #7c5a00; }
+        .alert-info { background: #dbeafe; color: #1e40af; }
+        
+        /* 頂部 Bar */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0 16px 0;
+            border-bottom: 1px solid #f0edf8;
+            margin-bottom: 16px;
+        }
+        .topbar .user {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #1a1a2e;
+        }
+        .topbar .user span { color: #888; font-weight: 400; }
+        .topbar .badge {
+            font-size: 0.6rem;
+            background: #4a1d8c;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+        
+        /* 學生列表 */
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0edf8;
+        }
+        .student-item:last-child { border-bottom: none; }
+        .student-item .name { font-weight: 500; font-size: 0.85rem; }
+        .student-item .id { font-size: 0.7rem; color: #888; }
+        .student-item .status {
+            font-size: 0.6rem;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+        .status-pending { background: #fef3c7; color: #7c5a00; }
+        .status-done { background: #d1fae5; color: #065f46; }
+        
+        .empty-state {
+            text-align: center;
+            color: #999;
+            font-size: 0.8rem;
+            padding: 20px 0;
+        }
+        
+        /* 密碼顯示 */
+        .pw-display {
+            font-family: monospace;
+            font-size: 1.1rem;
+            background: #f0edf8;
+            padding: 4px 14px;
+            border-radius: 8px;
+            display: inline-block;
+            letter-spacing: 1px;
+        }
+        
+        /* 響應式 */
+        @media (max-width: 480px) {
+            .container { padding: 12px; }
+            .card { padding: 20px 16px; }
+        }
+        
+        /* 狀態圓點 */
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .dot.online { background: #10b981; }
+        .dot.offline { background: #dc2626; }
+        .dot.connecting { background: #f59e0b; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
     </style>
 </head>
 <body>
 
 <div class="container" id="app">
-    <h1 style="color:#4a1d8c; font-size:1.2rem; text-align:center;">🧪 密碼系統完整測試</h1>
-    <p style="text-align:center; font-size:0.75rem; color:#888; margin-bottom:12px;">測試帳戶：VIP001 / NewPwd123</p>
 
-    <!-- 狀態 -->
-    <div class="card" style="padding:10px 16px;">
-        <div class="flex" style="justify-content:space-between;">
-            <span><span id="dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#f59e0b;"></span> <span id="statusText">⏳ 連線中</span></span>
-            <span id="userDisplay" style="font-size:0.75rem; color:#888;">未登入</span>
-        </div>
-    </div>
-
-    <!-- 用戶資訊 -->
-    <div id="userBox" class="hidden user-box">
-        <span id="userInfo">-</span>
-        <button class="btn btn-d" style="padding:2px 12px; font-size:0.65rem;" onclick="logout()">登出</button>
-    </div>
-
-    <!-- ===== 測試 1: 建立學生 ===== -->
-    <div class="card">
-        <div class="card-title">📝 測試 1：建立學生帳戶</div>
-        <div class="row" style="gap:6px;">
-            <div style="flex:2;">
-                <label>姓名</label>
-                <input id="regName" placeholder="測試學生" value="測試學生">
+    <!-- ========================================================= -->
+    <!-- 登入畫面 -->
+    <!-- ========================================================= -->
+    <div id="loginPage">
+        <div class="card">
+            <div class="login-title">🧪 Mastering Science</div>
+            <div class="login-sub">密碼系統測試版</div>
+            
+            <div id="loginAlert"></div>
+            
+            <div class="form-group">
+                <label>登入 ID（學號）</label>
+                <input type="text" id="loginId" placeholder="例如：VIP001" value="VIP001">
             </div>
-            <div style="flex:1;">
-                <label>學號 (留空自動)</label>
-                <input id="regId" placeholder="自動">
-            </div>
-        </div>
-        <div class="row" style="gap:6px;">
-            <div style="flex:1;">
-                <label>班級</label>
-                <input id="regClass" value="VIP">
-            </div>
-            <div style="flex:1;">
-                <label>電話</label>
-                <input id="regPhone" placeholder="91234567" value="91234567">
-            </div>
-        </div>
-        <button class="btn btn-s btn-block" onclick="testCreateUser()">✅ 建立學生</button>
-        <div id="regResult" class="alert"></div>
-    </div>
-
-    <!-- ===== 測試 2: 登入 ===== -->
-    <div class="card">
-        <div class="card-title">🔐 測試 2：登入</div>
-        <div class="row" style="gap:6px;">
-            <div style="flex:1;">
-                <label>學號</label>
-                <input id="loginId" placeholder="VIP001" value="VIP001">
-            </div>
-            <div style="flex:1;">
+            <div class="form-group">
                 <label>密碼</label>
-                <input id="loginPw" type="password" placeholder="密碼" value="NewPwd123">
+                <input type="password" id="loginPw" placeholder="請輸入密碼" value="NewPwd123">
+            </div>
+            
+            <button class="btn btn-primary" id="loginBtn">🔒 登入</button>
+            
+            <div class="text-center mt-2">
+                <button class="btn btn-outline btn-sm" id="forgotBtn">🔑 忘記密碼？</button>
+            </div>
+            
+            <div class="text-center mt-2">
+                <span style="font-size:0.65rem; color:#bbb;">測試帳號：VIP001 / NewPwd123</span>
             </div>
         </div>
-        <div class="row">
-            <button class="btn btn-p" onclick="testLogin()">🔒 登入</button>
-            <button class="btn btn-o" onclick="testLoginFail()">❌ 測試錯誤密碼</button>
+        
+        <!-- 忘記密碼 -->
+        <div id="forgotSection" class="card hidden">
+            <div class="card-title">🔑 忘記密碼</div>
+            <div id="forgotAlert"></div>
+            <div class="form-group">
+                <label>學號</label>
+                <input type="text" id="forgotId" placeholder="輸入學號">
+            </div>
+            <div class="form-group">
+                <label>電話號碼</label>
+                <input type="text" id="forgotPhone" placeholder="例如：91234567">
+            </div>
+            <div class="flex">
+                <button class="btn btn-outline" id="forgotCancel">取消</button>
+                <button class="btn btn-primary" id="forgotSubmit">驗證並重設</button>
+            </div>
         </div>
-        <div id="loginResult" class="alert"></div>
     </div>
 
-    <!-- ===== 測試 3: 修改密碼 ===== -->
-    <div class="card" id="changeSection">
-        <div class="card-title">🔑 測試 3：修改密碼</div>
-        <div class="row" style="gap:6px;">
-            <div style="flex:1;"><label>舊密碼</label><input id="oldPw" type="password" placeholder="舊密碼"></div>
-            <div style="flex:1;"><label>新密碼</label><input id="newPw" type="password" placeholder="新密碼"></div>
-            <div style="flex:1;"><label>確認新密碼</label><input id="confirmPw" type="password" placeholder="再次輸入"></div>
+    <!-- ========================================================= -->
+    <!-- 主畫面（登入後） -->
+    <!-- ========================================================= -->
+    <div id="mainPage" class="hidden">
+        
+        <!-- Top Bar -->
+        <div class="topbar">
+            <div class="user">👤 <span id="userName">-</span> <span id="userId">-</span></div>
+            <div>
+                <span id="userRole" class="badge">學生</span>
+                <button class="btn btn-danger btn-sm" onclick="logout()" style="margin-left:8px;">登出</button>
+            </div>
         </div>
-        <button class="btn btn-s btn-block" onclick="testChangePassword()">✅ 修改密碼</button>
-        <div id="changeResult" class="alert"></div>
-    </div>
 
-    <!-- ===== 測試 4: 首次登入強制改密碼 ===== -->
-    <div class="card">
-        <div class="card-title">🔄 測試 4：首次登入強制改密碼</div>
-        <p style="font-size:0.75rem; color:#888; margin-bottom:6px;">模擬學生首次登入，強制修改密碼</p>
-        <div class="row" style="gap:6px;">
-            <div style="flex:1;"><label>學號</label><input id="firstLoginId" placeholder="輸入學號"></div>
-            <div style="flex:1;"><label>當前密碼</label><input id="firstLoginPw" type="password" placeholder="初始密碼"></div>
+        <!-- ========================================================= -->
+        <!-- 老師專區 -->
+        <!-- ========================================================= -->
+        <div id="teacherZone" class="hidden">
+            
+            <!-- 建立學生 -->
+            <div class="card">
+                <div class="card-title">📝 建立學生</div>
+                <div id="createAlert"></div>
+                <div class="form-group">
+                    <label>姓名</label>
+                    <input type="text" id="regName" placeholder="輸入姓名" value="測試學生">
+                </div>
+                <div class="form-group">
+                    <label>班級</label>
+                    <input type="text" id="regClass" placeholder="班級" value="VIP">
+                </div>
+                <div class="form-group">
+                    <label>電話號碼</label>
+                    <input type="text" id="regPhone" placeholder="電話號碼" value="91234567">
+                </div>
+                <div class="form-group">
+                    <label>學號（留空自動產生）</label>
+                    <input type="text" id="regId" placeholder="留空自動產生">
+                </div>
+                <button class="btn btn-success" id="createBtn">✅ 建立學生</button>
+            </div>
+            
+            <!-- 學生列表 -->
+            <div class="card">
+                <div class="card-title">👨‍🎓 學生列表 <span id="classDisplay" style="font-weight:400; color:#888;">(VIP)</span></div>
+                <div id="studentList">
+                    <div class="empty-state">載入中...</div>
+                </div>
+            </div>
         </div>
-        <div class="row" style="gap:6px;">
-            <div style="flex:1;"><label>新密碼</label><input id="firstNewPw" type="password" placeholder="新密碼"></div>
-            <div style="flex:1;"><label>確認新密碼</label><input id="firstConfirmPw" type="password" placeholder="再次輸入"></div>
-        </div>
-        <button class="btn btn-p btn-block" onclick="testFirstLoginChange()">🔄 模擬首次登入改密碼</button>
-        <div id="firstChangeResult" class="alert"></div>
-    </div>
 
-    <!-- ===== 測試 5: 老師重置學生密碼 ===== -->
-    <div class="card">
-        <div class="card-title">🔄 測試 5：老師重置學生密碼</div>
-        <p style="font-size:0.75rem; color:#888; margin-bottom:6px;">老師強制重置學生密碼（用電話驗證）</p>
-        <div class="row" style="gap:6px;">
-            <div style="flex:1;"><label>學生學號</label><input id="resetId" placeholder="輸入學號"></div>
-            <div style="flex:1;"><label>電話號碼</label><input id="resetPhone" placeholder="電話號碼"></div>
+        <!-- ========================================================= -->
+        <!-- 學生專區（首次登入強制改密碼） -->
+        <!-- ========================================================= -->
+        <div id="studentZone" class="hidden">
+            
+            <!-- 首次登入警告 -->
+            <div id="firstLoginWarning" class="card hidden" style="border:2px solid #f59e0b;">
+                <div style="font-size:0.9rem; font-weight:600; color:#7c5a00;">⚠️ 首次登入！請設定您的密碼</div>
+                <div style="font-size:0.75rem; color:#888; margin:4px 0 12px 0;">這是您第一次登入，請設定自己的密碼。</div>
+                <div id="firstLoginAlert"></div>
+                <div class="form-group">
+                    <label>新密碼（至少 6 個字元）</label>
+                    <input type="password" id="firstNewPw" placeholder="請輸入新密碼">
+                </div>
+                <div class="form-group">
+                    <label>確認新密碼</label>
+                    <input type="password" id="firstConfirmPw" placeholder="請再次輸入新密碼">
+                </div>
+                <button class="btn btn-success" id="firstChangeBtn">✅ 設定密碼</button>
+            </div>
+            
+            <!-- 一般修改密碼 -->
+            <div class="card">
+                <div class="card-title">🔑 修改密碼</div>
+                <div id="changeAlert"></div>
+                <div class="form-group">
+                    <label>舊密碼</label>
+                    <input type="password" id="changeOldPw" placeholder="請輸入舊密碼">
+                </div>
+                <div class="form-group">
+                    <label>新密碼（至少 6 個字元）</label>
+                    <input type="password" id="changeNewPw" placeholder="請輸入新密碼">
+                </div>
+                <div class="form-group">
+                    <label>確認新密碼</label>
+                    <input type="password" id="changeConfirmPw" placeholder="請再次輸入新密碼">
+                </div>
+                <button class="btn btn-success" id="changeBtn">✅ 修改密碼</button>
+            </div>
+            
+            <!-- 學生主頁訊息 -->
+            <div class="card" style="background:#f5f0ff; border:1px solid #e0d6f5;">
+                <div style="font-size:0.8rem; color:#4a1d8c; text-align:center;">
+                    📚 練習功能將在正式版提供<br>
+                    <span style="font-size:0.7rem; color:#888;">目前專注測試密碼系統</span>
+                </div>
+            </div>
         </div>
-        <button class="btn btn-d btn-block" onclick="testResetPassword()">🔄 重置密碼</button>
-        <div id="resetResult" class="alert"></div>
-    </div>
-
-    <!-- ===== 測試 6: 忘記密碼 ===== -->
-    <div class="card">
-        <div class="card-title">🔑 測試 6：忘記密碼（電話驗證）</div>
-        <div class="row" style="gap:6px;">
-            <div style="flex:1;"><label>學號</label><input id="forgotId" placeholder="輸入學號"></div>
-            <div style="flex:1;"><label>電話號碼</label><input id="forgotPhone" placeholder="電話號碼"></div>
+        
+        <!-- 狀態 -->
+        <div style="text-align:center; font-size:0.65rem; color:#ccc; padding:8px 0;">
+            <span id="statusText">⏳ 連線中</span>
         </div>
-        <button class="btn btn-o btn-block" onclick="testForgotPassword()">🔑 忘記密碼</button>
-        <div id="forgotResult" class="alert"></div>
-    </div>
-
-    <!-- ===== 測試結果記錄 ===== -->
-    <div class="card">
-        <div class="card-title">📊 測試結果</div>
-        <div id="testLog" style="font-size:0.75rem; max-height:200px; overflow-y:auto; background:#f9f7ff; padding:8px 12px; border-radius:8px; color:#333;"></div>
     </div>
 </div>
 
@@ -192,7 +376,7 @@ const db = firebase.firestore();
 // 全域變數
 // ============================================================
 let currentUser = null;
-let testLogs = [];
+let currentClass = 'VIP';
 
 // ============================================================
 // 工具函數
@@ -218,12 +402,6 @@ function genPw() {
     for (let i = 0; i < 8; i++) p += c[Math.floor(Math.random() * c.length)];
     return p;
 }
-function log(msg, ok = true) {
-    const time = new Date().toLocaleTimeString();
-    testLogs.unshift(`[${time}] ${ok ? '✅' : '❌'} ${msg}`);
-    if (testLogs.length > 50) testLogs.pop();
-    document.getElementById('testLog').innerHTML = testLogs.map(l => `<div>${l}</div>`).join('');
-}
 function showAlert(id, type, msg) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -231,81 +409,18 @@ function showAlert(id, type, msg) {
     if (msg) {
         el.className = `alert alert-${type}`;
         el.textContent = msg;
-    }
-}
-function updateStatus(text, ok = true) {
-    document.getElementById('statusText').textContent = text;
-    document.getElementById('dot').style.background = ok ? '#10b981' : '#dc2626';
-}
-function updateUserUI() {
-    const box = document.getElementById('userBox');
-    const display = document.getElementById('userDisplay');
-    if (currentUser) {
-        box.classList.remove('hidden');
-        document.getElementById('userInfo').textContent = `👤 ${currentUser.name} (${currentUser.userId})`;
-        display.textContent = `✅ ${currentUser.name}`;
+        el.style.display = 'block';
     } else {
-        box.classList.add('hidden');
-        display.textContent = '未登入';
+        el.style.display = 'none';
     }
 }
+function clearAlert(id) { showAlert(id, null, ''); }
 
 // ============================================================
-// 🔥 測試 1：建立學生
+// 🔐 登入
 // ============================================================
-async function testCreateUser() {
-    const name = document.getElementById('regName').value.trim();
-    const customId = document.getElementById('regId').value.trim() || null;
-    const cls = document.getElementById('regClass').value.trim() || 'VIP';
-    const phone = document.getElementById('regPhone').value.trim();
-    const res = document.getElementById('regResult');
-    if (!name || !phone) { showAlert('regResult', 'w', '⚠️ 請填姓名和電話'); return; }
-    
-    const d = getUsers();
-    let userId = customId;
-    if (!userId) {
-        const classUsers = d.users.filter(u => u.className === cls);
-        userId = String(classUsers.length + 1).padStart(6, '0');
-    }
-    if (findUser(userId)) { showAlert('regResult', 'd', '❌ 學號 ' + userId + ' 已被使用'); return; }
-    
-    const pw = genPw();
-    const user = { userId, name, className: cls, phone, initialPassword: pw, password: null, isFirstLogin: true, isTeacher: false, managedClasses: [cls], createdAt: new Date().toISOString() };
-    
+async function doLogin(id, pw) {
     try {
-        d.users.push(user);
-        saveUsers(d);
-        await db.collection('users').doc(userId).set(user, { merge: true });
-        const email = userId + '@mastering-science.com';
-        try { await auth.createUserWithEmailAndPassword(email, pw); } 
-        catch(e) { if (e.code !== 'auth/email-already-in-use') throw e; }
-        
-        showAlert('regResult', 's', `✅ 建立成功！學號：${userId}，密碼：${pw}`);
-        log(`建立學生 ${name} (${userId}) 成功，密碼：${pw}`);
-        document.getElementById('regName').value = '';
-        document.getElementById('regId').value = '';
-        document.getElementById('regPhone').value = '';
-    } catch(e) {
-        showAlert('regResult', 'd', '❌ 建立失敗：' + e.message);
-        log(`建立學生失敗：${e.message}`, false);
-        // 回滾
-        const d2 = getUsers();
-        d2.users = d2.users.filter(u => u.userId !== userId);
-        saveUsers(d2);
-    }
-}
-
-// ============================================================
-// 🔥 測試 2：登入
-// ============================================================
-async function testLogin() {
-    const id = document.getElementById('loginId').value.trim();
-    const pw = document.getElementById('loginPw').value;
-    const res = document.getElementById('loginResult');
-    if (!id || !pw) { showAlert('loginResult', 'w', '⚠️ 請輸入學號和密碼'); return; }
-    
-    try {
-        updateStatus('⏳ 登入中...', false);
         const email = id + '@mastering-science.com';
         await auth.signInWithEmailAndPassword(email, pw);
         let user = findUser(id);
@@ -313,42 +428,271 @@ async function testLogin() {
             const doc = await db.collection('users').doc(id).get();
             if (doc.exists) user = doc.data();
         }
-        if (!user) { showAlert('loginResult', 'd', '❌ 找不到用戶資料'); await auth.signOut(); return; }
+        if (!user) { await auth.signOut(); showAlert('loginAlert', 'danger', '❌ 找不到用戶資料'); return false; }
         currentUser = user;
-        updateUserUI();
-        showAlert('loginResult', 's', `✅ 登入成功！歡迎 ${user.name}`);
-        log(`登入成功：${id}`);
-        updateStatus(`✅ 已登入 ${user.name}`, true);
+        return true;
     } catch(e) {
         const msg = e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential' ? '❌ 密碼錯誤' :
                     e.code === 'auth/user-not-found' ? '❌ 帳戶不存在' : '❌ ' + e.message;
-        showAlert('loginResult', 'd', msg);
-        log(`登入失敗：${id} - ${msg}`, false);
-        updateStatus('❌ 登入失敗', false);
+        showAlert('loginAlert', 'danger', msg);
+        return false;
     }
 }
 
-async function testLoginFail() {
-    document.getElementById('loginPw').value = 'WrongPassword123';
-    await testLogin();
-    document.getElementById('loginPw').value = 'NewPwd123';
+document.getElementById('loginBtn').addEventListener('click', async function() {
+    const id = document.getElementById('loginId').value.trim();
+    const pw = document.getElementById('loginPw').value;
+    clearAlert('loginAlert');
+    if (!id || !pw) { showAlert('loginAlert', 'warning', '⚠️ 請輸入學號和密碼'); return; }
+    
+    const ok = await doLogin(id, pw);
+    if (ok) {
+        showAlert('loginAlert', 'success', '✅ 登入成功！');
+        enterMainApp();
+    }
+});
+
+document.getElementById('loginPw').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') document.getElementById('loginBtn').click();
+});
+document.getElementById('loginId').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') document.getElementById('loginBtn').click();
+});
+
+// ============================================================
+// 🚪 登出
+// ============================================================
+function logout() {
+    if (!confirm('確定要登出嗎？')) return;
+    auth.signOut();
+    currentUser = null;
+    document.getElementById('loginPage').style.display = 'block';
+    document.getElementById('mainPage').classList.add('hidden');
+    document.getElementById('loginPw').value = '';
+    document.getElementById('statusText').textContent = '⏳ 已登出';
 }
 
 // ============================================================
-// 🔥 測試 3：修改密碼
+// 🏠 進入主畫面
 // ============================================================
-async function testChangePassword() {
-    const oldPw = document.getElementById('oldPw').value;
-    const newPw = document.getElementById('newPw').value;
-    const confirmPw = document.getElementById('confirmPw').value;
-    const res = document.getElementById('changeResult');
-    if (!currentUser) { showAlert('changeResult', 'w', '⚠️ 請先登入'); return; }
-    if (newPw.length < 6) { showAlert('changeResult', 'w', '⚠️ 密碼至少6個字元'); return; }
-    if (newPw !== confirmPw) { showAlert('changeResult', 'w', '❌ 兩次密碼不一致'); return; }
+function enterMainApp() {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('mainPage').classList.remove('hidden');
     
-    const userId = currentUser.userId || currentUser.id;
+    const isTeacher = currentUser.isTeacher || false;
+    document.getElementById('userName').textContent = currentUser.name || '未知';
+    document.getElementById('userId').textContent = `(${currentUser.userId})`;
+    document.getElementById('userRole').textContent = isTeacher ? '👩‍🏫 老師' : '🧑‍🎓 學生';
+    
+    // 顯示相應區域
+    if (isTeacher) {
+        document.getElementById('teacherZone').classList.remove('hidden');
+        document.getElementById('studentZone').classList.add('hidden');
+        currentClass = currentUser.className || currentUser.managedClasses?.[0] || 'VIP';
+        document.getElementById('classDisplay').textContent = `(${currentClass})`;
+        renderStudentList();
+    } else {
+        document.getElementById('teacherZone').classList.add('hidden');
+        document.getElementById('studentZone').classList.remove('hidden');
+        // 檢查是否首次登入
+        if (currentUser.isFirstLogin) {
+            document.getElementById('firstLoginWarning').classList.remove('hidden');
+            document.getElementById('changeAlert').style.display = 'none';
+        } else {
+            document.getElementById('firstLoginWarning').classList.add('hidden');
+        }
+    }
+    document.getElementById('statusText').textContent = '✅ 已登入';
+}
+
+// ============================================================
+// 📝 老師：建立學生
+// ============================================================
+document.getElementById('createBtn').addEventListener('click', async function() {
+    const name = document.getElementById('regName').value.trim();
+    const cls = document.getElementById('regClass').value.trim() || 'VIP';
+    const phone = document.getElementById('regPhone').value.trim();
+    const customId = document.getElementById('regId').value.trim() || null;
+    clearAlert('createAlert');
+    
+    if (!name || !phone) { showAlert('createAlert', 'warning', '⚠️ 請填姓名和電話'); return; }
+    
+    const d = getUsers();
+    let userId = customId;
+    if (!userId) {
+        const classUsers = d.users.filter(u => u.className === cls);
+        userId = String(classUsers.length + 1).padStart(6, '0');
+    }
+    if (findUser(userId)) { showAlert('createAlert', 'danger', '❌ 學號 ' + userId + ' 已被使用'); return; }
+    
+    const pw = genPw();
+    const user = {
+        userId, name, className: cls, phone,
+        initialPassword: pw, password: null,
+        isFirstLogin: true, isTeacher: false,
+        managedClasses: [cls],
+        createdAt: new Date().toISOString(),
+        latestStatus: {}, allAttempts: [], favorites: [],
+        practiceHistory: [], achievements: {}, stats: {}
+    };
+    
+    try {
+        d.users.push(user);
+        saveUsers(d);
+        await db.collection('users').doc(userId).set(user, { merge: true });
+        const email = userId + '@mastering-science.com';
+        try { await auth.createUserWithEmailAndPassword(email, pw); }
+        catch(e) { if (e.code !== 'auth/email-already-in-use') throw e; }
+        
+        // 顯示成功（含密碼）
+        const msg = `✅ 建立成功！<br>👤 ${name}（${userId}）<br>🔑 <span class="pw-display">${pw}</span>`;
+        showAlert('createAlert', 'success', msg);
+        document.getElementById('regName').value = '';
+        document.getElementById('regId').value = '';
+        document.getElementById('regPhone').value = '';
+        renderStudentList();
+    } catch(e) {
+        showAlert('createAlert', 'danger', '❌ 建立失敗：' + e.message);
+        const d2 = getUsers();
+        d2.users = d2.users.filter(u => u.userId !== userId);
+        saveUsers(d2);
+    }
+});
+
+// ============================================================
+// 👨‍🎓 老師：顯示學生列表
+// ============================================================
+async function renderStudentList() {
+    const container = document.getElementById('studentList');
+    try {
+        const students = await loadStudents(currentClass);
+        if (students.length === 0) {
+            container.innerHTML = '<div class="empty-state">還沒有學生</div>';
+            return;
+        }
+        let html = '';
+        for (const s of students) {
+            const statusClass = s.isFirstLogin ? 'status-pending' : 'status-done';
+            const statusText = s.isFirstLogin ? '⏳ 未改密碼' : '✅ 已改密碼';
+            html += `
+                <div class="student-item">
+                    <div>
+                        <div class="name">${s.name} <span class="id">${s.userId}</span></div>
+                        <div><span class="status ${statusClass}">${statusText}</span></div>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="resetStudent('${s.userId}')">🔄 重置</button>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    } catch(e) {
+        container.innerHTML = '<div class="empty-state">載入失敗</div>';
+        console.error(e);
+    }
+}
+
+async function loadStudents(cls) {
+    // 從 Firebase + localStorage 合併
+    const d = getUsers();
+    let local = d.users.filter(u => u.className === cls && !u.isTeacher);
+    try {
+        const snap = await db.collection('users').where('className', '==', cls).where('isTeacher', '==', false).get();
+        const fb = [];
+        snap.forEach(doc => fb.push(doc.data()));
+        // 合併：Firebase 優先
+        const merged = [...fb];
+        for (const s of local) {
+            if (!merged.find(m => m.userId === s.userId)) merged.push(s);
+        }
+        return merged;
+    } catch(e) {
+        return local;
+    }
+}
+
+// ============================================================
+// 🔄 老師：重置學生密碼
+// ============================================================
+async function resetStudent(userId) {
+    if (!confirm('確定要重置 ' + userId + ' 的密碼嗎？')) return;
+    const user = findUser(userId);
+    if (!user) { alert('找不到學生'); return; }
+    const newPw = genPw();
+    try {
+        updateUser(userId, { initialPassword: newPw, password: null, isFirstLogin: true });
+        const email = userId + '@mastering-science.com';
+        const fbUser = auth.currentUser;
+        if (fbUser) {
+            await fbUser.updatePassword(newPw);
+        } else {
+            const oldPw = user.password || user.initialPassword;
+            try {
+                const cred = await auth.signInWithEmailAndPassword(email, oldPw);
+                await cred.user.updatePassword(newPw);
+            } catch(e) {
+                await auth.createUserWithEmailAndPassword(email, newPw);
+            }
+        }
+        alert(`✅ 重置成功！新密碼：${newPw}`);
+        renderStudentList();
+    } catch(e) {
+        alert('❌ 重置失敗：' + e.message);
+    }
+}
+
+// ============================================================
+// 🔑 學生：首次登入改密碼
+// ============================================================
+document.getElementById('firstChangeBtn').addEventListener('click', async function() {
+    const newPw = document.getElementById('firstNewPw').value;
+    const confirmPw = document.getElementById('firstConfirmPw').value;
+    clearAlert('firstLoginAlert');
+    
+    if (newPw.length < 6) { showAlert('firstLoginAlert', 'warning', '⚠️ 密碼至少6個字元'); return; }
+    if (newPw !== confirmPw) { showAlert('firstLoginAlert', 'warning', '❌ 兩次密碼不一致'); return; }
+    
+    try {
+        const userId = currentUser.userId;
+        const fbUser = auth.currentUser;
+        if (fbUser) {
+            await fbUser.updatePassword(newPw);
+        } else {
+            const email = userId + '@mastering-science.com';
+            const cred = await auth.signInWithEmailAndPassword(email, currentUser.initialPassword);
+            await cred.user.updatePassword(newPw);
+        }
+        updateUser(userId, { password: newPw, isFirstLogin: false });
+        currentUser = findUser(userId);
+        showAlert('firstLoginAlert', 'success', '✅ 密碼設定成功！請重新登入');
+        document.getElementById('firstNewPw').value = '';
+        document.getElementById('firstConfirmPw').value = '';
+        // 更新狀態
+        document.getElementById('firstLoginWarning').classList.add('hidden');
+        setTimeout(() => {
+            alert('✅ 密碼已設定！請用新密碼重新登入');
+            logout();
+        }, 1500);
+    } catch(e) {
+        showAlert('firstLoginAlert', 'danger', '❌ 設定失敗：' + e.message);
+    }
+});
+
+// ============================================================
+// 🔑 學生/老師：一般修改密碼
+// ============================================================
+document.getElementById('changeBtn').addEventListener('click', async function() {
+    const oldPw = document.getElementById('changeOldPw').value;
+    const newPw = document.getElementById('changeNewPw').value;
+    const confirmPw = document.getElementById('changeConfirmPw').value;
+    clearAlert('changeAlert');
+    
+    if (newPw.length < 6) { showAlert('changeAlert', 'warning', '⚠️ 密碼至少6個字元'); return; }
+    if (newPw !== confirmPw) { showAlert('changeAlert', 'warning', '❌ 兩次密碼不一致'); return; }
+    if (!currentUser) { showAlert('changeAlert', 'danger', '❌ 請先登入'); return; }
+    
+    const userId = currentUser.userId;
     const validOld = currentUser.password || currentUser.initialPassword;
-    if (oldPw !== validOld) { showAlert('changeResult', 'w', '❌ 舊密碼不正確'); return; }
+    if (oldPw !== validOld) { showAlert('changeAlert', 'warning', '❌ 舊密碼不正確'); return; }
     
     try {
         updateUser(userId, { password: newPw, isFirstLogin: false });
@@ -361,106 +705,42 @@ async function testChangePassword() {
             const cred = await auth.signInWithEmailAndPassword(email, oldPw);
             await cred.user.updatePassword(newPw);
         }
-        showAlert('changeResult', 's', '✅ 密碼已修改！請用新密碼登入測試');
-        log(`修改密碼成功：${userId}`);
-        document.getElementById('oldPw').value = '';
-        document.getElementById('newPw').value = '';
-        document.getElementById('confirmPw').value = '';
+        showAlert('changeAlert', 'success', '✅ 密碼已修改！請用新密碼重新登入');
+        document.getElementById('changeOldPw').value = '';
+        document.getElementById('changeNewPw').value = '';
+        document.getElementById('changeConfirmPw').value = '';
+        setTimeout(() => {
+            alert('✅ 密碼已修改！請用新密碼重新登入');
+            logout();
+        }, 1500);
     } catch(e) {
-        showAlert('changeResult', 'd', '❌ 修改失敗：' + e.message);
-        log(`修改密碼失敗：${e.message}`, false);
+        showAlert('changeAlert', 'danger', '❌ 修改失敗：' + e.message);
     }
-}
+});
 
 // ============================================================
-// 🔥 測試 4：首次登入強制改密碼
+// 🔑 忘記密碼
 // ============================================================
-async function testFirstLoginChange() {
-    const id = document.getElementById('firstLoginId').value.trim();
-    const oldPw = document.getElementById('firstLoginPw').value;
-    const newPw = document.getElementById('firstNewPw').value;
-    const confirmPw = document.getElementById('firstConfirmPw').value;
-    const res = document.getElementById('firstChangeResult');
-    if (!id || !oldPw) { showAlert('firstChangeResult', 'w', '⚠️ 請輸入學號和當前密碼'); return; }
-    if (newPw.length < 6) { showAlert('firstChangeResult', 'w', '⚠️ 新密碼至少6個字元'); return; }
-    if (newPw !== confirmPw) { showAlert('firstChangeResult', 'w', '❌ 兩次密碼不一致'); return; }
-    
-    try {
-        // 先用舊密碼登入（模擬首次登入）
-        const email = id + '@mastering-science.com';
-        const cred = await auth.signInWithEmailAndPassword(email, oldPw);
-        // 立即改密碼
-        await cred.user.updatePassword(newPw);
-        // 更新 localStorage
-        const user = findUser(id);
-        if (user) updateUser(id, { password: newPw, isFirstLogin: false });
-        // 登出
-        await auth.signOut();
-        currentUser = null;
-        updateUserUI();
-        showAlert('firstChangeResult', 's', `✅ 首次登入改密碼成功！請用新密碼登入測試`);
-        log(`首次登入改密碼成功：${id}`);
-        document.getElementById('firstLoginId').value = '';
-        document.getElementById('firstLoginPw').value = '';
-        document.getElementById('firstNewPw').value = '';
-        document.getElementById('firstConfirmPw').value = '';
-    } catch(e) {
-        showAlert('firstChangeResult', 'd', '❌ 失敗：' + e.message);
-        log(`首次登入改密碼失敗：${e.message}`, false);
-    }
-}
+document.getElementById('forgotBtn').addEventListener('click', function() {
+    document.getElementById('forgotSection').classList.remove('hidden');
+    document.getElementById('loginPage').querySelector('.card:first-child').style.display = 'none';
+    clearAlert('forgotAlert');
+});
 
-// ============================================================
-// 🔥 測試 5：老師重置學生密碼
-// ============================================================
-async function testResetPassword() {
-    const id = document.getElementById('resetId').value.trim();
-    const phone = document.getElementById('resetPhone').value.trim();
-    const res = document.getElementById('resetResult');
-    if (!id || !phone) { showAlert('resetResult', 'w', '⚠️ 請輸入學號和電話'); return; }
-    
-    const user = findUser(id);
-    if (!user) { showAlert('resetResult', 'd', '❌ 學號不存在'); return; }
-    if (user.phone !== phone) { showAlert('resetResult', 'd', '❌ 電話號碼不正確'); return; }
-    
-    const newPw = genPw();
-    try {
-        updateUser(id, { initialPassword: newPw, password: null, isFirstLogin: true });
-        const email = id + '@mastering-science.com';
-        const fbUser = auth.currentUser;
-        if (fbUser) {
-            await fbUser.updatePassword(newPw);
-        } else {
-            const oldPw = user.password || user.initialPassword;
-            try {
-                const cred = await auth.signInWithEmailAndPassword(email, oldPw);
-                await cred.user.updatePassword(newPw);
-            } catch(e) {
-                await auth.createUserWithEmailAndPassword(email, newPw);
-            }
-        }
-        showAlert('resetResult', 's', `✅ 重置成功！新密碼：${newPw}`);
-        log(`重置密碼成功：${id}，新密碼：${newPw}`);
-        document.getElementById('resetId').value = '';
-        document.getElementById('resetPhone').value = '';
-    } catch(e) {
-        showAlert('resetResult', 'd', '❌ 重置失敗：' + e.message);
-        log(`重置密碼失敗：${e.message}`, false);
-    }
-}
+document.getElementById('forgotCancel').addEventListener('click', function() {
+    document.getElementById('forgotSection').classList.add('hidden');
+    document.getElementById('loginPage').querySelector('.card:first-child').style.display = 'block';
+});
 
-// ============================================================
-// 🔥 測試 6：忘記密碼
-// ============================================================
-async function testForgotPassword() {
+document.getElementById('forgotSubmit').addEventListener('click', async function() {
     const id = document.getElementById('forgotId').value.trim();
     const phone = document.getElementById('forgotPhone').value.trim();
-    const res = document.getElementById('forgotResult');
-    if (!id || !phone) { showAlert('forgotResult', 'w', '⚠️ 請輸入學號和電話'); return; }
+    clearAlert('forgotAlert');
+    if (!id || !phone) { showAlert('forgotAlert', 'warning', '⚠️ 請輸入學號和電話'); return; }
     
     const user = findUser(id);
-    if (!user) { showAlert('forgotResult', 'd', '❌ 學號不存在'); return; }
-    if (user.phone !== phone) { showAlert('forgotResult', 'd', '❌ 電話號碼不正確'); return; }
+    if (!user) { showAlert('forgotAlert', 'danger', '❌ 學號不存在'); return; }
+    if (user.phone !== phone) { showAlert('forgotAlert', 'danger', '❌ 電話號碼不正確'); return; }
     
     const newPw = genPw();
     try {
@@ -478,26 +758,13 @@ async function testForgotPassword() {
                 await auth.createUserWithEmailAndPassword(email, newPw);
             }
         }
-        showAlert('forgotResult', 's', `✅ 密碼已重設！新密碼：${newPw}`);
-        log(`忘記密碼重設成功：${id}，新密碼：${newPw}`);
+        showAlert('forgotAlert', 'success', `✅ 密碼已重設！<br>🔑 <span class="pw-display">${newPw}</span>`);
         document.getElementById('forgotId').value = '';
         document.getElementById('forgotPhone').value = '';
     } catch(e) {
-        showAlert('forgotResult', 'd', '❌ 重設失敗：' + e.message);
-        log(`忘記密碼重設失敗：${e.message}`, false);
+        showAlert('forgotAlert', 'danger', '❌ 重設失敗：' + e.message);
     }
-}
-
-// ============================================================
-// 🚪 登出
-// ============================================================
-function logout() {
-    auth.signOut();
-    currentUser = null;
-    updateUserUI();
-    updateStatus('⏳ 已登出', false);
-    log('已登出');
-}
+});
 
 // ============================================================
 // 🔥 Auth 狀態監聽
@@ -508,7 +775,13 @@ auth.onAuthStateChanged(user => {
         if (email && email.endsWith('@mastering-science.com')) {
             const id = email.replace('@mastering-science.com', '');
             const found = findUser(id);
-            if (found) { currentUser = found; updateUserUI(); }
+            if (found) {
+                currentUser = found;
+                // 如果主畫面已顯示，刷新；否則等待登入
+                if (document.getElementById('mainPage').classList.contains('hidden') === false) {
+                    enterMainApp();
+                }
+            }
         }
     }
 });
@@ -516,10 +789,10 @@ auth.onAuthStateChanged(user => {
 // ============================================================
 // 🚀 初始化
 // ============================================================
-updateStatus('⏳ 就緒', false);
-log('🧪 測試頁面已載入，用 VIP001 / NewPwd123 測試');
-document.getElementById('loginId').value = 'VIP001';
-document.getElementById('loginPw').value = 'NewPwd123';
+document.getElementById('statusText').textContent = '⏳ 就緒';
+console.log('🧪 極簡密碼測試系統已啟動！');
+console.log('📌 用 VIP001 / NewPwd123 登入測試');
 </script>
+
 </body>
 </html>
