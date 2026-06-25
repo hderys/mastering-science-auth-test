@@ -482,7 +482,6 @@
 
     <div class="form-group-login">
         <label for="loginUserId">登入 ID（學號）</label>
-        <!-- ✅ 修改：移除 VIP 示例 -->
         <input type="text" id="loginUserId" placeholder="例如：20240001">
     </div>
 
@@ -673,10 +672,8 @@
         <!-- ===== 手機版底部（直置時顯示） ===== -->
         <div class="quiz-footer">
             <button id="prevBtn" class="btn btn-outline">◀ 上一題</button>
-            <!-- ✅ 修改：改為「開啟周期表」，移除📊 -->
             <button id="periodicTableBtn" class="btn btn-outline" style="display:none;">開啟周期表</button>
             <button id="nextBtn" class="btn btn-outline">下一題 ▶</button>
-            <!-- ✅ 修改：改為「提交並離開」 -->
             <button id="submitAllBtn" class="btn" style="background:#10b981;">提交並離開</button>
         </div>
 
@@ -687,7 +684,6 @@
                 <span class="timer" id="desktopTimer">⏱️ 00:00</span>
             </div>
             <div class="sidebar-row-2">
-                <!-- ✅ 修改：改為「開啟周期表」，移除📊 -->
                 <button class="table-btn" id="desktopPeriodicBtn">開啟周期表</button>
                 <span class="counter" id="desktopCounter">1 / 10</span>
             </div>
@@ -695,11 +691,43 @@
             <div class="sidebar-actions">
                 <button class="btn btn-prev" id="desktopPrevBtn">◀</button>
                 <button class="btn btn-next" id="desktopNextBtn">▶</button>
-                <!-- ✅ 修改：改為「提交並離開」 -->
                 <button class="btn btn-submit" id="desktopSubmitBtn">提交並離開</button>
             </div>
         </div>
 
+    </div>
+</div>
+
+<!-- ===== 桌面版問題彈窗（獨立於手機版） ===== -->
+<div id="desktopQuizModal" class="modal">
+    <div class="modal-content">
+        <div class="main-panel" id="desktopMainPanel">
+            <div class="question-area">
+                <div class="question-text" id="desktopQuestionText">
+                    載入中...
+                </div>
+                <div class="image-area" id="desktopImageArea">
+                </div>
+                <div class="options-grid" id="desktopOptions">
+                </div>
+            </div>
+        </div>
+        <div class="sidebar" id="desktopSidebar">
+            <div class="sidebar-row-1">
+                <span class="difficulty" id="desktopDifficulty">📈 Advanced</span>
+                <span class="timer" id="desktopTimer">⏱️ 00:00</span>
+            </div>
+            <div class="sidebar-row-2">
+                <button class="table-btn" id="desktopPeriodicBtn">📊 周期表</button>
+                <span class="counter" id="desktopCounter">1 / 10</span>
+            </div>
+            <div class="nav-grid" id="desktopNav"></div>
+            <div class="sidebar-actions">
+                <button class="btn btn-prev" id="desktopPrevBtn">◀</button>
+                <button class="btn btn-next" id="desktopNextBtn">▶</button>
+                <button class="btn btn-submit" id="desktopSubmitBtn">提交</button>
+            </div>
+        </div>
     </div>
 </div>
 
