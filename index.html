@@ -265,7 +265,7 @@
         }
 
         /* ============================================================
-           手機橫置模式 - 變身桌面版（只限做題時）
+           手機橫置模式 - 變身桌面版（只限做題時）- 從測試版複製
            ============================================================ */
         @media (max-width: 900px) and (orientation: landscape) {
             #quizModal .modal-content {
@@ -319,16 +319,14 @@
             }
         }
 
-        /* 直置時隱藏桌面版元素 */
+        /* 直置時隱藏側邊欄 */
         @media (max-width: 900px) and (orientation: portrait) {
             #quizModal .sidebar { display: none !important; }
-            #quizModal .main-panel { display: none !important; }
         }
 
-        /* 桌面版（>900px）永遠顯示桌面版 */
+        /* 桌面版（>900px）永遠顯示側邊欄 */
         @media (min-width: 901px) {
             #quizModal .sidebar { display: flex !important; }
-            #quizModal .main-panel { display: flex !important; }
             #quizModal .quiz-header { display: none !important; }
             #quizModal .question-nav { display: none !important; }
             #quizModal .quiz-footer { display: none !important; }
@@ -419,146 +417,26 @@
         }
 
         /* ============================================================
-           桌面版獨立彈窗（#desktopQuizModal）
+           桌面版側邊欄樣式（在 #quizModal 內）
            ============================================================ */
-        #desktopQuizModal .modal-content {
-            width: 1000px;
-            max-width: 98%;
-            height: 620px;
-            max-height: 90vh;
-            padding: 0;
-            border-radius: 28px;
-            display: flex;
-            overflow: hidden;
-            background: white;
-            flex-direction: row;
-            box-shadow: 0 20px 60px rgba(74, 29, 140, 0.15);
-        }
-
-        #desktopQuizModal .main-panel {
-            flex: 1;
-            padding: 24px 28px 20px 28px;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            background: #ffffff;
-        }
-
-        #desktopQuizModal .question-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-        }
-
-        #desktopQuizModal .question-text {
-            font-size: 18px;
-            font-weight: 600;
-            line-height: 1.5;
-            color: #1a1a2e;
-            margin-bottom: 12px;
-            flex-shrink: 0;
-            word-break: break-word;
-        }
-
-        #desktopQuizModal .image-area {
-            text-align: center;
-            margin-bottom: 10px;
-            flex-shrink: 0;
-        }
-        #desktopQuizModal .image-area img {
-            max-height: 110px;
-            max-width: 100%;
-            object-fit: contain;
-            border-radius: 8px;
-            border: 1px solid #e9e4f5;
-            padding: 4px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        #desktopQuizModal .image-area img:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-        }
-        #desktopQuizModal .image-area:not(:has(img)) {
-            display: none !important;
-        }
-
-        #desktopQuizModal .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            flex: 1;
-            align-content: center;
-            min-height: 0;
-        }
-
-        #desktopQuizModal .option-btn {
-            background: #faf8ff;
-            border: 2px solid #e0d6f5;
-            border-radius: 12px;
-            padding: 14px 18px;
-            font-size: 15px;
-            font-weight: 500;
-            color: #1e1b4b;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            min-height: 44px;
-            word-break: break-word;
-            line-height: 1.3;
-        }
-        #desktopQuizModal .option-btn:hover:not(.selected) {
-            border-color: #4a1d8c;
-            background: #f5f0ff;
-            transform: translateY(-1px);
-        }
-        #desktopQuizModal .option-btn::before {
-            content: "○";
-            display: inline-block;
-            width: 22px;
-            font-size: 16px;
-            color: #a78bbf;
-            margin-right: 10px;
-            flex-shrink: 0;
-        }
-        #desktopQuizModal .option-btn.selected {
-            border-color: #4a1d8c;
-            background: #4a1d8c;
-            color: white;
-        }
-        #desktopQuizModal .option-btn.selected::before {
-            content: "●";
-            color: white;
-        }
-
-        #desktopQuizModal .main-panel.no-image .options-grid {
-            align-content: center;
-        }
-        #desktopQuizModal .main-panel.no-image .question-text {
-            font-size: 20px;
-        }
-
-        #desktopQuizModal .sidebar {
+        #quizModal .sidebar {
             width: 210px;
             min-width: 170px;
             background: linear-gradient(145deg, #3b1a6e, #2d0f54);
             padding: 18px 14px 14px 14px;
-            display: flex;
+            display: none;
             flex-direction: column;
             border-left: 1px solid rgba(255,255,255,0.08);
             flex-shrink: 0;
             transition: background 0.4s ease;
         }
 
-        #desktopQuizModal .sidebar.difficulty-translate { background: linear-gradient(145deg, #065f46, #047857); }
-        #desktopQuizModal .sidebar.difficulty-basic { background: linear-gradient(145deg, #1e40af, #1d4ed8); }
-        #desktopQuizModal .sidebar.difficulty-advanced { background: linear-gradient(145deg, #4c1d95, #6d28d9); }
-        #desktopQuizModal .sidebar.difficulty-challenge { background: linear-gradient(145deg, #78350f, #b45309); }
+        #quizModal .sidebar.difficulty-translate { background: linear-gradient(145deg, #065f46, #047857); }
+        #quizModal .sidebar.difficulty-basic { background: linear-gradient(145deg, #1e40af, #1d4ed8); }
+        #quizModal .sidebar.difficulty-advanced { background: linear-gradient(145deg, #4c1d95, #6d28d9); }
+        #quizModal .sidebar.difficulty-challenge { background: linear-gradient(145deg, #78350f, #b45309); }
 
-        #desktopQuizModal .sidebar-row-1 {
+        #quizModal .sidebar-row-1 {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -566,18 +444,18 @@
             border-bottom: 1px solid rgba(255,255,255,0.12);
             flex-shrink: 0;
         }
-        #desktopQuizModal .sidebar-row-1 .difficulty {
+        #quizModal .sidebar-row-1 .difficulty {
             font-size: 13px;
             font-weight: 600;
             color: #ffffff;
         }
-        #desktopQuizModal .sidebar-row-1 .timer {
+        #quizModal .sidebar-row-1 .timer {
             font-size: 14px;
             font-weight: 600;
             color: #fca5a5;
         }
 
-        #desktopQuizModal .sidebar-row-2 {
+        #quizModal .sidebar-row-2 {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -585,7 +463,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.12);
             flex-shrink: 0;
         }
-        #desktopQuizModal .sidebar-row-2 .table-btn {
+        #quizModal .sidebar-row-2 .table-btn {
             background: rgba(255,255,255,0.15);
             border: 1px solid rgba(255,255,255,0.2);
             border-radius: 30px;
@@ -596,19 +474,16 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        #desktopQuizModal .sidebar-row-2 .table-btn:hover {
+        #quizModal .sidebar-row-2 .table-btn:hover {
             background: rgba(255,255,255,0.25);
         }
-        #desktopQuizModal .sidebar-row-2 .table-btn.hidden {
-            display: none;
-        }
-        #desktopQuizModal .sidebar-row-2 .counter {
+        #quizModal .sidebar-row-2 .counter {
             font-size: 15px;
             font-weight: 700;
             color: #ffffff;
         }
 
-        #desktopQuizModal .nav-grid {
+        #quizModal .nav-grid {
             display: flex;
             flex-wrap: wrap;
             gap: 3px;
@@ -620,19 +495,19 @@
             border-bottom: 1px solid rgba(255,255,255,0.12);
             margin-bottom: 8px;
         }
-        #desktopQuizModal .nav-grid::-webkit-scrollbar {
+        #quizModal .nav-grid::-webkit-scrollbar {
             width: 2px;
         }
-        #desktopQuizModal .nav-grid::-webkit-scrollbar-track {
+        #quizModal .nav-grid::-webkit-scrollbar-track {
             background: rgba(255,255,255,0.05);
             border-radius: 10px;
         }
-        #desktopQuizModal .nav-grid::-webkit-scrollbar-thumb {
+        #quizModal .nav-grid::-webkit-scrollbar-thumb {
             background: rgba(255,255,255,0.2);
             border-radius: 10px;
         }
 
-        #desktopQuizModal .nav-dot {
+        #quizModal .nav-dot {
             border-radius: 50%;
             background: rgba(255,255,255,0.15);
             border: none;
@@ -648,39 +523,39 @@
             height: 24px;
             font-size: 9px;
         }
-        #desktopQuizModal .nav-dot.small {
+        #quizModal .nav-dot.small {
             width: 20px;
             height: 20px;
             font-size: 8px;
         }
-        #desktopQuizModal .nav-dot.tiny {
+        #quizModal .nav-dot.tiny {
             width: 17px;
             height: 17px;
             font-size: 7px;
         }
-        #desktopQuizModal .nav-dot.current {
+        #quizModal .nav-dot.current {
             background: #8b5cf6;
             color: white;
             box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
         }
-        #desktopQuizModal .nav-dot.answered {
+        #quizModal .nav-dot.answered {
             background: #34d399;
             color: white;
         }
-        #desktopQuizModal .nav-dot.unanswered {
+        #quizModal .nav-dot.unanswered {
             background: #fbbf24;
             color: #7c5a00;
         }
-        #desktopQuizModal .nav-dot:hover {
+        #quizModal .nav-dot:hover {
             transform: scale(1.1);
         }
 
-        #desktopQuizModal .sidebar-actions {
+        #quizModal .sidebar-actions {
             display: flex;
             gap: 4px;
             flex-shrink: 0;
         }
-        #desktopQuizModal .sidebar-actions .btn {
+        #quizModal .sidebar-actions .btn {
             flex: 1;
             padding: 6px 4px;
             border: none;
@@ -695,40 +570,46 @@
             align-items: center;
             justify-content: center;
         }
-        #desktopQuizModal .sidebar-actions .btn:disabled {
+        #quizModal .sidebar-actions .btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
         }
-        #desktopQuizModal .btn-prev {
+        #quizModal .btn-prev {
             background: #ffffff;
             color: #4a1d8c;
             border: 1px solid rgba(255,255,255,0.3);
         }
-        #desktopQuizModal .btn-prev:hover:not(:disabled) {
+        #quizModal .btn-prev:hover:not(:disabled) {
             background: #f5f0ff;
             transform: translateY(-1px);
         }
-        #desktopQuizModal .btn-next {
+        #quizModal .btn-next {
             background: #ffffff;
             color: #4a1d8c;
             border: 1px solid rgba(255,255,255,0.3);
         }
-        #desktopQuizModal .btn-next:hover:not(:disabled) {
+        #quizModal .btn-next:hover:not(:disabled) {
             background: #f5f0ff;
             transform: translateY(-1px);
         }
-        #desktopQuizModal .btn-submit {
+        #quizModal .btn-submit {
             background: #10b981;
             color: white;
         }
-        #desktopQuizModal .btn-submit:hover:not(:disabled) {
+        #quizModal .btn-submit:hover:not(:disabled) {
             background: #059669;
             transform: translateY(-1px);
         }
-        #desktopQuizModal .btn-submit:disabled {
+        #quizModal .btn-submit:disabled {
             opacity: 0.4;
             cursor: not-allowed;
         }
+
+        /* ===== 難度顏色 ===== */
+        #quizModal .modal-content.difficulty-translate { background: #dcfce7; }
+        #quizModal .modal-content.difficulty-basic { background: #dbeafe; }
+        #quizModal .modal-content.difficulty-advanced { background: #ede9fe; }
+        #quizModal .modal-content.difficulty-challenge { background: #fef3c7; }
     </style>
     
     <!-- ===== Firebase SDK (改用 jsdelivr CDN，提升手機相容性) ===== -->
@@ -957,7 +838,7 @@
 
 <div id="explainModal" class="modal"><div class="modal-content"><div id="explainContent" class="explain-content"></div><button id="closeExplainBtn" class="btn">返回成績總表</button></div></div>
 
-<!-- ===== 手機版問題彈窗 ===== -->
+<!-- ===== 手機版問題彈窗（只有一個彈窗！） ===== -->
 <div id="quizModal" class="modal">
     <div class="modal-content">
 
@@ -989,54 +870,24 @@
             <button id="submitAllBtn" class="btn" style="background:#10b981;">提交並離開</button>
         </div>
 
-        <!-- ===== 手機版側邊欄（橫置時顯示） ===== -->
-        <!-- 注意：手機版使用 mobileNav，避免與桌面版衝突 -->
-        <div class="sidebar" id="mobileSidebar">
-            <div class="sidebar-row-1">
-                <span class="difficulty" id="mobileDifficulty">📈 Advanced</span>
-                <span class="timer" id="mobileTimer">⏱️ 00:00</span>
-            </div>
-            <div class="sidebar-row-2">
-                <button class="table-btn" id="mobilePeriodicBtn">開啟周期表</button>
-                <span class="counter" id="mobileCounter">1 / 10</span>
-            </div>
-            <div class="nav-grid" id="mobileNav"></div>
-            <div class="sidebar-actions">
-                <button class="btn btn-prev" id="mobilePrevBtn">◀</button>
-                <button class="btn btn-next" id="mobileNextBtn">▶</button>
-                <button class="btn btn-submit" id="mobileSubmitBtn">提交並離開</button>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<!-- ===== 桌面版問題彈窗（獨立於手機版） ===== -->
-<div id="desktopQuizModal" class="modal">
-    <div class="modal-content">
-        <div class="main-panel" id="desktopMainPanel">
-            <div class="question-area">
-                <div class="question-text" id="desktopQuestionText">載入中...</div>
-                <div class="image-area" id="desktopImageArea"></div>
-                <div class="options-grid" id="desktopOptions"></div>
-            </div>
-        </div>
+        <!-- ===== 側邊欄（橫置時/桌面版顯示） ===== -->
         <div class="sidebar" id="desktopSidebar">
             <div class="sidebar-row-1">
                 <span class="difficulty" id="desktopDifficulty">📈 Advanced</span>
                 <span class="timer" id="desktopTimer">⏱️ 00:00</span>
             </div>
             <div class="sidebar-row-2">
-                <button class="table-btn" id="desktopPeriodicBtn">📊 周期表</button>
+                <button class="table-btn" id="desktopPeriodicBtn">開啟周期表</button>
                 <span class="counter" id="desktopCounter">1 / 10</span>
             </div>
             <div class="nav-grid" id="desktopNav"></div>
             <div class="sidebar-actions">
                 <button class="btn btn-prev" id="desktopPrevBtn">◀</button>
                 <button class="btn btn-next" id="desktopNextBtn">▶</button>
-                <button class="btn btn-submit" id="desktopSubmitBtn">提交</button>
+                <button class="btn btn-submit" id="desktopSubmitBtn">提交並離開</button>
             </div>
         </div>
+
     </div>
 </div>
 

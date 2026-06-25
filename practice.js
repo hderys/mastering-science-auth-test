@@ -56,7 +56,6 @@ function isNotAttempted(qid) {
 }
 
 function isMobile() {
-    // ✅ 手機橫置時也視為手機（寬度 ≤ 900px）
     return window.innerWidth <= 900;
 }
 
@@ -322,7 +321,6 @@ async function renderPractice() {
     document.querySelectorAll('.unit-test-btn').forEach(btn => btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const unit = btn.dataset.unit;
-        // ✅ 加入確認視窗
         const unitObj = window.ALL_UNITS[unit];
         const unitName = unitObj ? unitObj.name : '單元 ' + unit;
         const confirmMsg = '📝 確認開始單元測驗？\n\n你即將挑戰【' + unitName + '】的單元測驗，共 36 題。\n\n⏱️ 每題限時 90 秒\n📊 完成後會顯示 DSE 等級預測\n\n準備好了嗎？';
@@ -406,12 +404,7 @@ function startUnitTest(unit) {
     document.getElementById('resultModal').style.display = 'none';
     
     startTime = Date.now();
-    
-    if (isMobile()) {
-        showQuizModal();
-    } else {
-        showDesktopQuizModal();
-    }
+    showQuizModal();
 }
 
 // ==================== 單題練習功能 ====================
@@ -750,13 +743,7 @@ function startPracticeWithSettings() {
     document.getElementById('settingsModal').style.display = 'none';
     
     startTime = Date.now();
-    
-    // ✅ 使用 isMobile() 判斷（已改為 900px）
-    if (isMobile()) {
-        showQuizModal();
-    } else {
-        showDesktopQuizModal();
-    }
+    showQuizModal();
 }
 
 // ==================== showExplainModal ====================
@@ -944,7 +931,7 @@ function closeDSEResult() {
 }
 
 // ============================================================
-// 手機版彈窗函數（使用 mobileNav）
+// showQuizModal - 唯一彈窗（手機/桌面/橫置共用）
 // ============================================================
 
 function showQuizModal() { 
@@ -957,62 +944,177 @@ function showQuizModal() {
         setTimeout(showLandscapeHint, 500);
     }
     
-    const isMobileDevice = window.innerWidth <= 640;
-    const footerClass = isMobileDevice ? 'quiz-footer-mobile' : 'quiz-footer-desktop';
-    const footer = document.querySelector(`.${footerClass}`);
-    const footerElement = footer || document.querySelector('.quiz-footer');
+    // ✅ 綁定周期表按鈕
+    const periodicBtn = document.getElementById('periodicTableBtn');
+    if (periodicBtn && typeof showPeriodicTable === 'function') {
+        periodicBtn.removeEventListener('click', showPeriodicTable);
+        periodicBtn.addEventListener('click', showPeriodicTable);
+    }
     
-    let periodicBtn = document.getElementById('periodicTableBtn');
-    const shouldShowPeriodicTable = (currentChapter && parseInt(currentChapter) >= 6) || currentChapter === null;
+    // ✅ 綁定提交按鈕
+    const submitBtn = document.getElementById('submitAllBtn');
+    if (submitBtn && typeof submitAll === 'function') {
+        submitBtn.removeEventListener('click', submitAll);
+        submitBtn.addEventListener('click', submitAll);
+    }
     
-    if (shouldShowPeriodicTable) {
-        if (!periodicBtn) {
-            periodicBtn = document.createElement('button');
-            periodicBtn.id = 'periodicTableBtn';
-            periodicBtn.className = 'btn btn-outline';
-            periodicBtn.textContent = '開啟周期表';
-            periodicBtn.addEventListener('click', showPeriodicTable);
-            const nextBtn = document.getElementById('nextBtn');
-            if (nextBtn && footerElement) {
-                footerElement.insertBefore(periodicBtn, nextBtn.nextSibling);
-            }
-        }
-        periodicBtn.style.display = 'inline-block';
-    } else {
-        if (periodicBtn) {
-            periodicBtn.style.display = 'none';
-        }
+    // ✅ 綁定上一題/下一題
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    if (prevBtn) {
+        prevBtn.removeEventListener('click', handlePrev);
+        prevBtn.addEventListener('click', handlePrev);
+    }
+    if (nextBtn) {
+        nextBtn.removeEventListener('click', handleNext);
+        nextBtn.addEventListener('click', handleNext);
+    }
+    
+    // ✅ 綁定桌面版按鈕（直置時隱藏，橫置/桌面時顯示）
+    const desktopPrevBtn = document.getElementById('desktopPrevBtn');
+    const desktopNextBtn = document.getElementById('desktopNextBtn');
+    const desktopSubmitBtn = document.getElementById('desktopSubmitBtn');
+    const desktopPeriodicBtn = document.getElementById('desktopPeriodicBtn');
+    
+    if (desktopPrevBtn) {
+        desktopPrevBtn.removeEventListener('click', handleDesktopPrev);
+        desktopPrevBtn.addEventListener('click', handleDesktopPrev);
+    }
+    if (desktopNextBtn) {
+        desktopNextBtn.removeEventListener('click', handleDesktopNext);
+        desktopNextBtn.addEventListener('click', handleDesktopNext);
+    }
+    if (desktopSubmitBtn) {
+        desktopSubmitBtn.removeEventListener('click', submitAll);
+        desktopSubmitBtn.addEventListener('click', submitAll);
+    }
+    if (desktopPeriodicBtn && typeof showPeriodicTable === 'function') {
+        desktopPeriodicBtn.removeEventListener('click', showPeriodicTable);
+        desktopPeriodicBtn.addEventListener('click', showPeriodicTable);
     }
 }
 
-function renderQuizNav() {
-    // ✅ 使用 mobileNav（手機版專用）
-    let nav = document.getElementById('mobileNav');
-    if (!nav) {
-        // 如果 mobileNav 不存在，嘗試找 desktopNav（向後相容）
-        nav = document.getElementById('desktopNav');
+// ==================== 輔助函數 ====================
+function handlePrev() {
+    if (currentQIndex > 0) {
+        currentQIndex--;
+        renderQuizNav();
+        renderCurrentQuestion();
+        updateNavButtons();
     }
+}
+
+function handleNext() {
+    if (currentQIndex < currentQuestions.length - 1) {
+        currentQIndex++;
+        renderQuizNav();
+        renderCurrentQuestion();
+        updateNavButtons();
+    }
+}
+
+function handleDesktopPrev() {
+    if (currentQIndex > 0) {
+        currentQIndex--;
+        renderQuizNav();
+        renderCurrentQuestion();
+        updateNavButtons();
+        // 同步更新桌面版導航
+        const desktopNav = document.getElementById('desktopNav');
+        if (desktopNav) renderDesktopQuizNav();
+    }
+}
+
+function handleDesktopNext() {
+    if (currentQIndex < currentQuestions.length - 1) {
+        currentQIndex++;
+        renderQuizNav();
+        renderCurrentQuestion();
+        updateNavButtons();
+        // 同步更新桌面版導航
+        const desktopNav = document.getElementById('desktopNav');
+        if (desktopNav) renderDesktopQuizNav();
+    }
+}
+
+// ==================== renderQuizNav（手機版導航） ====================
+function renderQuizNav() {
+    let nav = document.getElementById('questionNav');
     if (!nav) return;
-    
     let html = '';
     for (let i = 0; i < currentQuestions.length; i++) {
         let cls = '';
         if (i === currentQIndex) cls = 'current';
         else if (currentAnswers[i] !== null) cls = 'answered';
         else cls = 'unanswered';
+        html += `<button class="q-nav-btn ${cls}" data-idx="${i}">${i + 1}</button>`;
+    }
+    nav.innerHTML = html;
+    document.getElementById('quizCounter').innerHTML = `${currentQIndex + 1} / ${currentQuestions.length}`;
+    document.querySelectorAll('.q-nav-btn').forEach(btn => btn.addEventListener('click', (e) => { 
+        currentQIndex = parseInt(btn.dataset.idx); 
+        renderQuizNav(); 
+        renderCurrentQuestion(); 
+        updateNavButtons();
+        const desktopNav = document.getElementById('desktopNav');
+        if (desktopNav) renderDesktopQuizNav();
+    }));
+    checkAllQuestionsAnswered();
+    
+    // 同步更新桌面版導航
+    const desktopNav = document.getElementById('desktopNav');
+    if (desktopNav) renderDesktopQuizNav();
+}
+
+// ==================== renderDesktopQuizNav（桌面版導航 - 同步） ====================
+function renderDesktopQuizNav() {
+    let nav = document.getElementById('desktopNav');
+    if (!nav) return;
+    let html = '';
+    const total = currentQuestions.length;
+    
+    let dotClass = '';
+    if (total <= 30) dotClass = '';
+    else if (total <= 45) dotClass = 'small';
+    else dotClass = 'tiny';
+    
+    for (let i = 0; i < total; i++) {
+        let cls = dotClass;
+        if (i === currentQIndex) cls += ' current';
+        else if (currentAnswers[i] !== null) cls += ' answered';
+        else cls += ' unanswered';
         html += `<button class="nav-dot ${cls}" data-idx="${i}">${i + 1}</button>`;
     }
     nav.innerHTML = html;
+    document.getElementById('desktopCounter').innerHTML = `${currentQIndex + 1} / ${total}`;
+    document.querySelectorAll('#desktopNav .nav-dot').forEach(btn => btn.addEventListener('click', (e) => {
+        currentQIndex = parseInt(btn.dataset.idx);
+        renderQuizNav();
+        renderCurrentQuestion();
+        updateNavButtons();
+        renderDesktopQuizNav();
+    }));
+    updateDesktopSidebarDifficulty();
+    checkDesktopAllQuestionsAnswered();
+}
+
+function updateDesktopSidebarDifficulty() {
+    if (currentQuestions.length === 0) return;
+    const q = currentQuestions[currentQIndex];
+    const sidebar = document.getElementById('desktopSidebar');
+    if (!sidebar) return;
     
-    document.querySelectorAll('#mobileNav .nav-dot, #desktopNav .nav-dot').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            currentQIndex = parseInt(btn.dataset.idx);
-            renderQuizNav();
-            renderCurrentQuestion();
-            updateNavButtons();
-        });
-    });
-    checkAllQuestionsAnswered();
+    sidebar.classList.remove('difficulty-translate', 'difficulty-basic', 'difficulty-advanced', 'difficulty-challenge');
+    
+    if (q.difficulty === '🌐 Translate') {
+        sidebar.classList.add('difficulty-translate');
+    } else if (q.difficulty === '✅ Basic') {
+        sidebar.classList.add('difficulty-basic');
+    } else if (q.difficulty === '📈 Advanced') {
+        sidebar.classList.add('difficulty-advanced');
+    } else if (q.difficulty === '🔥 Challenge') {
+        sidebar.classList.add('difficulty-challenge');
+    }
 }
 
 // ==================== renderCurrentQuestion（手機版） ====================
@@ -1185,6 +1287,28 @@ function checkAllQuestionsAnswered() {
     }
 }
 
+function checkDesktopAllQuestionsAnswered() {
+    if (currentQuestions.length === 0) return;
+    
+    const allAnswered = currentAnswers.every(a => a !== null && a !== undefined);
+    const submitBtn = document.getElementById('desktopSubmitBtn');
+    if (!submitBtn) return;
+    
+    if (allAnswered && currentAnswers.length > 0) {
+        if (!blinkInterval) {
+            blinkInterval = setInterval(() => {
+                submitBtn.style.animation = 'blink 0.3s step-end infinite';
+            }, 100);
+        }
+    } else {
+        if (blinkInterval) {
+            clearInterval(blinkInterval);
+            blinkInterval = null;
+            submitBtn.style.animation = '';
+        }
+    }
+}
+
 // ==================== submitAll ====================
 function submitAll() {
     if (blinkInterval) {
@@ -1267,7 +1391,6 @@ function submitAll() {
         renderPinned();
         renderHistory();
         renderAchievements();
-        // ✅ 提交後退出全屏（由 landscape.js 提供）
         if (typeof exitFullscreenAfterSubmit === 'function') {
             exitFullscreenAfterSubmit();
         }
@@ -1283,7 +1406,6 @@ function submitAll() {
             displayResults(results);
         };
         showDSEResult(accuracy, correctCount, currentQuestions.length);
-        // ✅ 提交後退出全屏（由 landscape.js 提供）
         if (typeof exitFullscreenAfterSubmit === 'function') {
             exitFullscreenAfterSubmit();
         }
@@ -1299,7 +1421,6 @@ function submitAll() {
     }
     
     displayResults(results);
-    // ✅ 提交後退出全屏（由 landscape.js 提供）
     if (typeof exitFullscreenAfterSubmit === 'function') {
         exitFullscreenAfterSubmit();
     }
@@ -1413,299 +1534,6 @@ function displayResults(results) {
     });
 }
 
-// ============================================================
-// 桌面版函數（使用 desktopNav）
-// ============================================================
-
-function showDesktopQuizModal() {
-    renderDesktopQuizNav();
-    renderDesktopCurrentQuestion();
-    document.getElementById('desktopQuizModal').style.display = 'flex';
-    
-    // ✅ 顯示首次橫置提示（由 landscape.js 提供）
-    if (typeof showLandscapeHint === 'function') {
-        setTimeout(showLandscapeHint, 500);
-    }
-}
-
-function renderDesktopQuizNav() {
-    // ✅ 使用 desktopNav（桌面版專用）
-    let nav = document.getElementById('desktopNav');
-    if (!nav) return;
-    
-    let html = '';
-    const total = currentQuestions.length;
-    
-    let dotClass = '';
-    if (total <= 30) dotClass = '';
-    else if (total <= 45) dotClass = 'small';
-    else dotClass = 'tiny';
-    
-    for (let i = 0; i < total; i++) {
-        let cls = dotClass;
-        if (i === currentQIndex) cls += ' current';
-        else if (currentAnswers[i] !== null) cls += ' answered';
-        else cls += ' unanswered';
-        html += `<button class="nav-dot ${cls}" data-idx="${i}">${i + 1}</button>`;
-    }
-    nav.innerHTML = html;
-    
-    document.getElementById('desktopCounter').innerHTML = `${currentQIndex + 1} / ${total}`;
-    
-    document.querySelectorAll('#desktopNav .nav-dot').forEach(btn => btn.addEventListener('click', (e) => {
-        currentQIndex = parseInt(btn.dataset.idx);
-        renderDesktopQuizNav();
-        renderDesktopCurrentQuestion();
-        updateDesktopNavButtons();
-    }));
-    
-    updateDesktopSidebarDifficulty();
-    checkDesktopAllQuestionsAnswered();
-}
-
-function updateDesktopSidebarDifficulty() {
-    if (currentQuestions.length === 0) return;
-    const q = currentQuestions[currentQIndex];
-    const sidebar = document.getElementById('desktopSidebar');
-    if (!sidebar) return;
-    
-    sidebar.classList.remove('difficulty-translate', 'difficulty-basic', 'difficulty-advanced', 'difficulty-challenge');
-    
-    if (q.difficulty === '🌐 Translate') {
-        sidebar.classList.add('difficulty-translate');
-    } else if (q.difficulty === '✅ Basic') {
-        sidebar.classList.add('difficulty-basic');
-    } else if (q.difficulty === '📈 Advanced') {
-        sidebar.classList.add('difficulty-advanced');
-    } else if (q.difficulty === '🔥 Challenge') {
-        sidebar.classList.add('difficulty-challenge');
-    }
-}
-
-function renderDesktopCurrentQuestion() {
-    if (currentQuestions.length === 0) return;
-    
-    const q = currentQuestions[currentQIndex];
-    const map = currentOptionsMapping[currentQIndex];
-    const hasImage = q.imageUrl !== null;
-    
-    document.getElementById('desktopQuestionText').innerHTML = q.text;
-    document.getElementById('desktopCounter').innerHTML = `${currentQIndex + 1} / ${currentQuestions.length}`;
-    document.getElementById('desktopDifficulty').innerHTML = q.difficulty;
-    
-    updateDesktopTimerDisplay();
-    updateDesktopSidebarDifficulty();
-    
-    const imageArea = document.getElementById('desktopImageArea');
-    const mainPanel = document.querySelector('.main-panel');
-    
-    if (hasImage && q.imageUrl) {
-        imageArea.innerHTML = `<img src="${q.imageUrl}" class="quiz-image" id="desktopImageThumb" style="max-height:110px; max-width:100%; object-fit:contain; cursor:pointer; border-radius:8px; border:1px solid #e9e4f5; padding:4px;">`;
-        imageArea.style.display = 'block';
-        if (mainPanel) mainPanel.classList.remove('no-image');
-        
-        document.getElementById('desktopImageThumb')?.addEventListener('click', () => {
-            document.getElementById('zoomImage').src = q.imageUrl;
-            document.getElementById('imageZoomModal').style.display = 'flex';
-        });
-    } else {
-        imageArea.innerHTML = '';
-        imageArea.style.display = 'none';
-        if (mainPanel) mainPanel.classList.add('no-image');
-    }
-    
-    const optsDiv = document.getElementById('desktopOptions');
-    optsDiv.innerHTML = '';
-    optsDiv.className = 'options-grid';
-    
-    for (let l of ['A', 'B', 'C', 'D']) {
-        let btn = document.createElement('button');
-        btn.className = 'option-btn';
-        if (currentAnswers[currentQIndex] === l) btn.classList.add('selected');
-        btn.textContent = `${l}. ${map.letterToText[l]}`;
-        btn.addEventListener('click', () => {
-            currentAnswers[currentQIndex] = l;
-            renderDesktopCurrentQuestion();
-            renderDesktopQuizNav();
-            checkDesktopAllQuestionsAnswered();
-        });
-        optsDiv.appendChild(btn);
-    }
-    
-    updateDesktopNavButtons();
-    checkDesktopAllQuestionsAnswered();
-    updateDesktopPeriodicButton();
-}
-
-function updateDesktopNavButtons() {
-    let prev = document.getElementById('desktopPrevBtn'), next = document.getElementById('desktopNextBtn');
-    if (prev) prev.disabled = (currentQIndex === 0);
-    if (next) next.disabled = (currentQIndex === currentQuestions.length - 1);
-}
-
-function updateDesktopTimerDisplay() {
-    let m = Math.floor(timeRemaining / 60), s = timeRemaining % 60;
-    const timerEl = document.getElementById('desktopTimer');
-    if (timerEl) timerEl.innerText = `⏱️ ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-}
-
-function checkDesktopAllQuestionsAnswered() {
-    if (currentQuestions.length === 0) return;
-    
-    const allAnswered = currentAnswers.every(a => a !== null && a !== undefined);
-    const submitBtn = document.getElementById('desktopSubmitBtn');
-    if (!submitBtn) return;
-    
-    if (allAnswered && currentAnswers.length > 0) {
-        if (!blinkInterval) {
-            blinkInterval = setInterval(() => {
-                submitBtn.style.animation = 'blink 0.3s step-end infinite';
-            }, 100);
-        }
-    } else {
-        if (blinkInterval) {
-            clearInterval(blinkInterval);
-            blinkInterval = null;
-            submitBtn.style.animation = '';
-        }
-    }
-}
-
-function updateDesktopPeriodicButton() {
-    const periodicBtn = document.getElementById('desktopPeriodicBtn');
-    if (!periodicBtn) return;
-    
-    const shouldShow = (currentChapter && parseInt(currentChapter) >= 6) || currentChapter === null;
-    
-    if (shouldShow) {
-        periodicBtn.style.display = 'inline-block';
-        periodicBtn.classList.remove('hidden');
-    } else {
-        periodicBtn.style.display = 'none';
-        periodicBtn.classList.add('hidden');
-    }
-}
-
-function submitDesktopAll() {
-    if (blinkInterval) {
-        clearInterval(blinkInterval);
-        blinkInterval = null;
-        const submitBtn = document.getElementById('desktopSubmitBtn');
-        if (submitBtn) submitBtn.style.animation = '';
-    }
-    if (timerInterval) clearInterval(timerInterval);
-    const timeSpentSeconds = Math.round((Date.now() - startTime) / 1000);
-    
-    let results = [], batch = [], correctCount = 0;
-    let consecutiveCorrect = userData.stats.consecutiveCorrect || 0;
-    let answeredCount = currentAnswers.filter(a => a !== null).length;
-    let isBlankPaper = (answeredCount === 0);
-    const isUnitTestMode = (currentChapter === null && currentQuestions.length > 1);
-
-    // ✅ 未答完提醒（含操作指引）- 桌面版    const total = currentQuestions.length;
-    const unanswered = total - answeredCount;
-    if (unanswered > 0) {
-        const confirmMsg = 
-            '⚠️ 你還有 ' + unanswered + ' 題未作答（共 ' + total + ' 題）\n\n' +
-            '💡 提示：\n' +
-            '   • 按「下一題 ▶」按鈕繼續作答\n' +
-            '   • 或點擊右側的圓圈號碼（如 ① ② ③）跳轉到未作答的題目\n\n' +
-            '確定要提交並離開嗎？\n（提交後無法修改答案）';
-        if (!confirm(confirmMsg)) {
-            return;
-        }
-    }
-
-    for (let i = 0; i < currentQuestions.length; i++) {
-        let q = currentQuestions[i], map = currentOptionsMapping[i], userLetter = currentAnswers[i];
-        let isCorrect = (userLetter === map.correctLetter);
-        if (isCorrect) {
-            correctCount++;
-            consecutiveCorrect++;
-        } else {
-            consecutiveCorrect = 0;
-        }
-        let userText = userLetter ? map.letterToText[userLetter] : '(未作答)', correctText = map.letterToText[map.correctLetter];
-        results.push({ question: q, userLetter: userLetter || '?', correctLetter: map.correctLetter, userText, correctText, isCorrect, qid: q.id });
-        batch.push({ qid: q.id, isCorrect: isCorrect });
-    }
-    userData.stats.consecutiveCorrect = consecutiveCorrect;
-    if (consecutiveCorrect > (userData.stats.maxConsecutive || 0)) userData.stats.maxConsecutive = consecutiveCorrect;
-    recordBatch(batch);
-    let accuracy = Math.round(correctCount / currentQuestions.length * 100);
-    let diffName = selectedDifficulty == 0 ? "★ 1星" : (selectedDifficulty == 1 ? "★★★ 3星" : "★★★★★ 5星");
-    let mode = isTrialMode ? 'trial' : 'normal';
-    let expectedTime = currentQuestions.length * (selectedDifficulty == 0 ? 108 : (selectedDifficulty == 2 ? 75 : 90));
-    let timeSpent = Math.round((expectedTime - timeRemaining) / expectedTime * 100);
-    
-    if (isSingleQuestionMode && currentQuestions.length === 1) {
-        const qid = currentQuestions[0].id;
-        const isCorrectSingle = results[0].isCorrect;
-        
-        if (singleQuestionSource === 'myMistakes' && isCorrectSingle) {
-            userData.latestStatus[qid] = true;
-            saveUserData();
-            alert('🎉 答對了！該題已從「我的錯題」中移除！');
-        } else if (singleQuestionSource === 'myMistakes' && !isCorrectSingle) {
-            alert('❌ 答錯了！該題仍保留在「我的錯題」中，加油！');
-        } else if (singleQuestionSource === 'pastMistakes' || singleQuestionSource === 'pinned') {
-            if (isCorrectSingle) {
-                alert('✅ 答對了！該題仍保留在列表中（歷程/收藏不會自動移除）');
-            } else {
-                alert('❌ 答錯了！再試一次吧！');
-            }
-        }
-        recordBatch(batch);
-        addPracticeHistory(currentUnit, currentChapter, '單題練習', 1, isCorrectSingle ? 1 : 0, isCorrectSingle ? 100 : 0, 'single', 0, consecutiveCorrect, isBlankPaper, timeSpentSeconds);
-        renderMyMistakes();
-        renderPastMistakes();
-        renderPinned();
-        renderHistory();
-        renderAchievements();
-        // ✅ 提交後退出全屏
-        if (typeof exitFullscreenAfterSubmit === 'function') {
-            exitFullscreenAfterSubmit();
-        }
-        document.getElementById('desktopQuizModal').style.display = 'none';
-        return;
-    }
-    
-    addPracticeHistory(currentUnit, currentChapter, diffName, currentQuestions.length, correctCount, accuracy, mode, timeSpent, consecutiveCorrect, isBlankPaper, timeSpentSeconds);
-    lastResults = results;
-    
-    if (isUnitTestMode && currentQuestions.length >= 10) {
-        window._dseResultCallback = function() {
-            displayResults(results);
-        };
-        showDSEResult(accuracy, correctCount, currentQuestions.length);
-        if (typeof exitFullscreenAfterSubmit === 'function') {
-            exitFullscreenAfterSubmit();
-        }
-        document.getElementById('desktopQuizModal').style.display = 'none';
-        renderPractice();
-        renderMyMistakes();
-        renderPastMistakes();
-        renderPinned();
-        renderHistory();
-        renderAchievements();
-        updateSettingsUnlockStatus();
-        return;
-    }
-    
-    displayResults(results);
-    if (typeof exitFullscreenAfterSubmit === 'function') {
-        exitFullscreenAfterSubmit();
-    }
-    document.getElementById('desktopQuizModal').style.display = 'none';
-    renderPractice();
-    renderMyMistakes();
-    renderPastMistakes();
-    renderPinned();
-    renderHistory();
-    renderAchievements();
-    updateSettingsUnlockStatus();
-}
-
 // ==================== initTabs ====================
 function initTabs() {
     let tabs = document.querySelectorAll('.tab'), panels = { 
@@ -1755,4 +1583,4 @@ function unlockAll() {
     alert('🔓 所有難度已解鎖！');
 }
 
-console.log('✅ practice.js 已載入（練習核心功能 + 事件綁定）');
+console.log('✅ practice.js 已載入（最終版 - 單一彈窗）');
