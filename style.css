@@ -1,0 +1,160 @@
+/* ============================================================
+   手機橫置模式（針對手機旋轉後的優化）
+   ============================================================ */
+@media (max-width: 900px) and (orientation: landscape) {
+    #quizModal .modal-content {
+        min-height: 85vh;
+        max-height: 95vh;
+        padding: 0.3rem 0.6rem;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-content: flex-start;
+    }
+
+    .quiz-header {
+        width: 100%;
+        order: 0;
+        flex-shrink: 0;
+    }
+
+    .question-nav {
+        width: 100%;
+        order: 1;
+        flex-shrink: 0;
+        max-height: 40px !important;
+        overflow-y: hidden;
+        gap: 3px;
+    }
+    .q-nav-btn {
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 0.55rem !important;
+    }
+
+    .quiz-body {
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 100%;
+        order: 2;
+        gap: 0.3rem;
+        min-height: 0;
+        flex: 1;
+    }
+
+    .question-text {
+        width: 100%;
+        font-size: clamp(1rem, 2.5vw, 1.2rem) !important;
+        max-height: 20vh;
+        flex-shrink: 0;
+        order: 0;
+        margin-bottom: 0.1rem;
+    }
+
+    .quiz-layout-mobile {
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        width: 100%;
+        gap: 0.2rem;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .image-area-mobile {
+        flex: 0 0 35% !important;
+        max-width: 35% !important;
+        max-height: 200px !important;
+        order: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding-right: 0.3rem;
+    }
+    .image-area-mobile img {
+        max-height: 160px !important;
+        max-width: 100%;
+        width: auto;
+        height: auto;
+    }
+
+    .options-area-mobile {
+        flex: 1 1 60% !important;
+        min-width: 0;
+        order: 2 !important;
+        padding-top: 0;
+    }
+
+    .quiz-layout-mobile .options-area-mobile .options-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+        align-content: flex-start;
+    }
+
+    .options-area-mobile .option-btn {
+        padding: 0.3rem 0.4rem !important;
+        font-size: clamp(0.8rem, 2.2vw, 0.95rem) !important;
+        min-height: 36px !important;
+        border-radius: 8px !important;
+    }
+
+    .quiz-footer-mobile {
+        width: 100%;
+        order: 3;
+        flex-shrink: 0;
+        padding: 0.1rem 0;
+        min-height: 34px;
+        gap: 0.3rem;
+    }
+    .quiz-footer-mobile .btn {
+        padding: 0.1rem 0.2rem !important;
+        font-size: clamp(0.55rem, 1.8vw, 0.7rem) !important;
+        min-height: 28px !important;
+    }
+}
+
+/* ============================================================
+   元素周期表按鈕 - 更明顯（手機版）
+   ============================================================ */
+@media (max-width: 640px) {
+    #periodicTableBtn {
+        background: linear-gradient(135deg, #3b82f6, #7c3aed) !important;
+        border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        color: white !important;
+        font-weight: 700 !important;
+        padding: 0.2rem 0.5rem !important;
+        font-size: clamp(0.65rem, 2.5vw, 0.8rem) !important;
+        border-radius: 40px !important;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.4) !important;
+        flex: 0.8 !important;
+        min-height: 36px !important;
+        transition: all 0.3s ease !important;
+    }
+    #periodicTableBtn:active {
+        transform: scale(0.95);
+        box-shadow: 0 0 30px rgba(59, 130, 246, 0.6) !important;
+    }
+}
+
+/* ============================================================
+   元素周期表按鈕 - 更明顯（桌面版）
+   ============================================================ */
+@media (min-width: 641px) {
+    #desktopQuizModal .sidebar-row-2 .table-btn {
+        background: linear-gradient(135deg, #3b82f6, #7c3aed) !important;
+        border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        color: white !important;
+        font-weight: 700 !important;
+        padding: 6px 18px !important;
+        font-size: 13px !important;
+        border-radius: 40px !important;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+    #desktopQuizModal .sidebar-row-2 .table-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 35px rgba(59, 130, 246, 0.5) !important;
+    }
+    #desktopQuizModal .sidebar-row-2 .table-btn:active {
+        transform: scale(0.95);
+    }
+}

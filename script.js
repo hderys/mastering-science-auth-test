@@ -1,0 +1,663 @@
+// ============================================================
+// 項目 2：強制桌面版縮放為 100%
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    function enforceZoom() {
+        if (window.innerWidth >= 1024) {
+            var viewport = document.querySelector('meta[name=viewport]');
+            if (viewport) {
+                viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+                setTimeout(function() {
+                    viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes';
+                }, 300);
+            }
+        }
+    }
+    enforceZoom();
+    var zoomTimer = null;
+    window.addEventListener('resize', function() {
+        clearTimeout(zoomTimer);
+        zoomTimer = setTimeout(enforceZoom, 300);
+    });
+});
+
+// ============================================================
+// 項目 4a：手機旋轉監聽加強
+// ============================================================
+function handleScreenRotation() {
+    var quizModal = document.getElementById('quizModal');
+    var desktopModal = document.getElementById('desktopQuizModal');
+    var isQuizVisible = (quizModal && quizModal.style.display === 'flex') ||
+                        (desktopModal && desktopModal.style.display === 'flex');
+    if (!isQuizVisible) return;
+
+    var isLandscape = window.innerWidth > window.innerHeight && window.innerWidth <= 900;
+    var isMobileDevice = window.innerWidth <= 640;
+
+    if (isMobileDevice || isLandscape) {
+        if (desktopModal) desktopModal.style.display = 'none';
+        if (quizModal) {
+            quizModal.style.display = 'flex';
+            if (typeof renderCurrentQuestion === 'function') {
+                renderCurrentQuestion();
+            }
+        }
+    } else {
+        if (quizModal) quizModal.style.display = 'none';
+        if (desktopModal) {
+            desktopModal.style.display = 'flex';
+            if (typeof renderDesktopCurrentQuestion === 'function') {
+                renderDesktopCurrentQuestion();
+            }
+        }
+    }
+}
+
+var rotationTimer = null;
+window.addEventListener('resize', function() {
+    clearTimeout(rotationTimer);
+    rotationTimer = setTimeout(function() {
+        handleScreenRotation();
+    }, 300);
+});
+
+// ============================================================
+// 項目 4b：提交按鈕文字改為「提交並離開」
+// ============================================================
+// 原有的 showQuizModal 函數會被覆蓋，加入提交按鈕文字設定
+var originalShowQuizModal = window.showQuizModal || function() {};
+window.showQuizModal = function() {
+    if (typeof originalShowQuizModal === 'function') {
+        originalShowQuizModal();
+    }
+    var submitBtn = document.getElementById('submitAllBtn');
+    if (submitBtn) {
+        submitBtn.textContent = '提交並離開';
+    }
+};
+
+var originalShowDesktopQuizModal = window.showDesktopQuizModal || function() {};
+window.showDesktopQuizModal = function() {
+    if (typeof originalShowDesktopQuizModal === 'function') {
+        originalShowDesktopQuizModal();
+    }
+    var submitBtn = document.getElementById('desktopSubmitBtn');
+    if (submitBtn) {
+        submitBtn.textContent = '提交並離開';
+    }
+};
+
+// ============================================================
+// 項目 4b：未答完提醒（含操作指引）
+// ============================================================
+var originalSubmitAll = window.submitAll || function() {};
+window.submitAll = function() {
+    // 檢查未答題數
+    if (typeof currentQuestions !== 'undefined' && typeof currentAnswers !== 'undefined') {
+        var total = currentQuestions.length;
+        var answered = 0;
+        for (var i = 0; i < currentAnswers.length; i++) {
+            if (currentAnswers[i] !== null) answered++;
+        }
+        var unanswered = total - answered;
+
+        if (unanswered > 0) {
+            var confirmMsg =
+                '⚠️ 你還有 ' + unanswered + ' 題未作答（共 ' + total + ' 題）\n\n' +
+                '💡 提示：\n' +
+                '   • 按「下一題 ▶」按鈕繼續作答\n' +
+                '   • 或點擊上方的圓圈號碼（如 ① ② ③）跳轉到未作答的題目\n\n' +
+                '確定要提交並離開嗎？\n（提交後無法修改答案）';
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+        }
+    }
+
+    if (typeof originalSubmitAll === 'function') {
+        originalSubmitAll();
+    }
+};
+
+var originalSubmitDesktopAll = window.submitDesktopAll || function() {};
+window.submitDesktopAll = function() {
+    if (typeof currentQuestions !== 'undefined' && typeof currentAnswers !== 'undefined') {
+        var total = currentQuestions.length;
+        var answered = 0;
+        for (var i = 0; i < currentAnswers.length; i++) {
+            if (currentAnswers[i] !== null) answered++;
+        }
+        var unanswered = total - answered;
+
+        if (unanswered > 0) {
+            var confirmMsg =
+                '⚠️ 你還有 ' + unanswered + ' 題未作答（共 ' + total + ' 題）\n\n' +
+                '💡 提示：\n' +
+                '   • 按「下一題 ▶」按鈕繼續作答\n' +
+                '   • 或點擊右側的圓圈號碼（如 ① ② ③）跳轉到未作答的題目\n\n' +
+                '確定要提交並離開嗎？\n（提交後無法修改答案）';
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+        }
+    }
+
+    if (typeof originalSubmitDesktopAll === 'function') {
+        originalSubmitDesktopAll();
+    }
+};
+
+// ============================================================
+// 實際的登入和練習邏輯（簡化版）
+// ============================================================
+var currentUser = null;
+var userData = { latestStatus: {}, allAttempts: [], favorites: [], practiceHistory: [], achievements: {} };
+var currentQuestions = [];
+var currentAnswers = [];
+var currentQIndex = 0;
+var timerInterval = null;
+var timeRemaining = 0;
+var selectedDifficulty = 1;
+var selectedCount = 10;
+var isTrialMode = false;
+var startTime = null;
+
+// 登入
+document.getElementById('loginBtn').addEventListener('click', function() {
+    var userId = document.getElementById('loginUserId').value.trim();
+    var password = document.getElementById('loginPassword').value.trim();
+    if (!userId || !password) {
+        document.getElementById('loginError').textContent = '⚠️ 請輸入登入 ID 和密碼';
+        document.getElementById('loginError').style.display = 'block';
+        return;
+    }
+    handleLogin(userId, password);
+});
+
+function handleLogin(userId, password) {
+    var email = userId + '@mastering-science.com';
+    auth.signInWithEmailAndPassword(email, password)
+        .then(function(userCredential) {
+            return db.collection('users').doc(userId).get();
+        })
+        .then(function(doc) {
+            if (doc.exists) {
+                currentUser = doc.data();
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('userLabel').textContent = '👋 ' + currentUser.name + ' (' + currentUser.className + ')';
+                renderPractice();
+                initTabs();
+                return;
+            }
+            throw new Error('找不到用戶資料');
+        })
+        .catch(function(error) {
+            var msg = error.message;
+            if (error.code === 'auth/user-not-found') msg = '❌ 帳戶不存在！';
+            else if (error.code === 'auth/wrong-password') msg = '❌ 密碼錯誤！';
+            document.getElementById('loginError').textContent = msg;
+            document.getElementById('loginError').style.display = 'block';
+        });
+}
+
+function renderPractice() {
+    var container = document.getElementById('practicePanel');
+    if (!container) return;
+    var html = '<div class="card"><h3>📖 選擇章節練習</h3>';
+    for (var unit in window.ALL_UNITS) {
+        var unitObj = window.ALL_UNITS[unit];
+        for (var ch in unitObj.chapters) {
+            var chObj = unitObj.chapters[ch];
+            html += '<div class="chapter-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; margin-bottom:4px; background:#f9f7ff; border-radius:12px;">';
+            html += '<span>' + chObj.name + ' (' + chObj.questions.length + ' 題)</span>';
+            html += '<button class="btn practice-chapter" data-unit="' + unit + '" data-chapter="' + ch + '" style="padding:4px 12px; font-size:0.8rem;">✏️ 練習</button>';
+            html += '</div>';
+        }
+    }
+    html += '</div>';
+    container.innerHTML = html;
+
+    document.querySelectorAll('.practice-chapter').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            pendingUnit = btn.dataset.unit;
+            pendingChapter = btn.dataset.chapter;
+            showSettingsModal();
+        });
+    });
+}
+
+var pendingUnit = null;
+var pendingChapter = null;
+
+function showSettingsModal() {
+    document.getElementById('settingsModal').style.display = 'flex';
+}
+
+document.getElementById('startPracticeBtn').addEventListener('click', function() {
+    startPracticeWithSettings();
+});
+
+document.getElementById('cancelSettingsBtn').addEventListener('click', function() {
+    document.getElementById('settingsModal').style.display = 'none';
+});
+
+function startPracticeWithSettings() {
+    var unit = pendingUnit;
+    var chapter = pendingChapter;
+    var allQuestions = window.ALL_UNITS[unit].chapters[chapter].questions;
+    var count = parseInt(document.getElementById('customCount').value) || 10;
+    if (count > allQuestions.length) count = allQuestions.length;
+
+    // 簡單選題：取前 count 題
+    var selected = [];
+    for (var i = 0; i < count && i < allQuestions.length; i++) {
+        selected.push(allQuestions[i]);
+    }
+    currentQuestions = selected;
+    currentAnswers = new Array(currentQuestions.length).fill(null);
+    currentQIndex = 0;
+
+    document.getElementById('settingsModal').style.display = 'none';
+
+    // 設定計時器
+    timeRemaining = currentQuestions.length * 90;
+    updateTimerDisplay();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(function() {
+        if (timeRemaining <= 0) submitAll();
+        else { timeRemaining--; updateTimerDisplay(); }
+    }, 1000);
+
+    startTime = Date.now();
+
+    if (window.innerWidth <= 640) {
+        showQuizModal();
+    } else {
+        showDesktopQuizModal();
+    }
+}
+
+function showQuizModal() {
+    renderQuizNav();
+    renderCurrentQuestion();
+    document.getElementById('quizModal').style.display = 'flex';
+
+    // 顯示周期表按鈕
+    var periodicBtn = document.getElementById('periodicTableBtn');
+    if (periodicBtn) {
+        periodicBtn.style.display = 'inline-block';
+        periodicBtn.addEventListener('click', showPeriodicTable);
+    }
+}
+
+function showDesktopQuizModal() {
+    renderDesktopQuizNav();
+    renderDesktopCurrentQuestion();
+    document.getElementById('desktopQuizModal').style.display = 'flex';
+
+    var periodicBtn = document.getElementById('desktopPeriodicBtn');
+    if (periodicBtn) {
+        periodicBtn.style.display = 'inline-block';
+        periodicBtn.addEventListener('click', showPeriodicTable);
+    }
+}
+
+function renderQuizNav() {
+    var nav = document.getElementById('questionNav');
+    var html = '';
+    for (var i = 0; i < currentQuestions.length; i++) {
+        var cls = '';
+        if (i === currentQIndex) cls = 'current';
+        else if (currentAnswers[i] !== null) cls = 'answered';
+        else cls = 'unanswered';
+        html += '<button class="q-nav-btn ' + cls + '" data-idx="' + i + '">' + (i + 1) + '</button>';
+    }
+    nav.innerHTML = html;
+    document.getElementById('quizCounter').textContent = (currentQIndex + 1) + ' / ' + currentQuestions.length;
+
+    document.querySelectorAll('.q-nav-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            currentQIndex = parseInt(btn.dataset.idx);
+            renderQuizNav();
+            renderCurrentQuestion();
+        });
+    });
+}
+
+function renderCurrentQuestion() {
+    var q = currentQuestions[currentQIndex];
+    document.getElementById('modalQuestionText').textContent = q.text;
+    document.getElementById('quizDifficulty').textContent = q.difficulty;
+    document.getElementById('quizCounter').textContent = (currentQIndex + 1) + ' / ' + currentQuestions.length;
+
+    // 圖片
+    var imgArea = document.getElementById('modalImageArea');
+    if (q.imageUrl) {
+        imgArea.innerHTML = '<img src="' + q.imageUrl + '" style="max-height:130px; max-width:100%; object-fit:contain; border-radius:8px; cursor:pointer;" onclick="zoomImage(\'' + q.imageUrl + '\')">';
+        imgArea.style.display = 'block';
+    } else {
+        imgArea.innerHTML = '';
+        imgArea.style.display = 'none';
+    }
+
+    // 選項
+    var optsDiv = document.getElementById('modalOptions');
+    optsDiv.innerHTML = '';
+    for (var i = 0; i < q.options.length; i++) {
+        var opt = q.options[i];
+        var letter = opt.charAt(0);
+        var text = opt.substring(3);
+        var btn = document.createElement('button');
+        btn.className = 'option-btn';
+        if (currentAnswers[currentQIndex] === letter) btn.classList.add('selected');
+        btn.textContent = letter + '. ' + text;
+        btn.dataset.letter = letter;
+        btn.addEventListener('click', function() {
+            currentAnswers[currentQIndex] = this.dataset.letter;
+            renderCurrentQuestion();
+            renderQuizNav();
+        });
+        optsDiv.appendChild(btn);
+    }
+
+    document.getElementById('prevBtn').disabled = (currentQIndex === 0);
+    document.getElementById('nextBtn').disabled = (currentQIndex === currentQuestions.length - 1);
+
+    // ✅ 項目4b：提交按鈕文字已在 showQuizModal 中設定
+}
+
+function renderDesktopQuizNav() {
+    var nav = document.getElementById('desktopNav');
+    var html = '';
+    for (var i = 0; i < currentQuestions.length; i++) {
+        var cls = '';
+        if (i === currentQIndex) cls = 'current';
+        else if (currentAnswers[i] !== null) cls = 'answered';
+        else cls = 'unanswered';
+        html += '<button class="nav-dot ' + cls + '" data-idx="' + i + '">' + (i + 1) + '</button>';
+    }
+    nav.innerHTML = html;
+    document.getElementById('desktopCounter').textContent = (currentQIndex + 1) + ' / ' + currentQuestions.length;
+
+    document.querySelectorAll('#desktopNav .nav-dot').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            currentQIndex = parseInt(btn.dataset.idx);
+            renderDesktopQuizNav();
+            renderDesktopCurrentQuestion();
+        });
+    });
+}
+
+function renderDesktopCurrentQuestion() {
+    var q = currentQuestions[currentQIndex];
+    document.getElementById('desktopQuestionText').textContent = q.text;
+    document.getElementById('desktopDifficulty').textContent = q.difficulty;
+    document.getElementById('desktopCounter').textContent = (currentQIndex + 1) + ' / ' + currentQuestions.length;
+
+    var imgArea = document.getElementById('desktopImageArea');
+    if (q.imageUrl) {
+        imgArea.innerHTML = '<img src="' + q.imageUrl + '" style="max-height:110px; max-width:100%; object-fit:contain; border-radius:8px; cursor:pointer;" onclick="zoomImage(\'' + q.imageUrl + '\')">';
+        imgArea.style.display = 'block';
+    } else {
+        imgArea.innerHTML = '';
+        imgArea.style.display = 'none';
+    }
+
+    var optsDiv = document.getElementById('desktopOptions');
+    optsDiv.innerHTML = '';
+    for (var i = 0; i < q.options.length; i++) {
+        var opt = q.options[i];
+        var letter = opt.charAt(0);
+        var text = opt.substring(3);
+        var btn = document.createElement('button');
+        btn.className = 'option-btn';
+        if (currentAnswers[currentQIndex] === letter) btn.classList.add('selected');
+        btn.textContent = letter + '. ' + text;
+        btn.dataset.letter = letter;
+        btn.addEventListener('click', function() {
+            currentAnswers[currentQIndex] = this.dataset.letter;
+            renderDesktopCurrentQuestion();
+            renderDesktopQuizNav();
+        });
+        optsDiv.appendChild(btn);
+    }
+
+    document.getElementById('desktopPrevBtn').disabled = (currentQIndex === 0);
+    document.getElementById('desktopNextBtn').disabled = (currentQIndex === currentQuestions.length - 1);
+
+    // ✅ 項目4b：提交按鈕文字已在 showDesktopQuizModal 中設定
+}
+
+function updateTimerDisplay() {
+    var m = Math.floor(timeRemaining / 60);
+    var s = timeRemaining % 60;
+    var timerEl = document.getElementById('timerDisplay');
+    if (timerEl) timerEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    var desktopTimer = document.getElementById('desktopTimer');
+    if (desktopTimer) desktopTimer.textContent = '⏱️ ' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function submitAll() {
+    // ✅ 項目4b：未答完提醒已在函數開頭處理（透過覆蓋）
+    if (timerInterval) clearInterval(timerInterval);
+
+    var correctCount = 0;
+    var results = [];
+    for (var i = 0; i < currentQuestions.length; i++) {
+        var q = currentQuestions[i];
+        var userLetter = currentAnswers[i];
+        var correctLetter = q.correct;
+        var isCorrect = (userLetter === correctLetter);
+        if (isCorrect) correctCount++;
+        results.push({
+            question: q,
+            userLetter: userLetter || '?',
+            correctLetter: correctLetter,
+            isCorrect: isCorrect,
+            qid: q.id
+        });
+    }
+
+    var accuracy = Math.round(correctCount / currentQuestions.length * 100);
+    document.getElementById('quizModal').style.display = 'none';
+    document.getElementById('desktopQuizModal').style.display = 'none';
+    displayResults(results, accuracy, correctCount);
+}
+
+function submitDesktopAll() {
+    // ✅ 項目4b：未答完提醒已在函數開頭處理（透過覆蓋）
+    submitAll();
+}
+
+function displayResults(results, accuracy, correctCount) {
+    var container = document.getElementById('resultContent');
+    var total = results.length;
+    var color = accuracy < 40 ? '#dc2626' : (accuracy < 70 ? '#f59e0b' : '#10b981');
+
+    var html = '<div class="result-summary-bar">';
+    html += '<div class="result-progress">';
+    html += '<span>✅ ' + accuracy + '% (' + correctCount + '/' + total + ')</span>';
+    html += '<div class="big-progress-bar"><div class="big-progress-fill" style="width:' + accuracy + '%; background:' + color + ';"></div></div>';
+    html += '</div>';
+    html += '</div>';
+
+    html += '<div class="results-card-list">';
+    for (var i = 0; i < results.length; i++) {
+        var r = results[i];
+        var cardClass = r.isCorrect ? 'correct' : 'wrong';
+        var icon = r.isCorrect ? '✅' : '❌';
+        html += '<div class="result-card ' + cardClass + '">';
+        html += '<div class="result-card-header">';
+        html += '<span class="result-card-question">' + (i + 1) + '. ' + r.question.text + '</span>';
+        html += '<span class="result-card-icon">' + icon + '</span>';
+        html += '</div>';
+        html += '<div class="result-card-details">';
+        html += '<span>📝 你的答案：' + r.userLetter + '</span>';
+        html += '<span>✓ 正解：' + r.correctLetter + '</span>';
+        html += '</div>';
+        html += '</div>';
+    }
+    html += '</div>';
+
+    container.innerHTML = html;
+    document.getElementById('resultModal').style.display = 'flex';
+}
+
+document.getElementById('closeResultBtn').addEventListener('click', function() {
+    document.getElementById('resultModal').style.display = 'none';
+});
+
+document.getElementById('prevBtn').addEventListener('click', function() {
+    if (currentQIndex > 0) { currentQIndex--; renderQuizNav(); renderCurrentQuestion(); }
+});
+
+document.getElementById('nextBtn').addEventListener('click', function() {
+    if (currentQIndex < currentQuestions.length - 1) { currentQIndex++; renderQuizNav(); renderCurrentQuestion(); }
+});
+
+document.getElementById('desktopPrevBtn').addEventListener('click', function() {
+    if (currentQIndex > 0) { currentQIndex--; renderDesktopQuizNav(); renderDesktopCurrentQuestion(); }
+});
+
+document.getElementById('desktopNextBtn').addEventListener('click', function() {
+    if (currentQIndex < currentQuestions.length - 1) { currentQIndex++; renderDesktopQuizNav(); renderDesktopCurrentQuestion(); }
+});
+
+// ✅ 項目4b：提交按鈕事件（覆蓋原有）
+document.getElementById('submitAllBtn').addEventListener('click', function() {
+    window.submitAll();
+});
+
+document.getElementById('desktopSubmitBtn').addEventListener('click', function() {
+    window.submitDesktopAll();
+});
+
+function showPeriodicTable() {
+    var imgUrl = 'https://raw.githubusercontent.com/hderys/mastering-science-images/main/webp_image/periodic_table.png';
+    document.getElementById('zoomImage').src = imgUrl;
+    document.getElementById('imageZoomModal').style.display = 'flex';
+}
+
+function closeImageZoom() {
+    document.getElementById('imageZoomModal').style.display = 'none';
+}
+
+document.getElementById('closeZoomBtn').addEventListener('click', closeImageZoom);
+
+function zoomImage(url) {
+    document.getElementById('zoomImage').src = url;
+    document.getElementById('imageZoomModal').style.display = 'flex';
+}
+
+// 難度選擇
+document.getElementById('diff-easy').addEventListener('click', function() {
+    selectedDifficulty = 0;
+    document.getElementById('diff-easy').classList.add('active');
+    document.getElementById('diff-medium').classList.remove('active');
+    document.getElementById('diff-hard').classList.remove('active');
+});
+
+document.getElementById('diff-medium').addEventListener('click', function() {
+    if (document.getElementById('diff-medium').disabled) return;
+    selectedDifficulty = 1;
+    document.getElementById('diff-easy').classList.remove('active');
+    document.getElementById('diff-medium').classList.add('active');
+    document.getElementById('diff-hard').classList.remove('active');
+});
+
+document.getElementById('diff-hard').addEventListener('click', function() {
+    if (document.getElementById('diff-hard').disabled) return;
+    selectedDifficulty = 2;
+    document.getElementById('diff-easy').classList.remove('active');
+    document.getElementById('diff-medium').classList.remove('active');
+    document.getElementById('diff-hard').classList.add('active');
+});
+
+// 題數選擇
+document.getElementById('count-10').addEventListener('click', function() {
+    selectedCount = 10;
+    document.getElementById('customCount').value = 10;
+    document.getElementById('count-10').classList.add('active');
+    document.getElementById('count-20').classList.remove('active');
+    document.getElementById('count-36').classList.remove('active');
+});
+
+document.getElementById('count-20').addEventListener('click', function() {
+    if (document.getElementById('count-20').disabled) return;
+    selectedCount = 20;
+    document.getElementById('customCount').value = 20;
+    document.getElementById('count-10').classList.remove('active');
+    document.getElementById('count-20').classList.add('active');
+    document.getElementById('count-36').classList.remove('active');
+});
+
+document.getElementById('count-36').addEventListener('click', function() {
+    if (document.getElementById('count-36').disabled) return;
+    selectedCount = 36;
+    document.getElementById('customCount').value = 36;
+    document.getElementById('count-10').classList.remove('active');
+    document.getElementById('count-20').classList.remove('active');
+    document.getElementById('count-36').classList.add('active');
+});
+
+document.getElementById('customCount').addEventListener('change', function() {
+    var val = parseInt(this.value) || 10;
+    if (val < 1) val = 1;
+    if (val > 50) val = 50;
+    this.value = val;
+    selectedCount = val;
+    document.getElementById('count-10').classList.remove('active');
+    document.getElementById('count-20').classList.remove('active');
+    document.getElementById('count-36').classList.remove('active');
+});
+
+// 密碼顯示切換
+document.getElementById('togglePasswordBtn').addEventListener('click', function() {
+    var input = document.getElementById('loginPassword');
+    if (input.type === 'password') {
+        input.type = 'text';
+        this.textContent = '🙈';
+    } else {
+        input.type = 'password';
+        this.textContent = '👁️';
+    }
+});
+
+// 分頁切換
+function initTabs() {
+    var tabs = document.querySelectorAll('.tab');
+    var panels = {
+        practice: document.getElementById('practicePanel'),
+        myMistakes: document.getElementById('myMistakesPanel'),
+        pinned: document.getElementById('pinnedPanel'),
+        history: document.getElementById('historyPanel'),
+        achievements: document.getElementById('achievementsPanel'),
+        teacher: document.getElementById('teacherPanel')
+    };
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            var target = tab.dataset.tab;
+            for (var p in panels) {
+                if (panels[p]) panels[p].style.display = 'none';
+            }
+            if (panels[target]) panels[target].style.display = 'block';
+            tabs.forEach(function(t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            if (target === 'history') renderHistory();
+            if (target === 'achievements') renderAchievements();
+        });
+    });
+}
+
+function renderHistory() {
+    var container = document.getElementById('historyPanel');
+    container.innerHTML = '<div class="card"><h3>📋 做題紀錄</h3><p style="color:#999;">暫無紀錄</p></div>';
+}
+
+function renderAchievements() {
+    var container = document.getElementById('achievementsPanel');
+    container.innerHTML = '<div class="card"><h3>🏆 我的成就</h3><p style="color:#999;">暫無成就</p></div>';
+}
+
+console.log('✅ 測試版 script.js 已載入！');
