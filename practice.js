@@ -1572,8 +1572,7 @@ function submitDesktopAll() {
     let isBlankPaper = (answeredCount === 0);
     const isUnitTestMode = (currentChapter === null && currentQuestions.length > 1);
 
-    // ✅ 未答完提醒（含操作指引）- 桌面版
-    const total = currentQuestions.length;
+    // ✅ 未答完提醒（含操作指引）- 桌面版    const total = currentQuestions.length;
     const unanswered = total - answeredCount;
     if (unanswered > 0) {
         const confirmMsg = 
@@ -1726,4 +1725,213 @@ function unlockAll() {
     alert('🔓 所有難度已解鎖！');
 }
 
-console.log('✅ practice.js 已載入（練習核心功能）');
+// ============================================================
+// DOMContentLoaded - 綁定按鈕事件（原 script.js 中的關鍵部分）
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    // 難度選擇
+    document.getElementById('diff-easy').addEventListener('click', () => { 
+        selectedDifficulty = 0; 
+        document.getElementById('diff-easy').classList.add('active'); 
+        document.getElementById('diff-medium').classList.remove('active'); 
+        document.getElementById('diff-hard').classList.remove('active'); 
+        isTrialMode = false; 
+        updateSettingsUnlockStatus(); 
+    });
+    document.getElementById('diff-medium').addEventListener('click', () => { 
+        if (document.getElementById('diff-medium').disabled) return; 
+        selectedDifficulty = 1; 
+        document.getElementById('diff-easy').classList.remove('active'); 
+        document.getElementById('diff-medium').classList.add('active'); 
+        document.getElementById('diff-hard').classList.remove('active'); 
+        isTrialMode = false; 
+        updateSettingsUnlockStatus(); 
+    });
+    document.getElementById('diff-hard').addEventListener('click', () => { 
+        if (document.getElementById('diff-hard').disabled) return; 
+        selectedDifficulty = 2; 
+        document.getElementById('diff-easy').classList.remove('active'); 
+        document.getElementById('diff-medium').classList.remove('active'); 
+        document.getElementById('diff-hard').classList.add('active'); 
+        isTrialMode = false; 
+        updateSettingsUnlockStatus(); 
+    });
+    
+    // 題數選擇
+    document.getElementById('count-10').addEventListener('click', () => {
+        selectedCount = 10;
+        customCount = 10;
+        document.getElementById('count-10').classList.add('active');
+        document.getElementById('count-20').classList.remove('active');
+        if (document.getElementById('count-36')) document.getElementById('count-36').classList.remove('active');
+        const customInput = document.getElementById('customCount');
+        if (customInput) customInput.value = 10;
+    });
+    document.getElementById('count-20').addEventListener('click', () => {
+        if (document.getElementById('count-20').disabled) return;
+        selectedCount = 20;
+        customCount = 20;
+        document.getElementById('count-10').classList.remove('active');
+        document.getElementById('count-20').classList.add('active');
+        if (document.getElementById('count-36')) document.getElementById('count-36').classList.remove('active');
+        const customInput = document.getElementById('customCount');
+        if (customInput) customInput.value = 20;
+    });
+    document.getElementById('count-36').addEventListener('click', () => {
+        if (document.getElementById('count-36').disabled) return;
+        selectedCount = 36;
+        customCount = 36;
+        document.getElementById('count-10').classList.remove('active');
+        document.getElementById('count-20').classList.remove('active');
+        document.getElementById('count-36').classList.add('active');
+        const customInput = document.getElementById('customCount');
+        if (customInput) customInput.value = 36;
+    });
+    
+    // 試煉模式
+    document.getElementById('trial-mode').addEventListener('click', () => {
+        if (document.getElementById('trial-mode').disabled) return;
+        isTrialMode = true;
+        selectedDifficulty = 2;
+        selectedCount = 50;
+        customCount = 50;
+        document.getElementById('diff-easy').classList.remove('active');
+        document.getElementById('diff-medium').classList.remove('active');
+        document.getElementById('diff-hard').classList.add('active');
+        document.getElementById('count-10').classList.remove('active');
+        document.getElementById('count-20').classList.remove('active');
+        if (document.getElementById('count-36')) document.getElementById('count-36').classList.remove('active');
+        const customInput = document.getElementById('customCount');
+        if (customInput) customInput.value = 50;
+        updateSettingsUnlockStatus();
+    });
+    
+    // #8: 一鍵解鎖 - 點擊時會檢查是否為老師
+    document.getElementById('devUnlockBtn').addEventListener('click', function() {
+        if (currentUser && currentUser.isTeacher) {
+            unlockAll();
+        } else {
+            alert('⚠️ 此功能僅限老師使用');
+        }
+    });
+    
+    // 排除翻譯題
+    const excludeTranslateCheckbox = document.getElementById('excludeTranslate');
+    if (excludeTranslateCheckbox) {
+        excludeTranslateCheckbox.addEventListener('change', (e) => {
+            excludeTranslate = e.target.checked;
+            updateSettingsUnlockStatus();
+        });
+    }
+    
+    // 自訂題數
+    const customInput = document.getElementById('customCount');
+    if (customInput) {
+        customInput.addEventListener('change', (e) => {
+            let val = parseInt(e.target.value);
+            if (isNaN(val)) val = 10;
+            let maxVal = parseInt(customInput.max);
+            if (!isNaN(maxVal) && val > maxVal) val = maxVal;
+            if (val < 1) val = 1;
+            customCount = val;
+            selectedCount = val;
+            customInput.value = val;
+            document.getElementById('count-10').classList.remove('active');
+            document.getElementById('count-20').classList.remove('active');
+            if (document.getElementById('count-36')) document.getElementById('count-36').classList.remove('active');
+        });
+    }
+    
+    // 開始練習（核心按鈕）
+    document.getElementById('startPracticeBtn').addEventListener('click', () => {
+        if (window._singleRedoQid) {
+            let qid = window._singleRedoQid;
+            window._singleRedoQid = null;
+            let unit = pendingUnit, chapter = pendingChapter, allQs = [...window.ALL_UNITS[unit].chapters[chapter].questions], targetQ = allQs.find(q => q.id === qid);
+            if (targetQ) {
+                currentUnit = unit;
+                currentChapter = chapter;
+                currentQuestions = [targetQ];
+                currentOptionsMapping = currentQuestions.map(q => { let letters = ['A', 'B', 'C', 'D'], map = {}; for (let i = 0; i < 4; i++) { let optText = q.options[i].substring(3); map[letters[i]] = optText; } return { letterToText: map, correctLetter: q.correct }; });
+                currentAnswers = new Array(1).fill(null);
+                currentQIndex = 0;
+                timeRemaining = 90;
+                updateTimerDisplay();
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(() => { if (timeRemaining <= 0) submitAll(); else { timeRemaining--; updateTimerDisplay(); } }, 1000);
+                document.getElementById('settingsModal').style.display = 'none';
+                showQuizModal();
+            }
+        } else {
+            startPracticeWithSettings();
+        }
+    });
+    
+    // 取消
+    document.getElementById('cancelSettingsBtn').addEventListener('click', () => document.getElementById('settingsModal').style.display = 'none');
+    
+    // 關閉題解
+    document.getElementById('closeExplainBtn').addEventListener('click', () => { 
+        document.getElementById('explainModal').style.display = 'none'; 
+        if (lastResults) displayResults(lastResults); 
+    });
+    
+    // 提交答案（手機版）
+    document.getElementById('submitAllBtn').addEventListener('click', () => submitAll());
+    
+    // 關閉結果
+    document.getElementById('closeResultBtn').addEventListener('click', () => document.getElementById('resultModal').style.display = 'none');
+    document.getElementById('closeZoomBtn').addEventListener('click', closeImageZoom);
+    
+    // 上一題 / 下一題（手機版）
+    document.getElementById('prevBtn').addEventListener('click', () => { 
+        if (currentQIndex > 0) { 
+            currentQIndex--; 
+            renderQuizNav(); 
+            renderCurrentQuestion(); 
+            updateNavButtons(); 
+        } 
+    });
+    document.getElementById('nextBtn').addEventListener('click', () => { 
+        if (currentQIndex < currentQuestions.length - 1) { 
+            currentQIndex++; 
+            renderQuizNav(); 
+            renderCurrentQuestion(); 
+            updateNavButtons(); 
+        } 
+    });
+    
+    // 桌面版
+    const desktopSubmitBtn = document.getElementById('desktopSubmitBtn');
+    if (desktopSubmitBtn) {
+        desktopSubmitBtn.addEventListener('click', submitDesktopAll);
+    }
+    const desktopPrevBtn = document.getElementById('desktopPrevBtn');
+    const desktopNextBtn = document.getElementById('desktopNextBtn');
+    if (desktopPrevBtn) {
+        desktopPrevBtn.addEventListener('click', function() {
+            if (currentQIndex > 0) {
+                currentQIndex--;
+                renderDesktopQuizNav();
+                renderDesktopCurrentQuestion();
+                updateDesktopNavButtons();
+            }
+        });
+    }
+    if (desktopNextBtn) {
+        desktopNextBtn.addEventListener('click', function() {
+            if (currentQIndex < currentQuestions.length - 1) {
+                currentQIndex++;
+                renderDesktopQuizNav();
+                renderDesktopCurrentQuestion();
+                updateDesktopNavButtons();
+            }
+        });
+    }
+    const desktopPeriodicBtn = document.getElementById('desktopPeriodicBtn');
+    if (desktopPeriodicBtn) {
+        desktopPeriodicBtn.addEventListener('click', showPeriodicTable);
+    }
+});
+
+console.log('✅ practice.js 已載入（練習核心功能 + 事件綁定）');
