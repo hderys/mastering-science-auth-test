@@ -2,8 +2,7 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <!-- ✅ 項目2：修改 viewport -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>測試版 - Mastering Science</title>
     <link rel="stylesheet" href="style.css">
     <style>
@@ -100,34 +99,6 @@
             display: none;
         }
 
-        /* ✅ 項目2：強制桌面版縮放100% + 無捲軸 */
-        @media (min-width: 1024px) {
-            html {
-                zoom: 1 !important;
-                -moz-transform: scale(1) !important;
-                -moz-transform-origin: top left !important;
-            }
-            body {
-                overflow: hidden;
-                height: 100vh;
-            }
-            #loginScreen {
-                max-height: 100vh;
-                overflow-y: hidden;
-            }
-        }
-
-        @media (min-width: 641px) and (max-width: 1023px) {
-            #loginScreen {
-                max-height: 100vh;
-                overflow-y: hidden;
-            }
-            body {
-                height: 100vh;
-                overflow: hidden;
-            }
-        }
-
         /* 手機版 */
         @media (max-width: 640px) {
             #loginScreen {
@@ -141,6 +112,21 @@
                 max-height: 95vh;
                 overflow-y: auto;
                 padding: 1.2rem;
+            }
+            /* 手機版設定彈窗垂直排列 */
+            .settings-two-columns {
+                flex-direction: column !important;
+                gap: 0.5rem !important;
+            }
+            .settings-left, .settings-right {
+                width: 100% !important;
+            }
+            .count-row {
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+            }
+            .custom-input-wrapper {
+                justify-content: center;
             }
         }
 
@@ -444,7 +430,7 @@
             color: #dc2626;
         }
 
-        /* ===== 手機版底部按鈕（不換行） ===== */
+        /* ===== 手機版底部按鈕 ===== */
         @media (max-width: 640px) {
             .quiz-footer {
                 display: flex;
@@ -920,7 +906,7 @@
                 min-height: 36px !important;
                 border-radius: 8px !important;
             }
-            .quiz-footer-mobile {
+            .quiz-footer {
                 width: 100%;
                 order: 3;
                 flex-shrink: 0;
@@ -928,7 +914,7 @@
                 min-height: 34px;
                 gap: 0.3rem;
             }
-            .quiz-footer-mobile .btn {
+            .quiz-footer .btn {
                 padding: 0.1rem 0.2rem !important;
                 font-size: clamp(0.55rem, 1.8vw, 0.7rem) !important;
                 min-height: 28px !important;
@@ -978,29 +964,72 @@
             }
         }
 
-        /* ===== 章節懸浮自動展開（項目16） ===== */
-        .chapter-item-hover {
-            transition: all 0.2s ease;
+        /* ===== 練習頁面佈局（項目16） ===== */
+        .unit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f3f0ff;
+            border-radius: 12px;
+            margin: 6px 0 2px 0;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            border-left: 4px solid #4a1d8c;
         }
-        .chapter-item-hover:hover {
-            background: #ede9fe !important;
-            transform: translateX(4px);
-            box-shadow: 0 2px 8px rgba(74, 29, 140, 0.1);
+        .unit-header:hover {
+            background: #ede9fe;
         }
-        .chapter-item-hover .chapter-name {
-            transition: color 0.2s ease;
+        .unit-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #2e0f5a;
+            font-size: 0.95rem;
         }
-        .chapter-item-hover:hover .chapter-name {
+        .unit-header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .unit-toggle {
+            font-size: 0.7rem;
             color: #4a1d8c;
+            transition: transform 0.2s ease;
+        }
+        .unit-toggle.open {
+            transform: rotate(90deg);
         }
 
-        /* 單元懸浮預覽效果 */
-        .unit-header-hover {
-            transition: all 0.2s ease;
-            cursor: pointer;
+        /* 章節容器 - 預設隱藏 */
+        .chapters-container {
+            margin-left: 1.5rem;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease;
         }
-        .unit-header-hover:hover {
-            background: #ede9fe !important;
+        .chapters-container.open {
+            max-height: 500px;
+        }
+
+        .chapter-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            margin-bottom: 3px;
+            background: #f9f7ff;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+        .chapter-item:hover {
+            background: #ede9fe;
+            transform: translateX(4px);
+        }
+        .chapter-name {
+            font-size: 0.85rem;
+            color: #2e0f5a;
         }
     </style>
 </head>
@@ -1186,66 +1215,16 @@ window.ALL_UNITS = {
             "5": {
                 "name": "5. Atomic Structure",
                 "questions": [
-                    {
-                        "id": "C25A001",
-                        "text": "Which of the following elements is a semi-metal?",
-                        "options": ["A. Phosphorus", "B. Boron", "C. Aluminium", "D. Lithium"],
-                        "correct": "B",
-                        "explanation": "B and Si are semimetals in first 20 elements.",
-                        "imageUrl": null,
-                        "difficulty": "✅ Basic",
-                        "difficulty_level": 1,
-                        "sf": 1
-                    },
-                    {
-                        "id": "C25A002",
-                        "text": "Which of the following substances is a non-metal liquid element at room conditions?",
-                        "options": ["A. Bromine", "B. Chlorine", "C. Mercury", "D. Water"],
-                        "correct": "A",
-                        "explanation": "Mercury is liquid METAL. Water is NOT an element.",
-                        "imageUrl": null,
-                        "difficulty": "✅ Basic",
-                        "difficulty_level": 1,
-                        "sf": 1
-                    },
-                    {
-                        "id": "C25A003",
-                        "text": "Which of the following is the correct chemical symbol for copper?",
-                        "options": ["A. Ca", "B. Co", "C. Cr", "D. Cu"],
-                        "correct": "D",
-                        "explanation": "",
-                        "imageUrl": null,
-                        "difficulty": "✅ Basic",
-                        "difficulty_level": 1,
-                        "sf": 1
-                    }
+                    {"id": "C25A001", "text": "Which of the following elements is a semi-metal?", "options": ["A. Phosphorus", "B. Boron", "C. Aluminium", "D. Lithium"], "correct": "B", "explanation": "B and Si are semimetals.", "imageUrl": null, "difficulty": "✅ Basic", "difficulty_level": 1, "sf": 1},
+                    {"id": "C25A002", "text": "Which of the following substances is a non-metal liquid element at room conditions?", "options": ["A. Bromine", "B. Chlorine", "C. Mercury", "D. Water"], "correct": "A", "explanation": "Mercury is liquid METAL.", "imageUrl": null, "difficulty": "✅ Basic", "difficulty_level": 1, "sf": 1},
+                    {"id": "C25A003", "text": "Which of the following is the correct chemical symbol for copper?", "options": ["A. Ca", "B. Co", "C. Cr", "D. Cu"], "correct": "D", "explanation": "", "imageUrl": null, "difficulty": "✅ Basic", "difficulty_level": 1, "sf": 1}
                 ]
             },
             "6": {
                 "name": "6. Periodic Table",
                 "questions": [
-                    {
-                        "id": "C26A001",
-                        "text": "In the modern Periodic Table, elements are arranged in order of increasing",
-                        "options": ["A. mass number", "B. atomic number", "C. atomic weight", "D. number of neutrons"],
-                        "correct": "B",
-                        "explanation": "In the Periodic Table, elements are arranged in order of increasing NUMBER of PROTON.",
-                        "imageUrl": null,
-                        "difficulty": "✅ Basic",
-                        "difficulty_level": 1,
-                        "sf": 1
-                    },
-                    {
-                        "id": "C26A002",
-                        "text": "Which of the following statements concerning Group 0 elements is INCORRECT?",
-                        "options": ["A. They are called noble gases.", "B. They are chemically unreactive.", "C. They all have eight electrons in the outermost shell.", "D. Their relative atomic masses increase down the group."],
-                        "correct": "C",
-                        "explanation": "Helium only has TWO electrons in the outermost electron shell.",
-                        "imageUrl": null,
-                        "difficulty": "📈 Advanced",
-                        "difficulty_level": 2,
-                        "sf": 1
-                    }
+                    {"id": "C26A001", "text": "In the modern Periodic Table, elements are arranged in order of increasing", "options": ["A. mass number", "B. atomic number", "C. atomic weight", "D. number of neutrons"], "correct": "B", "explanation": "Arranged in order of increasing NUMBER of PROTON.", "imageUrl": null, "difficulty": "✅ Basic", "difficulty_level": 1, "sf": 1},
+                    {"id": "C26A002", "text": "Which of the following statements concerning Group 0 elements is INCORRECT?", "options": ["A. They are called noble gases.", "B. They are chemically unreactive.", "C. They all have eight electrons in the outermost shell.", "D. Their relative atomic masses increase down the group."], "correct": "C", "explanation": "Helium only has TWO electrons.", "imageUrl": null, "difficulty": "📈 Advanced", "difficulty_level": 2, "sf": 1}
                 ]
             }
         }
@@ -1259,7 +1238,6 @@ window.ALL_UNITS = {
 <script src="https://cdn.jsdelivr.net/npm/firebase@12.15.0/firebase-auth-compat.js"></script>
 
 <script>
-// Firebase 配置
 const firebaseConfig = {
     apiKey: "AIzaSyBWUr-qFjDuAbRn2ueCOA24Bx5vHhGwCzs",
     authDomain: "mastering-science.firebaseapp.com",
@@ -1276,6 +1254,5 @@ console.log('🔥 Firebase 已初始化（測試版）');
 
 <script src="script.js"></script>
 
-<!-- ===== 結束 ===== -->
 </body>
 </html>
