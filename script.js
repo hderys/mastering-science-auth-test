@@ -1,5 +1,5 @@
 // ============================================================
-// 項目 2：強制桌面版縮放為 100%
+// 項目2：強制桌面版縮放為 100%
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     function enforceZoom() {
@@ -22,11 +22,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ============================================================
-// 項目 4a：手機旋轉監聽加強
+// 項目4a：手機旋轉監聽加強（完全重寫）
 // ============================================================
 function handleScreenRotation() {
     var quizModal = document.getElementById('quizModal');
     var desktopModal = document.getElementById('desktopQuizModal');
+
     var isQuizVisible = (quizModal && quizModal.style.display === 'flex') ||
                         (desktopModal && desktopModal.style.display === 'flex');
     if (!isQuizVisible) return;
@@ -34,23 +35,27 @@ function handleScreenRotation() {
     var isLandscape = window.innerWidth > window.innerHeight && window.innerWidth <= 900;
     var isMobileDevice = window.innerWidth <= 640;
 
-    if (isMobileDevice || isLandscape) {
-        if (desktopModal) desktopModal.style.display = 'none';
-        if (quizModal) {
-            quizModal.style.display = 'flex';
-            if (typeof renderCurrentQuestion === 'function') {
-                renderCurrentQuestion();
+    // 強制關閉兩個視窗
+    if (desktopModal) desktopModal.style.display = 'none';
+    if (quizModal) quizModal.style.display = 'none';
+
+    // 延遲 50ms 後重新打開，確保 DOM 完全重置
+    setTimeout(function() {
+        if (isMobileDevice || isLandscape) {
+            if (quizModal) {
+                quizModal.style.display = 'flex';
+                // 🔹 強制重新渲染所有內容
+                if (typeof renderQuizNav === 'function') renderQuizNav();
+                if (typeof renderCurrentQuestion === 'function') renderCurrentQuestion();
+            }
+        } else {
+            if (desktopModal) {
+                desktopModal.style.display = 'flex';
+                if (typeof renderDesktopQuizNav === 'function') renderDesktopQuizNav();
+                if (typeof renderDesktopCurrentQuestion === 'function') renderDesktopCurrentQuestion();
             }
         }
-    } else {
-        if (quizModal) quizModal.style.display = 'none';
-        if (desktopModal) {
-            desktopModal.style.display = 'flex';
-            if (typeof renderDesktopCurrentQuestion === 'function') {
-                renderDesktopCurrentQuestion();
-            }
-        }
-    }
+    }, 50);
 }
 
 var rotationTimer = null;
@@ -62,9 +67,8 @@ window.addEventListener('resize', function() {
 });
 
 // ============================================================
-// 項目 4b：提交按鈕文字改為「提交並離開」
+// 項目4b：提交按鈕文字改為「提交並離開」
 // ============================================================
-// 原有的 showQuizModal 函數會被覆蓋，加入提交按鈕文字設定
 var originalShowQuizModal = window.showQuizModal || function() {};
 window.showQuizModal = function() {
     if (typeof originalShowQuizModal === 'function') {
@@ -88,11 +92,10 @@ window.showDesktopQuizModal = function() {
 };
 
 // ============================================================
-// 項目 4b：未答完提醒（含操作指引）
+// 項目4b：未答完提醒（含操作指引）
 // ============================================================
 var originalSubmitAll = window.submitAll || function() {};
 window.submitAll = function() {
-    // 檢查未答題數
     if (typeof currentQuestions !== 'undefined' && typeof currentAnswers !== 'undefined') {
         var total = currentQuestions.length;
         var answered = 0;
@@ -148,7 +151,7 @@ window.submitDesktopAll = function() {
 };
 
 // ============================================================
-// 實際的登入和練習邏輯（簡化版）
+// 實際的登入和練習邏輯
 // ============================================================
 var currentUser = null;
 var userData = { latestStatus: {}, allAttempts: [], favorites: [], practiceHistory: [], achievements: {} };
@@ -161,8 +164,10 @@ var selectedDifficulty = 1;
 var selectedCount = 10;
 var isTrialMode = false;
 var startTime = null;
+var pendingUnit = null;
+var pendingChapter = null;
 
-// 登入
+// ===== 登入 =====
 document.getElementById('loginBtn').addEventListener('click', function() {
     var userId = document.getElementById('loginUserId').value.trim();
     var password = document.getElementById('loginPassword').value.trim();
@@ -201,23 +206,32 @@ function handleLogin(userId, password) {
         });
 }
 
+// ===== 練習頁面 =====
 function renderPractice() {
     var container = document.getElementById('practicePanel');
     if (!container) return;
     var html = '<div class="card"><h3>📖 選擇章節練習</h3>';
+
     for (var unit in window.ALL_UNITS) {
         var unitObj = window.ALL_UNITS[unit];
+        html += '<div class="unit-header-hover" style="font-weight:bold; padding:6px 0 2px 0; color:#4a1d8c;">📚 ' + unitObj.name + '</div>';
+
         for (var ch in unitObj.chapters) {
             var chObj = unitObj.chapters[ch];
-            html += '<div class="chapter-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; margin-bottom:4px; background:#f9f7ff; border-radius:12px;">';
-            html += '<span>' + chObj.name + ' (' + chObj.questions.length + ' 題)</span>';
-            html += '<button class="btn practice-chapter" data-unit="' + unit + '" data-chapter="' + ch + '" style="padding:4px 12px; font-size:0.8rem;">✏️ 練習</button>';
-            html += '</div>';
+            // ✅ 項目16：章節懸浮自動展開 - 加入 hover class
+            html += '<div class="chapter-item-hover" style="display:flex; justify-content:space-between; align-items:center; padding:6px 12px; margin-bottom:3px; background:#f9f7ff; border-radius:10px; transition:all 0.2s ease;">';
+            html += '<span class="chapter-name" style="font-size:0.85rem;">' + chObj.name + ' (' + chObj.questions.length + ' 題)</span>';
+            html += '<div style="display:flex; gap:6px;">';
+            html += '<button class="btn practice-chapter" data-unit="' + unit + '" data-chapter="' + ch + '" style="padding:4px 12px; font-size:0.75rem;">✏️ 練習</button>';
+            // ✅ 項目15：單元測驗按鈕 - 加入確認視窗（JS 處理）
+            html += '<button class="btn unit-test-btn" data-unit="' + unit + '" style="padding:4px 12px; font-size:0.75rem; background:#f59e0b;">📝 單元測驗</button>';
+            html += '</div></div>';
         }
     }
     html += '</div>';
     container.innerHTML = html;
 
+    // 練習按鈕
     document.querySelectorAll('.practice-chapter').forEach(function(btn) {
         btn.addEventListener('click', function() {
             pendingUnit = btn.dataset.unit;
@@ -225,10 +239,69 @@ function renderPractice() {
             showSettingsModal();
         });
     });
+
+    // ✅ 項目15：單元測驗按鈕 - 加入確認視窗
+    document.querySelectorAll('.unit-test-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var unit = btn.dataset.unit;
+            var unitObj = window.ALL_UNITS[unit];
+            var unitName = unitObj ? unitObj.name : '單元 ' + unit;
+
+            var confirmMsg =
+                '📝 確認開始單元測驗？\n\n' +
+                '你即將挑戰【' + unitName + '】的單元測驗，共 36 題。\n\n' +
+                '⏱️ 每題限時 90 秒\n' +
+                '📊 完成後會顯示 DSE 等級預測\n\n' +
+                '準備好了嗎？';
+
+            if (confirm(confirmMsg)) {
+                startUnitTest(unit);
+            }
+        });
+    });
 }
 
-var pendingUnit = null;
-var pendingChapter = null;
+// ✅ 項目15：單元測驗函數
+function startUnitTest(unit) {
+    var allQuestions = [];
+    for (var ch in window.ALL_UNITS[unit].chapters) {
+        var qs = window.ALL_UNITS[unit].chapters[ch].questions;
+        for (var i = 0; i < qs.length; i++) {
+            allQuestions.push(qs[i]);
+        }
+    }
+    if (allQuestions.length === 0) {
+        alert('此單元暫無題目');
+        return;
+    }
+
+    var count = Math.min(36, allQuestions.length);
+    var selected = [];
+    for (var i = 0; i < count && i < allQuestions.length; i++) {
+        selected.push(allQuestions[i]);
+    }
+
+    currentQuestions = selected;
+    currentAnswers = new Array(currentQuestions.length).fill(null);
+    currentQIndex = 0;
+
+    timeRemaining = currentQuestions.length * 90;
+    updateTimerDisplay();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(function() {
+        if (timeRemaining <= 0) submitAll();
+        else { timeRemaining--; updateTimerDisplay(); }
+    }, 1000);
+
+    startTime = Date.now();
+    document.getElementById('settingsModal').style.display = 'none';
+
+    if (window.innerWidth <= 640) {
+        showQuizModal();
+    } else {
+        showDesktopQuizModal();
+    }
+}
 
 function showSettingsModal() {
     document.getElementById('settingsModal').style.display = 'flex';
@@ -249,7 +322,6 @@ function startPracticeWithSettings() {
     var count = parseInt(document.getElementById('customCount').value) || 10;
     if (count > allQuestions.length) count = allQuestions.length;
 
-    // 簡單選題：取前 count 題
     var selected = [];
     for (var i = 0; i < count && i < allQuestions.length; i++) {
         selected.push(allQuestions[i]);
@@ -260,7 +332,6 @@ function startPracticeWithSettings() {
 
     document.getElementById('settingsModal').style.display = 'none';
 
-    // 設定計時器
     timeRemaining = currentQuestions.length * 90;
     updateTimerDisplay();
     if (timerInterval) clearInterval(timerInterval);
@@ -278,28 +349,21 @@ function startPracticeWithSettings() {
     }
 }
 
+// ===== 手機版問題彈窗 =====
 function showQuizModal() {
     renderQuizNav();
     renderCurrentQuestion();
     document.getElementById('quizModal').style.display = 'flex';
 
-    // 顯示周期表按鈕
     var periodicBtn = document.getElementById('periodicTableBtn');
     if (periodicBtn) {
         periodicBtn.style.display = 'inline-block';
         periodicBtn.addEventListener('click', showPeriodicTable);
     }
-}
 
-function showDesktopQuizModal() {
-    renderDesktopQuizNav();
-    renderDesktopCurrentQuestion();
-    document.getElementById('desktopQuizModal').style.display = 'flex';
-
-    var periodicBtn = document.getElementById('desktopPeriodicBtn');
-    if (periodicBtn) {
-        periodicBtn.style.display = 'inline-block';
-        periodicBtn.addEventListener('click', showPeriodicTable);
+    var submitBtn = document.getElementById('submitAllBtn');
+    if (submitBtn) {
+        submitBtn.textContent = '提交並離開';
     }
 }
 
@@ -341,7 +405,7 @@ function renderCurrentQuestion() {
         imgArea.style.display = 'none';
     }
 
-    // 選項
+    // 選項（完全重建）
     var optsDiv = document.getElementById('modalOptions');
     optsDiv.innerHTML = '';
     for (var i = 0; i < q.options.length; i++) {
@@ -363,8 +427,24 @@ function renderCurrentQuestion() {
 
     document.getElementById('prevBtn').disabled = (currentQIndex === 0);
     document.getElementById('nextBtn').disabled = (currentQIndex === currentQuestions.length - 1);
+}
 
-    // ✅ 項目4b：提交按鈕文字已在 showQuizModal 中設定
+// ===== 桌面版問題彈窗 =====
+function showDesktopQuizModal() {
+    renderDesktopQuizNav();
+    renderDesktopCurrentQuestion();
+    document.getElementById('desktopQuizModal').style.display = 'flex';
+
+    var periodicBtn = document.getElementById('desktopPeriodicBtn');
+    if (periodicBtn) {
+        periodicBtn.style.display = 'inline-block';
+        periodicBtn.addEventListener('click', showPeriodicTable);
+    }
+
+    var submitBtn = document.getElementById('desktopSubmitBtn');
+    if (submitBtn) {
+        submitBtn.textContent = '提交並離開';
+    }
 }
 
 function renderDesktopQuizNav() {
@@ -425,10 +505,9 @@ function renderDesktopCurrentQuestion() {
 
     document.getElementById('desktopPrevBtn').disabled = (currentQIndex === 0);
     document.getElementById('desktopNextBtn').disabled = (currentQIndex === currentQuestions.length - 1);
-
-    // ✅ 項目4b：提交按鈕文字已在 showDesktopQuizModal 中設定
 }
 
+// ===== 計時器 =====
 function updateTimerDisplay() {
     var m = Math.floor(timeRemaining / 60);
     var s = timeRemaining % 60;
@@ -438,8 +517,8 @@ function updateTimerDisplay() {
     if (desktopTimer) desktopTimer.textContent = '⏱️ ' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
 }
 
+// ===== 提交 =====
 function submitAll() {
-    // ✅ 項目4b：未答完提醒已在函數開頭處理（透過覆蓋）
     if (timerInterval) clearInterval(timerInterval);
 
     var correctCount = 0;
@@ -466,10 +545,10 @@ function submitAll() {
 }
 
 function submitDesktopAll() {
-    // ✅ 項目4b：未答完提醒已在函數開頭處理（透過覆蓋）
     submitAll();
 }
 
+// ===== 顯示結果 =====
 function displayResults(results, accuracy, correctCount) {
     var container = document.getElementById('resultContent');
     var total = results.length;
@@ -504,6 +583,7 @@ function displayResults(results, accuracy, correctCount) {
     document.getElementById('resultModal').style.display = 'flex';
 }
 
+// ===== 按鈕事件 =====
 document.getElementById('closeResultBtn').addEventListener('click', function() {
     document.getElementById('resultModal').style.display = 'none';
 });
@@ -524,7 +604,6 @@ document.getElementById('desktopNextBtn').addEventListener('click', function() {
     if (currentQIndex < currentQuestions.length - 1) { currentQIndex++; renderDesktopQuizNav(); renderDesktopCurrentQuestion(); }
 });
 
-// ✅ 項目4b：提交按鈕事件（覆蓋原有）
 document.getElementById('submitAllBtn').addEventListener('click', function() {
     window.submitAll();
 });
@@ -533,6 +612,7 @@ document.getElementById('desktopSubmitBtn').addEventListener('click', function()
     window.submitDesktopAll();
 });
 
+// ===== 周期表 =====
 function showPeriodicTable() {
     var imgUrl = 'https://raw.githubusercontent.com/hderys/mastering-science-images/main/webp_image/periodic_table.png';
     document.getElementById('zoomImage').src = imgUrl;
@@ -550,7 +630,7 @@ function zoomImage(url) {
     document.getElementById('imageZoomModal').style.display = 'flex';
 }
 
-// 難度選擇
+// ===== 難度選擇 =====
 document.getElementById('diff-easy').addEventListener('click', function() {
     selectedDifficulty = 0;
     document.getElementById('diff-easy').classList.add('active');
@@ -574,7 +654,7 @@ document.getElementById('diff-hard').addEventListener('click', function() {
     document.getElementById('diff-hard').classList.add('active');
 });
 
-// 題數選擇
+// ===== 題數選擇 =====
 document.getElementById('count-10').addEventListener('click', function() {
     selectedCount = 10;
     document.getElementById('customCount').value = 10;
@@ -612,7 +692,7 @@ document.getElementById('customCount').addEventListener('change', function() {
     document.getElementById('count-36').classList.remove('active');
 });
 
-// 密碼顯示切換
+// ===== 密碼顯示切換 =====
 document.getElementById('togglePasswordBtn').addEventListener('click', function() {
     var input = document.getElementById('loginPassword');
     if (input.type === 'password') {
@@ -624,7 +704,7 @@ document.getElementById('togglePasswordBtn').addEventListener('click', function(
     }
 });
 
-// 分頁切換
+// ===== 分頁切換 =====
 function initTabs() {
     var tabs = document.querySelectorAll('.tab');
     var panels = {

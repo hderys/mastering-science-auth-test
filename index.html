@@ -2,12 +2,12 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <!-- ✅ 項目2：修改 viewport，加上 maximum-scale=1.0 -->
+    <!-- ✅ 項目2：修改 viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.0">
     <title>測試版 - Mastering Science</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* 登入畫面樣式 */
+        /* ===== 基礎樣式 ===== */
         .form-group-login {
             margin-bottom: 14px;
         }
@@ -60,6 +60,15 @@
         .btn:hover {
             background: #3b1a6e;
         }
+        .btn-outline {
+            background: white;
+            color: #4a1d8c;
+            border: 1px solid #4a1d8c;
+            width: auto;
+        }
+        .btn-outline:hover {
+            background: #f5f0ff;
+        }
         .card {
             background: white;
             border-radius: 24px;
@@ -91,8 +100,24 @@
             display: none;
         }
 
-        /* ✅ 項目2：桌面版強制滿版無捲軸 */
-        @media (min-width: 641px) {
+        /* ✅ 項目2：強制桌面版縮放100% + 無捲軸 */
+        @media (min-width: 1024px) {
+            html {
+                zoom: 1 !important;
+                -moz-transform: scale(1) !important;
+                -moz-transform-origin: top left !important;
+            }
+            body {
+                overflow: hidden;
+                height: 100vh;
+            }
+            #loginScreen {
+                max-height: 100vh;
+                overflow-y: hidden;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 1023px) {
             #loginScreen {
                 max-height: 100vh;
                 overflow-y: hidden;
@@ -119,154 +144,7 @@
             }
         }
 
-        /* ✅ 項目4c：手機版周期表按鈕更明顯 */
-        @media (max-width: 640px) {
-            #periodicTableBtn {
-                background: linear-gradient(135deg, #3b82f6, #7c3aed) !important;
-                border: 2px solid rgba(255,255,255,0.3) !important;
-                color: white !important;
-                font-weight: 700 !important;
-                padding: 0.2rem 0.5rem !important;
-                font-size: clamp(0.65rem, 2.5vw, 0.8rem) !important;
-                border-radius: 40px !important;
-                box-shadow: 0 0 20px rgba(59, 130, 246, 0.4) !important;
-                flex: 0.8 !important;
-                min-height: 36px !important;
-                transition: all 0.3s ease !important;
-            }
-            #periodicTableBtn:active {
-                transform: scale(0.95);
-                box-shadow: 0 0 30px rgba(59, 130, 246, 0.6) !important;
-            }
-        }
-
-        /* ✅ 項目4c：桌面版周期表按鈕更明顯 */
-        @media (min-width: 641px) {
-            #desktopQuizModal .sidebar-row-2 .table-btn {
-                background: linear-gradient(135deg, #3b82f6, #7c3aed) !important;
-                border: 2px solid rgba(255,255,255,0.3) !important;
-                color: white !important;
-                font-weight: 700 !important;
-                padding: 6px 18px !important;
-                font-size: 13px !important;
-                border-radius: 40px !important;
-                box-shadow: 0 0 20px rgba(59, 130, 246, 0.3) !important;
-                transition: all 0.3s ease !important;
-            }
-            #desktopQuizModal .sidebar-row-2 .table-btn:hover {
-                transform: scale(1.05);
-                box-shadow: 0 0 35px rgba(59, 130, 246, 0.5) !important;
-            }
-            #desktopQuizModal .sidebar-row-2 .table-btn:active {
-                transform: scale(0.95);
-            }
-        }
-
-        /* ============================================================
-           項目4a：手機橫置模式
-           ============================================================ */
-        @media (max-width: 900px) and (orientation: landscape) {
-            #quizModal .modal-content {
-                min-height: 85vh;
-                max-height: 95vh;
-                padding: 0.3rem 0.6rem;
-                flex-direction: row;
-                flex-wrap: wrap;
-                align-content: flex-start;
-            }
-            .quiz-header {
-                width: 100%;
-                order: 0;
-                flex-shrink: 0;
-            }
-            .question-nav {
-                width: 100%;
-                order: 1;
-                flex-shrink: 0;
-                max-height: 40px !important;
-                overflow-y: hidden;
-                gap: 3px;
-            }
-            .q-nav-btn {
-                width: 22px !important;
-                height: 22px !important;
-                font-size: 0.55rem !important;
-            }
-            .quiz-body {
-                flex-direction: row;
-                flex-wrap: wrap;
-                width: 100%;
-                order: 2;
-                gap: 0.3rem;
-                min-height: 0;
-                flex: 1;
-            }
-            .question-text {
-                width: 100%;
-                font-size: clamp(1rem, 2.5vw, 1.2rem) !important;
-                max-height: 20vh;
-                flex-shrink: 0;
-                order: 0;
-                margin-bottom: 0.1rem;
-            }
-            .quiz-layout-mobile {
-                flex-direction: row !important;
-                flex-wrap: wrap;
-                width: 100%;
-                gap: 0.2rem;
-                flex: 1;
-                min-height: 0;
-            }
-            .image-area-mobile {
-                flex: 0 0 35% !important;
-                max-width: 35% !important;
-                max-height: 200px !important;
-                order: 1 !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                padding-right: 0.3rem;
-            }
-            .image-area-mobile img {
-                max-height: 160px !important;
-                max-width: 100%;
-                width: auto;
-                height: auto;
-            }
-            .options-area-mobile {
-                flex: 1 1 60% !important;
-                min-width: 0;
-                order: 2 !important;
-                padding-top: 0;
-            }
-            .quiz-layout-mobile .options-area-mobile .options-grid {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                gap: 6px !important;
-                align-content: flex-start;
-            }
-            .options-area-mobile .option-btn {
-                padding: 0.3rem 0.4rem !important;
-                font-size: clamp(0.8rem, 2.2vw, 0.95rem) !important;
-                min-height: 36px !important;
-                border-radius: 8px !important;
-            }
-            .quiz-footer-mobile {
-                width: 100%;
-                order: 3;
-                flex-shrink: 0;
-                padding: 0.1rem 0;
-                min-height: 34px;
-                gap: 0.3rem;
-            }
-            .quiz-footer-mobile .btn {
-                padding: 0.1rem 0.2rem !important;
-                font-size: clamp(0.55rem, 1.8vw, 0.7rem) !important;
-                min-height: 28px !important;
-            }
-        }
-
-        /* 主程式 */
+        /* ===== 主程式 ===== */
         #mainApp { display: none; }
         .nav-tabs { display: flex; gap: 0.3rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
         .tab {
@@ -276,6 +154,7 @@
         }
         .tab.active { background: #4a1d8c; color: white; }
         #userLabel { font-size: clamp(0.7rem, 4vw, 0.85rem); }
+
         .modal-overlay {
             display: none;
             position: fixed;
@@ -335,7 +214,7 @@
         .mt-8 { margin-top: 8px; }
         .hidden { display: none !important; }
 
-        /* 設定彈窗 */
+        /* ===== 設定彈窗 ===== */
         .modal {
             display: none;
             position: fixed;
@@ -470,7 +349,7 @@
             margin-top: 0.2rem;
         }
 
-        /* 問題彈窗 */
+        /* ===== 問題彈窗 ===== */
         #quizModal .modal-content {
             transition: background-color 0.4s ease;
         }
@@ -555,11 +434,6 @@
             font-size: clamp(0.6rem, 3.5vw, 0.85rem);
             width: auto;
         }
-        .btn-outline {
-            background: white;
-            color: #4a1d8c;
-            border: 1px solid #4a1d8c;
-        }
         #submitAllBtn {
             background: #10b981;
             color: white;
@@ -570,7 +444,51 @@
             color: #dc2626;
         }
 
-        /* 桌面版 */
+        /* ===== 手機版底部按鈕（不換行） ===== */
+        @media (max-width: 640px) {
+            .quiz-footer {
+                display: flex;
+                flex-wrap: nowrap !important;
+                gap: 3px;
+                padding: 2px 0;
+            }
+            .quiz-footer .btn {
+                font-size: 0.55rem !important;
+                padding: 4px 4px !important;
+                white-space: nowrap !important;
+                flex: 1;
+                min-width: 0;
+                border-radius: 30px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                line-height: 1;
+            }
+            #submitAllBtn {
+                flex: 1.2 !important;
+                font-size: 0.6rem !important;
+                padding: 4px 6px !important;
+                background: #10b981 !important;
+            }
+            #periodicTableBtn {
+                flex: 0.7 !important;
+                font-size: 0.5rem !important;
+                padding: 4px 4px !important;
+                white-space: nowrap !important;
+                background: linear-gradient(135deg, #3b82f6, #7c3aed) !important;
+                color: white !important;
+                border: 1px solid rgba(255,255,255,0.3) !important;
+                box-shadow: 0 0 15px rgba(59, 130, 246, 0.3) !important;
+            }
+            #prevBtn, #nextBtn {
+                flex: 0.6 !important;
+                font-size: 0.5rem !important;
+                padding: 4px 2px !important;
+            }
+        }
+
+        /* ===== 桌面版 ===== */
         #desktopQuizModal .modal-content {
             width: 1000px;
             max-width: 98%;
@@ -764,15 +682,11 @@
         #desktopQuizModal .btn-submit {
             background: #10b981;
             color: white;
-        }
-
-        /* ✅ 項目4b：桌面版提交按鈕文字調整 */
-        #desktopQuizModal .btn-submit {
             font-size: 13px;
             font-weight: 700;
         }
 
-        /* 結果彈窗 */
+        /* ===== 結果彈窗 ===== */
         .result-container { overflow-y: auto; max-height: 60vh; }
         .result-summary-bar {
             display: flex;
@@ -881,7 +795,7 @@
             border-radius: 40px;
         }
 
-        /* 圖片放大 */
+        /* ===== 圖片放大 ===== */
         #imageZoomModal .modal-content {
             max-width: 600px;
             text-align: center;
@@ -894,13 +808,11 @@
             object-fit: contain;
         }
 
-        /* 用戶標籤 */
+        /* ===== 其他 ===== */
         #userLabel {
             font-size: clamp(0.7rem, 4vw, 0.85rem);
             color: #2e0f5a;
         }
-
-        /* 圖標按鈕 */
         .btn-icon {
             background: none;
             border: none;
@@ -908,7 +820,6 @@
             cursor: pointer;
             padding: 4px 6px;
         }
-
         .image-area-mobile {
             display: flex;
             justify-content: center;
@@ -920,6 +831,176 @@
             max-height: 130px;
             max-width: 100%;
             object-fit: contain;
+        }
+
+        /* ===== 手機橫置模式（項目4a） ===== */
+        @media (max-width: 900px) and (orientation: landscape) {
+            #quizModal .modal-content {
+                min-height: 85vh;
+                max-height: 95vh;
+                padding: 0.3rem 0.6rem;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-content: flex-start;
+            }
+            .quiz-header {
+                width: 100%;
+                order: 0;
+                flex-shrink: 0;
+            }
+            .question-nav {
+                width: 100%;
+                order: 1;
+                flex-shrink: 0;
+                max-height: 40px !important;
+                overflow-y: hidden;
+                gap: 3px;
+            }
+            .q-nav-btn {
+                width: 22px !important;
+                height: 22px !important;
+                font-size: 0.55rem !important;
+            }
+            .quiz-body {
+                flex-direction: row;
+                flex-wrap: wrap;
+                width: 100%;
+                order: 2;
+                gap: 0.3rem;
+                min-height: 0;
+                flex: 1;
+            }
+            .question-text {
+                width: 100%;
+                font-size: clamp(1rem, 2.5vw, 1.2rem) !important;
+                max-height: 20vh;
+                flex-shrink: 0;
+                order: 0;
+                margin-bottom: 0.1rem;
+            }
+            .quiz-layout-mobile {
+                flex-direction: row !important;
+                flex-wrap: wrap;
+                width: 100%;
+                gap: 0.2rem;
+                flex: 1;
+                min-height: 0;
+            }
+            .image-area-mobile {
+                flex: 0 0 35% !important;
+                max-width: 35% !important;
+                max-height: 200px !important;
+                order: 1 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding-right: 0.3rem;
+            }
+            .image-area-mobile img {
+                max-height: 160px !important;
+                max-width: 100%;
+                width: auto;
+                height: auto;
+            }
+            .options-area-mobile {
+                flex: 1 1 60% !important;
+                min-width: 0;
+                order: 2 !important;
+                padding-top: 0;
+            }
+            .quiz-layout-mobile .options-area-mobile .options-grid {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 6px !important;
+                align-content: flex-start;
+            }
+            .options-area-mobile .option-btn {
+                padding: 0.3rem 0.4rem !important;
+                font-size: clamp(0.8rem, 2.2vw, 0.95rem) !important;
+                min-height: 36px !important;
+                border-radius: 8px !important;
+            }
+            .quiz-footer-mobile {
+                width: 100%;
+                order: 3;
+                flex-shrink: 0;
+                padding: 0.1rem 0;
+                min-height: 34px;
+                gap: 0.3rem;
+            }
+            .quiz-footer-mobile .btn {
+                padding: 0.1rem 0.2rem !important;
+                font-size: clamp(0.55rem, 1.8vw, 0.7rem) !important;
+                min-height: 28px !important;
+            }
+        }
+
+        /* ===== 周期表按鈕 - 手機版（項目4c） ===== */
+        @media (max-width: 640px) {
+            #periodicTableBtn {
+                background: linear-gradient(135deg, #3b82f6, #7c3aed) !important;
+                border: 2px solid rgba(255,255,255,0.3) !important;
+                color: white !important;
+                font-weight: 700 !important;
+                padding: 0.2rem 0.5rem !important;
+                font-size: clamp(0.65rem, 2.5vw, 0.8rem) !important;
+                border-radius: 40px !important;
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.4) !important;
+                flex: 0.8 !important;
+                min-height: 36px !important;
+                transition: all 0.3s ease !important;
+            }
+            #periodicTableBtn:active {
+                transform: scale(0.95);
+                box-shadow: 0 0 30px rgba(59, 130, 246, 0.6) !important;
+            }
+        }
+
+        /* ===== 周期表按鈕 - 桌面版（項目4c） ===== */
+        @media (min-width: 641px) {
+            #desktopQuizModal .sidebar-row-2 .table-btn {
+                background: linear-gradient(135deg, #3b82f6, #7c3aed) !important;
+                border: 2px solid rgba(255,255,255,0.3) !important;
+                color: white !important;
+                font-weight: 700 !important;
+                padding: 6px 18px !important;
+                font-size: 13px !important;
+                border-radius: 40px !important;
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.3) !important;
+                transition: all 0.3s ease !important;
+            }
+            #desktopQuizModal .sidebar-row-2 .table-btn:hover {
+                transform: scale(1.05);
+                box-shadow: 0 0 35px rgba(59, 130, 246, 0.5) !important;
+            }
+            #desktopQuizModal .sidebar-row-2 .table-btn:active {
+                transform: scale(0.95);
+            }
+        }
+
+        /* ===== 章節懸浮自動展開（項目16） ===== */
+        .chapter-item-hover {
+            transition: all 0.2s ease;
+        }
+        .chapter-item-hover:hover {
+            background: #ede9fe !important;
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(74, 29, 140, 0.1);
+        }
+        .chapter-item-hover .chapter-name {
+            transition: color 0.2s ease;
+        }
+        .chapter-item-hover:hover .chapter-name {
+            color: #4a1d8c;
+        }
+
+        /* 單元懸浮預覽效果 */
+        .unit-header-hover {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .unit-header-hover:hover {
+            background: #ede9fe !important;
         }
     </style>
 </head>
@@ -1035,10 +1116,9 @@
         </div>
         <div class="quiz-footer">
             <button id="prevBtn" class="btn btn-outline">◀ 上一題</button>
-            <!-- ✅ 項目4c：手機版周期表按鈕更明顯（樣式在 CSS 中） -->
-            <button id="periodicTableBtn" class="btn btn-outline" style="display:none;">📊 周期表</button>
+            <!-- ✅ 項目4c：改為「開啟周期表」，移除📊 -->
+            <button id="periodicTableBtn" class="btn btn-outline" style="display:none;">開啟周期表</button>
             <button id="nextBtn" class="btn btn-outline">下一題 ▶</button>
-            <!-- ✅ 項目4b：提交按鈕改為「提交並離開」（JS 會設定文字） -->
             <button id="submitAllBtn" class="btn" style="background:#10b981;">提交並離開</button>
         </div>
     </div>
@@ -1060,15 +1140,14 @@
                 <span class="timer" id="desktopTimer">⏱️ 00:00</span>
             </div>
             <div class="sidebar-row-2">
-                <!-- ✅ 項目4c：桌面版周期表按鈕更明顯（樣式在 CSS 中） -->
-                <button class="table-btn" id="desktopPeriodicBtn">📊 周期表</button>
+                <!-- ✅ 項目4c：改為「開啟周期表」，移除📊 -->
+                <button class="table-btn" id="desktopPeriodicBtn">開啟周期表</button>
                 <span class="counter" id="desktopCounter">1 / 10</span>
             </div>
             <div class="nav-grid" id="desktopNav"></div>
             <div class="sidebar-actions">
                 <button class="btn btn-prev" id="desktopPrevBtn">◀</button>
                 <button class="btn btn-next" id="desktopNextBtn">▶</button>
-                <!-- ✅ 項目4b：提交按鈕改為「提交並離開」（JS 會設定文字） -->
                 <button class="btn btn-submit" id="desktopSubmitBtn">提交並離開</button>
             </div>
         </div>
@@ -1138,6 +1217,33 @@ window.ALL_UNITS = {
                         "imageUrl": null,
                         "difficulty": "✅ Basic",
                         "difficulty_level": 1,
+                        "sf": 1
+                    }
+                ]
+            },
+            "6": {
+                "name": "6. Periodic Table",
+                "questions": [
+                    {
+                        "id": "C26A001",
+                        "text": "In the modern Periodic Table, elements are arranged in order of increasing",
+                        "options": ["A. mass number", "B. atomic number", "C. atomic weight", "D. number of neutrons"],
+                        "correct": "B",
+                        "explanation": "In the Periodic Table, elements are arranged in order of increasing NUMBER of PROTON.",
+                        "imageUrl": null,
+                        "difficulty": "✅ Basic",
+                        "difficulty_level": 1,
+                        "sf": 1
+                    },
+                    {
+                        "id": "C26A002",
+                        "text": "Which of the following statements concerning Group 0 elements is INCORRECT?",
+                        "options": ["A. They are called noble gases.", "B. They are chemically unreactive.", "C. They all have eight electrons in the outermost shell.", "D. Their relative atomic masses increase down the group."],
+                        "correct": "C",
+                        "explanation": "Helium only has TWO electrons in the outermost electron shell.",
+                        "imageUrl": null,
+                        "difficulty": "📈 Advanced",
+                        "difficulty_level": 2,
                         "sf": 1
                     }
                 ]
