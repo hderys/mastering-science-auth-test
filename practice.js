@@ -1,7 +1,116 @@
 // ============================================================
-// practice.js - 練習核心功能（選題、計時、提交、UI渲染）
-// 依賴：core.js（需先載入）
+// practice.js - 練習核心功能
 // ============================================================
+
+// ==================== 全域變量 ====================
+let currentUser = null;
+let userData = { latestStatus: {}, allAttempts: [], favorites: [], practiceHistory: [], achievements: {} };
+let currentUnit = null;
+let currentChapter = null;
+let currentQuestions = [];
+let currentOptionsMapping = [];
+let currentAnswers = [];
+let currentQIndex = 0;
+let timerInterval = null;
+let timeRemaining = 0;
+let pendingUnit = null;
+let pendingChapter = null;
+let lastResults = null;
+let selectedDifficulty = 1;
+let selectedCount = 10;
+let isTrialMode = false;
+let excludeTranslate = true;
+let blinkInterval = null;
+let customCount = 10;
+let isSingleQuestionMode = false;
+let singleQuestionSource = null;
+let startTime = null;
+let showOnlyWrong = false;
+let showAnswers = false;
+let currentSubtab = 'progress';
+let currentClass = '';
+
+// ==================== 基本函數 ====================
+function isMobile() {
+    return window.innerWidth <= 900;
+}
+
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function hasEverWrong(qid) {
+    return userData.allAttempts.some(att => att.qid === qid && !att.isCorrect);
+}
+
+function isNotAttempted(qid) {
+    return !userData.allAttempts.some(att => att.qid === qid);
+}
+
+function formatTime(seconds) {
+    if (!seconds || seconds < 0) return '-';
+    let m = Math.floor(seconds / 60);
+    let s = seconds % 60;
+    if (m === 0) return `${s}秒`;
+    return `${m}分${s}秒`;
+}
+
+function updateTimerDisplay() {
+    let m = Math.floor(timeRemaining / 60);
+    let s = timeRemaining % 60;
+    document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+function updateNavButtons() {
+    let prev = document.getElementById('prevBtn');
+    let next = document.getElementById('nextBtn');
+    if (prev) prev.disabled = (currentQIndex === 0);
+    if (next) next.disabled = (currentQIndex === currentQuestions.length - 1);
+}
+
+function checkAllQuestionsAnswered() {
+    if (currentQuestions.length === 0) return;
+    const allAnswered = currentAnswers.every(a => a !== null && a !== undefined);
+    const submitBtn = document.getElementById('submitAllBtn');
+    if (!submitBtn) return;
+    if (allAnswered && currentAnswers.length > 0) {
+        if (!blinkInterval) {
+            blinkInterval = setInterval(() => {
+                submitBtn.style.animation = 'blink 0.3s step-end infinite';
+            }, 100);
+        }
+    } else {
+        if (blinkInterval) {
+            clearInterval(blinkInterval);
+            blinkInterval = null;
+            submitBtn.style.animation = '';
+        }
+    }
+}
+
+function checkDesktopAllQuestionsAnswered() {
+    if (currentQuestions.length === 0) return;
+    const allAnswered = currentAnswers.every(a => a !== null && a !== undefined);
+    const submitBtn = document.getElementById('desktopSubmitBtn');
+    if (!submitBtn) return;
+    if (allAnswered && currentAnswers.length > 0) {
+        if (!blinkInterval) {
+            blinkInterval = setInterval(() => {
+                submitBtn.style.animation = 'blink 0.3s step-end infinite';
+            }, 100);
+        }
+    } else {
+        if (blinkInterval) {
+            clearInterval(blinkInterval);
+            blinkInterval = null;
+            submitBtn.style.animation = '';
+        }
+    }
+}
 
 // ==================== 進度計算函數 ====================
 function getUnitMastery(unit) {
@@ -37,26 +146,6 @@ function getChapterDifficultyMastery(unit, chapter, difficultyLevel) {
         }
     }
     return total === 0 ? 0 : Math.round(correct / total * 100);
-}
-
-function shuffleArray(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-}
-
-function hasEverWrong(qid) {
-    return userData.allAttempts.some(att => att.qid === qid && !att.isCorrect);
-}
-
-function isNotAttempted(qid) {
-    return !userData.allAttempts.some(att => att.qid === qid);
-}
-
-function isMobile() {
-    return window.innerWidth <= 900;
 }
 
 // ==================== 挑題邏輯 ====================
@@ -939,7 +1028,7 @@ function showQuizModal() {
     renderCurrentQuestion(); 
     document.getElementById('quizModal').style.display = 'flex';
     
-    // ✅ 顯示首次橫置提示（由 landscape.js 提供）
+    // ✅ 顯示首次橫置提示
     if (typeof showLandscapeHint === 'function') {
         setTimeout(showLandscapeHint, 500);
     }
@@ -970,7 +1059,7 @@ function showQuizModal() {
         nextBtn.addEventListener('click', handleNext);
     }
     
-    // ✅ 綁定桌面版按鈕（直置時隱藏，橫置/桌面時顯示）
+    // ✅ 綁定桌面版按鈕
     const desktopPrevBtn = document.getElementById('desktopPrevBtn');
     const desktopNextBtn = document.getElementById('desktopNextBtn');
     const desktopSubmitBtn = document.getElementById('desktopSubmitBtn');
@@ -1019,7 +1108,6 @@ function handleDesktopPrev() {
         renderQuizNav();
         renderCurrentQuestion();
         updateNavButtons();
-        // 同步更新桌面版導航
         const desktopNav = document.getElementById('desktopNav');
         if (desktopNav) renderDesktopQuizNav();
     }
@@ -1031,13 +1119,12 @@ function handleDesktopNext() {
         renderQuizNav();
         renderCurrentQuestion();
         updateNavButtons();
-        // 同步更新桌面版導航
         const desktopNav = document.getElementById('desktopNav');
         if (desktopNav) renderDesktopQuizNav();
     }
 }
 
-// ==================== renderQuizNav（手機版導航） ====================
+// ==================== renderQuizNav ====================
 function renderQuizNav() {
     let nav = document.getElementById('questionNav');
     if (!nav) return;
@@ -1061,12 +1148,11 @@ function renderQuizNav() {
     }));
     checkAllQuestionsAnswered();
     
-    // 同步更新桌面版導航
     const desktopNav = document.getElementById('desktopNav');
     if (desktopNav) renderDesktopQuizNav();
 }
 
-// ==================== renderDesktopQuizNav（桌面版導航 - 同步） ====================
+// ==================== renderDesktopQuizNav ====================
 function renderDesktopQuizNav() {
     let nav = document.getElementById('desktopNav');
     if (!nav) return;
@@ -1117,7 +1203,7 @@ function updateDesktopSidebarDifficulty() {
     }
 }
 
-// ==================== renderCurrentQuestion（手機版） ====================
+// ==================== renderCurrentQuestion ====================
 function renderCurrentQuestion() {
     let q = currentQuestions[currentQIndex];
     let map = currentOptionsMapping[currentQIndex];
@@ -1254,62 +1340,9 @@ function renderCurrentQuestion() {
     checkAllQuestionsAnswered();
 }
 
-function updateNavButtons() { 
-    let prev = document.getElementById('prevBtn'), next = document.getElementById('nextBtn'); 
-    prev.disabled = (currentQIndex === 0); 
-    next.disabled = (currentQIndex === currentQuestions.length - 1); 
-}
-
-function updateTimerDisplay() { 
-    let m = Math.floor(timeRemaining / 60), s = timeRemaining % 60; 
-    document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`; 
-}
-
-function checkAllQuestionsAnswered() {
-    if (currentQuestions.length === 0) return;
-    
-    const allAnswered = currentAnswers.every(a => a !== null && a !== undefined);
-    const submitBtn = document.getElementById('submitAllBtn');
-    if (!submitBtn) return;
-    
-    if (allAnswered && currentAnswers.length > 0) {
-        if (!blinkInterval) {
-            blinkInterval = setInterval(() => {
-                submitBtn.style.animation = 'blink 0.3s step-end infinite';
-            }, 100);
-        }
-    } else {
-        if (blinkInterval) {
-            clearInterval(blinkInterval);
-            blinkInterval = null;
-            submitBtn.style.animation = '';
-        }
-    }
-}
-
-function checkDesktopAllQuestionsAnswered() {
-    if (currentQuestions.length === 0) return;
-    
-    const allAnswered = currentAnswers.every(a => a !== null && a !== undefined);
-    const submitBtn = document.getElementById('desktopSubmitBtn');
-    if (!submitBtn) return;
-    
-    if (allAnswered && currentAnswers.length > 0) {
-        if (!blinkInterval) {
-            blinkInterval = setInterval(() => {
-                submitBtn.style.animation = 'blink 0.3s step-end infinite';
-            }, 100);
-        }
-    } else {
-        if (blinkInterval) {
-            clearInterval(blinkInterval);
-            blinkInterval = null;
-            submitBtn.style.animation = '';
-        }
-    }
-}
-
-// ==================== submitAll ====================
+// ============================================================
+// submitAll
+// ============================================================
 function submitAll() {
     if (blinkInterval) {
         clearInterval(blinkInterval);
@@ -1534,7 +1567,375 @@ function displayResults(results) {
     });
 }
 
-// ==================== initTabs ====================
+// ==================== renderMyMistakes ====================
+function renderMyMistakes() {
+    let wrongByChapter = {};
+    for (let u in window.ALL_UNITS) {
+        for (let c in window.ALL_UNITS[u].chapters) {
+            for (let q of window.ALL_UNITS[u].chapters[c].questions) {
+                if (userData.latestStatus[q.id] === false) {
+                    if (!wrongByChapter[c]) wrongByChapter[c] = [];
+                    wrongByChapter[c].push({ ...q, chapterName: window.ALL_UNITS[u].chapters[c].name });
+                }
+            }
+        }
+    }
+    let container = document.getElementById('myMistakesPanel');
+    if (Object.keys(wrongByChapter).length === 0) { container.innerHTML = '<div class="card">✨ 目前沒有錯題</div>'; return; }
+    let html = '<div class="card"><h3>我的錯題</h3>';
+    for (let ch in wrongByChapter) {
+        html += `<div class="mistake-chapter-group"><div class="mistake-chapter-header" onclick="toggleMistakeChapter('${ch}','my')"><span>📖 ${wrongByChapter[ch][0].chapterName}</span><span class="unit-toggle" id="my-toggle-${ch}">▶</span></div><div class="mistake-questions" id="my-${ch}">`;
+        for (let q of wrongByChapter[ch]) {
+            let isFav = userData.favorites.includes(q.id);
+            html += `<div class="mistake-question-item"><span>${q.text}</span><div>
+                <button class="btn-icon star" data-qid="${q.id}" style="color:${isFav ? '#fbbf24' : '#ccc'}">★</button>
+                <button class="btn-icon redo-q" data-qid="${q.id}" data-source="myMistakes">🔄</button>
+            </div></div>`;
+        }
+        html += `</div></div>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+    attachMistakeEvents();
+}
+
+function renderPastMistakes() {
+    let wrongQids = new Set();
+    for (let att of userData.allAttempts) if (!att.isCorrect) wrongQids.add(att.qid);
+    let pastByChapter = {};
+    for (let u in window.ALL_UNITS) {
+        for (let c in window.ALL_UNITS[u].chapters) {
+            for (let q of window.ALL_UNITS[u].chapters[c].questions) {
+                if (wrongQids.has(q.id)) {
+                    if (!pastByChapter[c]) pastByChapter[c] = [];
+                    pastByChapter[c].push({ ...q, chapterName: window.ALL_UNITS[u].chapters[c].name });
+                }
+            }
+        }
+    }
+    let container = document.getElementById('pastMistakesPanel');
+    if (Object.keys(pastByChapter).length === 0) { container.innerHTML = '<div class="card">📭 尚無錯題歷程</div>'; return; }
+    let html = '<div class="card"><h3>錯題歷程</h3>';
+    for (let ch in pastByChapter) {
+        html += `<div class="mistake-chapter-group"><div class="mistake-chapter-header" onclick="toggleMistakeChapter('${ch}','past')"><span>📖 ${pastByChapter[ch][0].chapterName}</span><span class="unit-toggle" id="past-toggle-${ch}">▶</span></div><div class="mistake-questions" id="past-${ch}">`;
+        for (let q of pastByChapter[ch]) {
+            let isFav = userData.favorites.includes(q.id);
+            html += `<div class="mistake-question-item"><span>${q.text}</span><div>
+                <button class="btn-icon star" data-qid="${q.id}" style="color:${isFav ? '#fbbf24' : '#ccc'}">★</button>
+                <button class="btn-icon redo-q" data-qid="${q.id}" data-source="pastMistakes">🔄</button>
+                <button class="btn-icon remove-q" data-qid="${q.id}" style="color:#dc2626;" title="移除該題">🗑️</button>
+            </div></div>`;
+        }
+        html += `</div></div>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+    attachMistakeEvents();
+    attachRemoveEvents();
+}
+
+function renderPinned() {
+    let container = document.getElementById('pinnedPanel');
+    if (userData.favorites.length === 0) { container.innerHTML = '<div class="card">⭐ 尚無收藏題目</div>'; return; }
+    let html = '<div class="card"><h3>收藏題目</h3>';
+    for (let qid of userData.favorites) {
+        let found = null, chapterName = '';
+        for (let u in window.ALL_UNITS) {
+            for (let c in window.ALL_UNITS[u].chapters) {
+                let q = window.ALL_UNITS[u].chapters[c].questions.find(qq => qq.id === qid);
+                if (q) {
+                    found = q;
+                    chapterName = window.ALL_UNITS[u].chapters[c].name;
+                    break;
+                }
+            }
+            if (found) break;
+        }
+        if (found) html += `<div class="mistake-question-item"><span><strong>${chapterName}</strong> ${found.text}</span><div>
+            <button class="btn-icon redo-q" data-qid="${qid}" data-source="pinned">🔄</button>
+            <button class="btn-icon remove-q" data-qid="${qid}" style="color:#dc2626;" title="移除該題">🗑️</button>
+        </div></div>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+    document.querySelectorAll('.redo-q').forEach(btn => btn.addEventListener('click', (e) => {
+        const qid = btn.dataset.qid;
+        const source = btn.dataset.source || 'myMistakes';
+        startSingleQuestion(qid, source);
+    }));
+    attachRemoveEvents();
+}
+
+function attachMistakeEvents() {
+    document.querySelectorAll('.star').forEach(star => star.addEventListener('click', (e) => { let qid = star.dataset.qid; if (userData.favorites.includes(qid)) userData.favorites = userData.favorites.filter(id => id !== qid); else userData.favorites.push(qid); saveUserData(); renderMyMistakes(); renderPastMistakes(); renderPinned(); }));
+    document.querySelectorAll('.redo-q').forEach(btn => btn.addEventListener('click', (e) => {
+        const qid = btn.dataset.qid;
+        const source = btn.dataset.source || 'myMistakes';
+        startSingleQuestion(qid, source);
+    }));
+}
+
+function attachRemoveEvents() {
+    document.querySelectorAll('.remove-q').forEach(btn => btn.addEventListener('click', (e) => {
+        const qid = btn.dataset.qid;
+        if (confirm('確定移除該題？')) {
+            if (userData.favorites.includes(qid)) {
+                userData.favorites = userData.favorites.filter(id => id !== qid);
+            }
+            userData.allAttempts = userData.allAttempts.filter(att => att.qid !== qid);
+            delete userData.latestStatus[qid];
+            saveUserData();
+            renderPastMistakes();
+            renderPinned();
+            renderMyMistakes();
+        }
+    }));
+}
+
+function renderHistory() {
+    let container = document.getElementById('historyPanel');
+    if (!userData.practiceHistory || userData.practiceHistory.length === 0) { container.innerHTML = '<div class="card">📋 暫無做題紀錄</div>'; return; }
+    let html = `<div class="card"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;"><h3>📋 做題紀錄</h3><button id="exportHistoryBtn" class="btn export-btn">📥 匯出 CSV</button></div><div style="overflow-x:auto;"><table class="history-table"><thead><tr><th>日期</th><th>時間</th><th>單元</th><th>章節</th><th>題數</th><th>正確率</th><th>模式</th><th>花費時間</th></tr></thead><tbody>`;
+    for (let h of userData.practiceHistory) {
+        let timeStr = h.timeSpent ? formatTime(h.timeSpent) : '-';
+        html += `<tr><td>${format(new Date(h.date), 'yyyy-MM-dd')}</td><td>${h.time}</td><td>${h.unitName}</td><td>${h.chapterName}</td><td>${h.questionCount}</td><td>${h.accuracy}%</td><td>${h.mode === 'trial' ? '試煉' : '一般'}</td><td>${timeStr}</td></tr>`;
+    }
+    html += `</tbody></table></div></div>`;
+    container.innerHTML = html;
+    document.getElementById('exportHistoryBtn')?.addEventListener('click', () => {
+        let csv = [["日期", "時間", "單元", "章節", "題數", "正確數", "正確率", "模式", "花費時間"]];
+        for (let h of userData.practiceHistory) {
+            let timeStr = h.timeSpent ? formatTime(h.timeSpent) : '-';
+            csv.push([h.date, h.time, h.unitName, h.chapterName, h.questionCount, h.correctCount, `${h.accuracy}%`, h.mode === 'trial' ? '試煉' : '一般', timeStr]);
+        }
+        let blob = new Blob(["\uFEFF" + csv.map(r => r.join(",")).join("\n")], { type: "text/csv;charset=utf-8;" });
+        let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `mastering_science_history_${currentUser.name}.csv`; link.click(); URL.revokeObjectURL(link.href);
+    });
+}
+
+// ==================== renderAchievements ====================
+async function renderAchievements() {
+    let container = document.getElementById('achievementsPanel');
+    
+    // 計算總積分
+    let totalPoints = calculateTotalPoints(userData.achievements);
+    let rankInfo = await calculateClassRank(currentUser.id, totalPoints);
+    
+    // 積分榜數據
+    let rankListHtml = '';
+    try {
+        const className = currentUser.className;
+        const allStudents = await loadAllStudentsFromFirebase(className);
+        const rankedStudents = [...allStudents].sort((a, b) => {
+            const aPoints = calculateTotalPoints(a.achievements || {});
+            const bPoints = calculateTotalPoints(b.achievements || {});
+            return bPoints - aPoints;
+        });
+        
+        if (rankedStudents.length > 0) {
+            rankListHtml = `<div class="rank-list-container">
+                <h3 style="margin-bottom:0.5rem;">🏆 班級積分榜</h3>
+                <div style="font-size:0.7rem; color:#666; margin-bottom:0.5rem;">👥 ${className} 班級</div>
+                <div style="overflow-x:auto;">`;
+            
+            const medals = ['🥇', '🥈', '🥉'];
+            rankedStudents.forEach((s, index) => {
+                const points = calculateTotalPoints(s.achievements || {});
+                const medal = index < 3 ? medals[index] : `${index + 1}`;
+                const isCurrentUser = s.userId === currentUser.id;
+                const rowStyle = isCurrentUser ? 'background:#ede9fe; font-weight:bold; border-radius:8px;' : '';
+                rankListHtml += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; border-bottom:1px solid #f0edf8; ${rowStyle} border-radius:8px;">
+                        <span style="font-size:0.85rem;">${medal} ${s.name}</span>
+                        <span style="font-size:0.85rem; font-weight:600; color:${isCurrentUser ? '#4a1d8c' : '#2e0f5a'};">${points} 分</span>
+                    </div>
+                `;
+            });
+            
+            rankListHtml += `</div></div>`;
+        }
+    } catch(e) {
+        console.warn('⚠️ 載入積分榜失敗:', e);
+    }
+    
+    // 章節成就
+    let chapterList = [];
+    for (let u in window.ALL_UNITS) {
+        for (let ch in window.ALL_UNITS[u].chapters) {
+            chapterList.push({
+                unit: u,
+                unitName: window.ALL_UNITS[u].name,
+                chapter: ch,
+                chapterNum: parseInt(ch),
+                chapterName: window.ALL_UNITS[u].chapters[ch].name
+            });
+        }
+    }
+    chapterList.sort((a, b) => a.chapterNum - b.chapterNum);
+    
+    let unlockedChapters = [];
+    let lockedChapters = [];
+    
+    for (let item of chapterList) {
+        let key = `${item.unit}_${item.chapter}`;
+        let ach = userData.achievements[key] || {};
+        let types = [
+            { id: 'star1', name: '一星完成', icon: '✅', unlocked: ach.star1?.unlocked || false, date: ach.star1?.date || null, needHint: '需一星80%', points: ACHIEVEMENT_POINTS.star1, order: 1 },
+            { id: 'star3', name: '三星解鎖', icon: '🔥', unlocked: ach.star3?.unlocked || false, date: ach.star3?.date || null, needHint: '需三星80%', points: ACHIEVEMENT_POINTS.star3, order: 2 },
+            { id: 'star5', name: '五星解鎖', icon: '💎', unlocked: ach.star5?.unlocked || false, date: ach.star5?.date || null, needHint: '需五星80%', points: ACHIEVEMENT_POINTS.star5, order: 3 },
+            { id: 'trial', name: '試煉完成', icon: '⚔️', unlocked: ach.trial?.unlocked || false, date: ach.trial?.date || null, needHint: '需試煉模式80%', points: ACHIEVEMENT_POINTS.trial, order: 4 }
+        ];
+        for (let t of types) {
+            let entry = {
+                unitName: item.unitName,
+                chapterName: item.chapterName,
+                chapterNum: item.chapterNum,
+                name: t.name,
+                icon: t.icon,
+                unlocked: t.unlocked,
+                date: t.date,
+                needHint: t.needHint,
+                points: t.points,
+                order: t.order
+            };
+            if (t.unlocked) {
+                unlockedChapters.push(entry);
+            } else {
+                lockedChapters.push(entry);
+            }
+        }
+    }
+    
+    unlockedChapters.sort((a, b) => {
+        if (a.chapterNum !== b.chapterNum) return a.chapterNum - b.chapterNum;
+        return a.order - b.order;
+    });
+    lockedChapters.sort((a, b) => {
+        if (a.chapterNum !== b.chapterNum) return a.chapterNum - b.chapterNum;
+        return a.order - b.order;
+    });
+    
+    let totalQ = userData.stats?.totalQuestionsAnswered || 0;
+    let specials = [
+        { id: 'firstPractice', name: '初試啼聲', icon: '🎯', unlocked: userData.achievements.firstPractice?.unlocked || false, date: userData.achievements.firstPractice?.date || null, desc: '完成第一次練習', progress: userData.achievements.firstPractice?.progress || totalQ, target: 1, showProgress: true, points: ACHIEVEMENT_POINTS.firstPractice, isPenalty: false },
+        { id: 'tenQuestions', name: '十題達人', icon: '📝', unlocked: userData.achievements.tenQuestions?.unlocked || false, date: userData.achievements.tenQuestions?.date || null, desc: '累積完成100題', progress: totalQ, target: 100, showProgress: true, points: ACHIEVEMENT_POINTS.tenQuestions, isPenalty: false },
+        { id: 'fiveHundred', name: '百題斬', icon: '⚔️', unlocked: userData.achievements.fiveHundred?.unlocked || false, date: userData.achievements.fiveHundred?.date || null, desc: '累積完成500題', progress: totalQ, target: 500, showProgress: true, points: ACHIEVEMENT_POINTS.fiveHundred, isPenalty: false },
+        { id: 'thousand', name: '千題之王', icon: '👑', unlocked: userData.achievements.thousand?.unlocked || false, date: userData.achievements.thousand?.date || null, desc: '累積完成1000題', progress: totalQ, target: 1000, showProgress: true, points: ACHIEVEMENT_POINTS.thousand, isPenalty: false },
+        { id: 'perfectLesson', name: '完美一課', icon: '🌟', unlocked: userData.achievements.perfectLesson?.unlocked || false, date: userData.achievements.perfectLesson?.date || null, desc: '單次練習10題以上全對', points: ACHIEVEMENT_POINTS.perfectLesson, isPenalty: false },
+        { id: 'dseComplete', name: 'DSE模擬完成', icon: '📝', unlocked: userData.achievements.dseComplete?.unlocked || false, date: userData.achievements.dseComplete?.date || null, desc: '完成一次36題模式', points: ACHIEVEMENT_POINTS.dseComplete, isPenalty: false },
+        { id: 'speedStar', name: '速度之星', icon: '⚡', unlocked: userData.achievements.speedStar?.unlocked || false, date: userData.achievements.speedStar?.date || null, desc: '提前50%時間完成練習且正確率≥70%', points: ACHIEVEMENT_POINTS.speedStar, isPenalty: false },
+        { id: 'consecutive20', name: '連續答對王', icon: '🔥', unlocked: userData.achievements.consecutive20?.unlocked || false, date: userData.achievements.consecutive20?.date || null, desc: '連續答對20題', points: ACHIEVEMENT_POINTS.consecutive20, isPenalty: false },
+        { id: 'allChaptersMaster', name: '全科目制霸', icon: '🏆', unlocked: userData.achievements.allChaptersMaster?.unlocked || false, date: userData.achievements.allChaptersMaster?.date || null, desc: '所有章節完成度達80%', points: ACHIEVEMENT_POINTS.allChaptersMaster, isPenalty: false },
+        { id: 'fiveStarStreak', name: '五星連珠', icon: '⭐', unlocked: userData.achievements.fiveStarStreak?.unlocked || false, date: userData.achievements.fiveStarStreak?.date || null, desc: '連續5次練習正確率100%', points: ACHIEVEMENT_POINTS.fiveStarStreak, isPenalty: false },
+        { id: 'mistakeEraser', name: '錯題剋星', icon: '🗑️', unlocked: userData.achievements.mistakeEraser?.unlocked || false, date: userData.achievements.mistakeEraser?.date || null, desc: '從錯題本清除50道錯題', points: ACHIEVEMENT_POINTS.mistakeEraser, isPenalty: false },
+        { id: 'collector', name: '收藏家', icon: '📚', unlocked: userData.achievements.collector?.unlocked || false, date: userData.achievements.collector?.date || null, desc: '收藏50道題目', points: ACHIEVEMENT_POINTS.collector, isPenalty: false },
+        { id: 'weekChallenge', name: '一週挑戰', icon: '📅', unlocked: userData.achievements.weekChallenge?.unlocked || false, date: userData.achievements.weekChallenge?.date || null, desc: '連續7天完成至少一次練習', points: ACHIEVEMENT_POINTS.weekChallenge, isPenalty: false },
+        { id: 'blankPaper', name: '交白卷', icon: '📄', unlocked: userData.achievements.blankPaper?.unlocked || false, date: userData.achievements.blankPaper?.date || null, desc: '提交空白答案卷', points: ACHIEVEMENT_POINTS.blankPaper, isPenalty: true },
+        { id: 'downwardTrend', name: '下滑趨勢', icon: '📉', unlocked: userData.achievements.downwardTrend?.unlocked || false, date: userData.achievements.downwardTrend?.date || null, desc: '連續兩次正確率下降超過20%', points: ACHIEVEMENT_POINTS.downwardTrend, isPenalty: true }
+    ];
+    
+    let unlockedSpecials = specials.filter(s => s.unlocked && !s.isPenalty);
+    let unlockedPenalties = specials.filter(s => s.unlocked && s.isPenalty);
+    let lockedSpecials = specials.filter(s => !s.unlocked && !s.isPenalty);
+    unlockedSpecials.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    unlockedPenalties.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    lockedSpecials.sort((a, b) => (b.points || 0) - (a.points || 0));
+    
+    let totalUnlocked = unlockedSpecials.length + unlockedPenalties.length + unlockedChapters.length;
+    let totalPossible = specials.length + (chapterList.length * 4);
+    let percent = totalPossible > 0 ? Math.round(totalUnlocked / totalPossible * 100) : 0;
+    
+    let html = `<div class="card">`;
+    
+    html += `
+        <div class="points-rank-bar">
+            <div class="points-box">
+                <div class="points-number">${totalPoints}</div>
+                <div class="points-label">總積分</div>
+            </div>
+            <div class="rank-box">
+                <div class="rank-number">#${rankInfo.rank} / ${rankInfo.total}</div>
+                <div class="rank-label">班級排名</div>
+            </div>
+        </div>
+        <div class="achievement-progress">
+            <div style="display:flex; justify-content:space-between;">
+                <span>🏆 總解鎖進度</span>
+                <span>${totalUnlocked} / ${totalPossible} (${percent}%)</span>
+            </div>
+            <div class="achievement-bar">
+                <div class="achievement-fill" style="width:${percent}%;"></div>
+            </div>
+        </div>`;
+    
+    if (rankListHtml) {
+        html += rankListHtml;
+    }
+    
+    if (unlockedSpecials.length > 0 || unlockedPenalties.length > 0 || lockedSpecials.length > 0) {
+        html += `<h3 style="margin-top:0.5rem;">🎯 特殊成就</h3>`;
+        
+        for (let ach of unlockedSpecials) {
+            let pointsDisplay = ach.points > 0 ? `🏆 +${ach.points}` : '';
+            html += `<div class="achievement-item unlocked"><div class="achievement-row"><div><span class="achievement-badge">${ach.icon}</span> <strong>${ach.name}</strong></div><div class="achievement-date">${ach.date} ${pointsDisplay}</div></div><div class="achievement-desc">${ach.desc}</div>`;
+            if (ach.showProgress) {
+                let percentProgress = Math.min(100, Math.round(ach.progress / ach.target * 100));
+                html += `<div class="progress-small"><div class="progress-small-fill" style="width:${percentProgress}%;"></div></div><div class="achievement-desc">${ach.progress}/${ach.target}</div>`;
+            }
+            html += `</div>`;
+        }
+        
+        for (let ach of unlockedPenalties) {
+            html += `<div class="achievement-item unlocked" style="background:#f8d7da; border-left-color:#dc2626;"><div class="achievement-row"><div><span class="achievement-badge">${ach.icon}</span> <strong>${ach.name}</strong></div><div class="achievement-date">${ach.date} ⚠️ ${ach.points}</div></div><div class="achievement-desc">${ach.desc}</div></div>`;
+        }
+        
+        for (let ach of lockedSpecials) {
+            let pointsDisplay = ach.points > 0 ? `🏆 +${ach.points}` : '';
+            html += `<div class="achievement-item locked"><div class="achievement-row"><div><span class="achievement-badge">🔒</span> <strong>${ach.name}</strong></div><div class="achievement-date">${pointsDisplay}</div></div><div class="achievement-desc">🔒 未解鎖</div>`;
+            if (ach.showProgress) {
+                let percentProgress = Math.min(100, Math.round(ach.progress / ach.target * 100));
+                html += `<div class="progress-small"><div class="progress-small-fill" style="width:${percentProgress}%;"></div></div><div class="achievement-desc">${ach.progress}/${ach.target}</div>`;
+            }
+            html += `</div>`;
+        }
+    }
+    
+    if (unlockedChapters.length > 0) {
+        html += `<h3 style="margin-top:0.8rem;">📖 已獲得章節成就</h3>`;
+        let currentUnit = '';
+        for (let ach of unlockedChapters) {
+            if (ach.unitName !== currentUnit) {
+                currentUnit = ach.unitName;
+                html += `<div style="margin-top:0.5rem; font-weight:bold;">${currentUnit}</div>`;
+            }
+            let pointsDisplay = ach.points > 0 ? `🏆 +${ach.points}` : '';
+            html += `<div class="achievement-item unlocked"><div class="achievement-row"><div><span class="achievement-badge">${ach.icon}</span> ${ach.chapterName} - ${ach.name}</div><div class="achievement-date">${ach.date} ${pointsDisplay}</div></div></div>`;
+        }
+    }
+    
+    if (lockedChapters.length > 0) {
+        let lockedId = "lockedChaptersPanel";
+        html += `<h3 class="collapsible" onclick="toggleCollapsible('${lockedId}')">🔒 未獲得章節成就 (${lockedChapters.length}) ▼</h3>
+                 <div id="${lockedId}" class="collapsible-content collapsed">`;
+        let currentUnit = '';
+        for (let ach of lockedChapters) {
+            if (ach.unitName !== currentUnit) {
+                currentUnit = ach.unitName;
+                html += `<div style="margin-top:0.5rem; font-weight:bold;">${currentUnit}</div>`;
+            }
+            let pointsDisplay = ach.points > 0 ? `🏆 +${ach.points}` : '';
+            html += `<div class="achievement-item locked"><div class="achievement-row"><div><span class="achievement-badge">🔒</span> ${ach.chapterName} - ${ach.name}</div><div class="achievement-date">${pointsDisplay}</div></div><div class="achievement-desc">🔒 ${ach.needHint}</div></div>`;
+        }
+        html += `</div>`;
+    }
+    
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+// ============================================================
+// initTabs
+// ============================================================
 function initTabs() {
     let tabs = document.querySelectorAll('.tab'), panels = { 
         practice: document.getElementById('practicePanel'), 
@@ -1562,25 +1963,239 @@ function initTabs() {
     }));
 }
 
-// ==================== 一鍵解鎖 ====================
-function unlockAll() {
-    if (!pendingUnit || !pendingChapter) {
-        alert('請先選擇一個章節');
-        return;
+// ============================================================
+// ============================================================
+// DOMContentLoaded - 綁定所有按鈕事件
+// ============================================================
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ DOMContentLoaded 已觸發');
+
+    // 難度選擇
+    document.getElementById('diff-easy').addEventListener('click', function() {
+        selectedDifficulty = 0;
+        document.getElementById('diff-easy').classList.add('active');
+        document.getElementById('diff-medium').classList.remove('active');
+        document.getElementById('diff-hard').classList.remove('active');
+        isTrialMode = false;
+        updateSettingsUnlockStatus();
+    });
+    document.getElementById('diff-medium').addEventListener('click', function() {
+        if (document.getElementById('diff-medium').disabled) return;
+        selectedDifficulty = 1;
+        document.getElementById('diff-easy').classList.remove('active');
+        document.getElementById('diff-medium').classList.add('active');
+        document.getElementById('diff-hard').classList.remove('active');
+        isTrialMode = false;
+        updateSettingsUnlockStatus();
+    });
+    document.getElementById('diff-hard').addEventListener('click', function() {
+        if (document.getElementById('diff-hard').disabled) return;
+        selectedDifficulty = 2;
+        document.getElementById('diff-easy').classList.remove('active');
+        document.getElementById('diff-medium').classList.remove('active');
+        document.getElementById('diff-hard').classList.add('active');
+        isTrialMode = false;
+        updateSettingsUnlockStatus();
+    });
+
+    // 題數選擇
+    document.getElementById('count-10').addEventListener('click', function() {
+        selectedCount = 10;
+        customCount = 10;
+        document.getElementById('count-10').classList.add('active');
+        document.getElementById('count-20').classList.remove('active');
+        if (document.getElementById('count-36')) document.getElementById('count-36').classList.remove('active');
+        var customInput = document.getElementById('customCount');
+        if (customInput) customInput.value = 10;
+    });
+    document.getElementById('count-20').addEventListener('click', function() {
+        if (document.getElementById('count-20').disabled) return;
+        selectedCount = 20;
+        customCount = 20;
+        document.getElementById('count-10').classList.remove('active');
+        document.getElementById('count-20').classList.add('active');
+        if (document.getElementById('count-36')) document.getElementById('count-36').classList.remove('active');
+        var customInput = document.getElementById('customCount');
+        if (customInput) customInput.value = 20;
+    });
+    document.getElementById('count-36').addEventListener('click', function() {
+        if (document.getElementById('count-36').disabled) return;
+        selectedCount = 36;
+        customCount = 36;
+        document.getElementById('count-10').classList.remove('active');
+        document.getElementById('count-20').classList.remove('active');
+        document.getElementById('count-36').classList.add('active');
+        var customInput = document.getElementById('customCount');
+        if (customInput) customInput.value = 36;
+    });
+
+    // 試煉模式
+    document.getElementById('trial-mode').addEventListener('click', function() {
+        if (document.getElementById('trial-mode').disabled) return;
+        isTrialMode = true;
+        selectedDifficulty = 2;
+        selectedCount = 50;
+        customCount = 50;
+        document.getElementById('diff-easy').classList.remove('active');
+        document.getElementById('diff-medium').classList.remove('active');
+        document.getElementById('diff-hard').classList.add('active');
+        document.getElementById('count-10').classList.remove('active');
+        document.getElementById('count-20').classList.remove('active');
+        if (document.getElementById('count-36')) document.getElementById('count-36').classList.remove('active');
+        var customInput = document.getElementById('customCount');
+        if (customInput) customInput.value = 50;
+        updateSettingsUnlockStatus();
+    });
+
+    // 一鍵解鎖（僅老師）
+    document.getElementById('devUnlockBtn').addEventListener('click', function() {
+        if (currentUser && currentUser.isTeacher) {
+            unlockAll();
+        } else {
+            alert('⚠️ 此功能僅限老師使用');
+        }
+    });
+
+    // 排除翻譯題
+    var excludeTranslateCheckbox = document.getElementById('excludeTranslate');
+    if (excludeTranslateCheckbox) {
+        excludeTranslateCheckbox.addEventListener('change', function(e) {
+            excludeTranslate = e.target.checked;
+            updateSettingsUnlockStatus();
+        });
     }
-    let qs = window.ALL_UNITS[pendingUnit].chapters[pendingChapter].questions;
-    for (let q of qs) {
-        userData.latestStatus[q.id] = true;
+
+    // 自訂題數
+    var customInput = document.getElementById('customCount');
+    if (customInput) {
+        customInput.addEventListener('change', function(e) {
+            var val = parseInt(e.target.value);
+            if (isNaN(val)) val = 10;
+            var maxVal = parseInt(customInput.max);
+            if (!isNaN(maxVal) && val > maxVal) val = maxVal;
+            if (val < 1) val = 1;
+            customCount = val;
+            selectedCount = val;
+            customInput.value = val;
+            document.getElementById('count-10').classList.remove('active');
+            document.getElementById('count-20').classList.remove('active');
+            if (document.getElementById('count-36')) document.getElementById('count-36').classList.remove('active');
+        });
     }
-    saveUserData();
-    updateSettingsUnlockStatus();
-    renderPractice();
-    renderMyMistakes();
-    renderPastMistakes();
-    renderPinned();
-    renderHistory();
-    renderAchievements();
-    alert('🔓 所有難度已解鎖！');
-}
+
+    // ✅ 開始練習按鈕
+    document.getElementById('startPracticeBtn').addEventListener('click', function() {
+        console.log('✅ 開始練習按鈕被點擊');
+        if (window._singleRedoQid) {
+            var qid = window._singleRedoQid;
+            window._singleRedoQid = null;
+            var unit = pendingUnit, chapter = pendingChapter;
+            var allQs = window.ALL_UNITS[unit].chapters[chapter].questions;
+            var targetQ = allQs.find(function(q) { return q.id === qid; });
+            if (targetQ) {
+                currentUnit = unit;
+                currentChapter = chapter;
+                currentQuestions = [targetQ];
+                currentOptionsMapping = currentQuestions.map(function(q) {
+                    var letters = ['A', 'B', 'C', 'D'], map = {};
+                    for (var i = 0; i < 4; i++) { var optText = q.options[i].substring(3); map[letters[i]] = optText; }
+                    return { letterToText: map, correctLetter: q.correct };
+                });
+                currentAnswers = new Array(1).fill(null);
+                currentQIndex = 0;
+                timeRemaining = 90;
+                updateTimerDisplay();
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(function() {
+                    if (timeRemaining <= 0) submitAll();
+                    else { timeRemaining--; updateTimerDisplay(); }
+                }, 1000);
+                document.getElementById('settingsModal').style.display = 'none';
+                showQuizModal();
+            }
+        } else {
+            startPracticeWithSettings();
+        }
+    });
+
+    // 取消
+    document.getElementById('cancelSettingsBtn').addEventListener('click', function() {
+        document.getElementById('settingsModal').style.display = 'none';
+    });
+
+    // 關閉題解
+    document.getElementById('closeExplainBtn').addEventListener('click', function() {
+        document.getElementById('explainModal').style.display = 'none';
+        if (lastResults) displayResults(lastResults);
+    });
+
+    // 提交答案（手機版）
+    document.getElementById('submitAllBtn').addEventListener('click', function() {
+        submitAll();
+    });
+
+    // 關閉結果
+    document.getElementById('closeResultBtn').addEventListener('click', function() {
+        document.getElementById('resultModal').style.display = 'none';
+    });
+    document.getElementById('closeZoomBtn').addEventListener('click', closeImageZoom);
+
+    // 上一題 / 下一題（手機版）
+    document.getElementById('prevBtn').addEventListener('click', function() {
+        if (currentQIndex > 0) {
+            currentQIndex--;
+            renderQuizNav();
+            renderCurrentQuestion();
+            updateNavButtons();
+        }
+    });
+    document.getElementById('nextBtn').addEventListener('click', function() {
+        if (currentQIndex < currentQuestions.length - 1) {
+            currentQIndex++;
+            renderQuizNav();
+            renderCurrentQuestion();
+            updateNavButtons();
+        }
+    });
+
+    // 桌面版按鈕
+    var desktopSubmitBtn = document.getElementById('desktopSubmitBtn');
+    if (desktopSubmitBtn) {
+        desktopSubmitBtn.addEventListener('click', submitAll);
+    }
+    var desktopPrevBtn = document.getElementById('desktopPrevBtn');
+    var desktopNextBtn = document.getElementById('desktopNextBtn');
+    if (desktopPrevBtn) {
+        desktopPrevBtn.addEventListener('click', function() {
+            if (currentQIndex > 0) {
+                currentQIndex--;
+                renderQuizNav();
+                renderCurrentQuestion();
+                updateNavButtons();
+                var desktopNav = document.getElementById('desktopNav');
+                if (desktopNav) renderDesktopQuizNav();
+            }
+        });
+    }
+    if (desktopNextBtn) {
+        desktopNextBtn.addEventListener('click', function() {
+            if (currentQIndex < currentQuestions.length - 1) {
+                currentQIndex++;
+                renderQuizNav();
+                renderCurrentQuestion();
+                updateNavButtons();
+                var desktopNav = document.getElementById('desktopNav');
+                if (desktopNav) renderDesktopQuizNav();
+            }
+        });
+    }
+    var desktopPeriodicBtn = document.getElementById('desktopPeriodicBtn');
+    if (desktopPeriodicBtn) {
+        desktopPeriodicBtn.addEventListener('click', showPeriodicTable);
+    }
+
+    console.log('✅ 所有按鈕事件已綁定');
+});
 
 console.log('✅ practice.js 已載入（最終版 - 單一彈窗）');
