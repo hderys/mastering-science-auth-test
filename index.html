@@ -989,21 +989,22 @@
             <button id="submitAllBtn" class="btn" style="background:#10b981;">提交並離開</button>
         </div>
 
-        <!-- ===== 桌面版側邊欄（橫置時顯示） ===== -->
-        <div class="sidebar" id="desktopSidebar">
+        <!-- ===== 手機版側邊欄（橫置時顯示） ===== -->
+        <!-- 注意：手機版使用 mobileNav，避免與桌面版衝突 -->
+        <div class="sidebar" id="mobileSidebar">
             <div class="sidebar-row-1">
-                <span class="difficulty" id="desktopDifficulty">📈 Advanced</span>
-                <span class="timer" id="desktopTimer">⏱️ 00:00</span>
+                <span class="difficulty" id="mobileDifficulty">📈 Advanced</span>
+                <span class="timer" id="mobileTimer">⏱️ 00:00</span>
             </div>
             <div class="sidebar-row-2">
-                <button class="table-btn" id="desktopPeriodicBtn">開啟周期表</button>
-                <span class="counter" id="desktopCounter">1 / 10</span>
+                <button class="table-btn" id="mobilePeriodicBtn">開啟周期表</button>
+                <span class="counter" id="mobileCounter">1 / 10</span>
             </div>
-            <div class="nav-grid" id="desktopNav"></div>
+            <div class="nav-grid" id="mobileNav"></div>
             <div class="sidebar-actions">
-                <button class="btn btn-prev" id="desktopPrevBtn">◀</button>
-                <button class="btn btn-next" id="desktopNextBtn">▶</button>
-                <button class="btn btn-submit" id="desktopSubmitBtn">提交並離開</button>
+                <button class="btn btn-prev" id="mobilePrevBtn">◀</button>
+                <button class="btn btn-next" id="mobileNextBtn">▶</button>
+                <button class="btn btn-submit" id="mobileSubmitBtn">提交並離開</button>
             </div>
         </div>
 
