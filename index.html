@@ -3,58 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>測試版 - Mastering Science</title>
+    <title>測試 - 練習設定 + 橫置</title>
     <link rel="stylesheet" href="style.css">
     <style>
         /* ===== 基礎樣式 ===== */
-        .form-group-login {
-            margin-bottom: 14px;
+        body {
+            background: #f5f0ff;
+            font-family: system-ui, sans-serif;
+            padding: 12px;
+            margin: 0;
+            min-height: 100vh;
         }
-        .form-group-login label {
-            display: block;
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: #2e0f5a;
-            margin-bottom: 4px;
-        }
-        .form-group-login input {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: 40px;
-            border: 2px solid #e0d6f5;
-            font-size: 1rem;
-            outline: none;
-        }
-        .form-group-login input:focus {
-            border-color: #4a1d8c;
-        }
-        .password-wrapper {
-            position: relative;
-        }
-        .password-wrapper input {
-            padding-right: 48px;
-        }
-        .toggle-password-btn {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: #888;
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         .btn {
             border: none;
             background: #4a1d8c;
             color: white;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 40px;
             font-weight: 600;
             cursor: pointer;
-            font-size: 1rem;
-            width: 100%;
+            font-size: 0.85rem;
         }
         .btn:hover {
             background: #3b1a6e;
@@ -63,142 +38,74 @@
             background: white;
             color: #4a1d8c;
             border: 1px solid #4a1d8c;
-            width: auto;
         }
         .btn-outline:hover {
             background: #f5f0ff;
         }
-        .card {
-            background: white;
-            border-radius: 24px;
-            padding: 2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        body {
-            background: #f5f0ff;
-            font-family: system-ui, sans-serif;
-            padding: 12px;
-            min-height: 100vh;
-            margin: 0;
-        }
-        #loginScreen {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            max-width: 400px;
-            width: 90%;
-            margin: 0 !important;
-            max-height: 95vh;
-            overflow-y: auto;
-        }
-        #loginError {
-            color: #dc2626;
-            font-size: 0.85rem;
-            margin-bottom: 8px;
-            display: none;
-        }
 
-        /* 手機版 */
-        @media (max-width: 640px) {
-            #loginScreen {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                max-width: 380px;
-                width: 92%;
-                margin: 0 !important;
-                max-height: 95vh;
-                overflow-y: auto;
-                padding: 1.2rem;
-            }
-            /* 手機版設定彈窗垂直排列 */
-            .settings-two-columns {
-                flex-direction: column !important;
-                gap: 0.5rem !important;
-            }
-            .settings-left, .settings-right {
-                width: 100% !important;
-            }
-            .count-row {
-                grid-template-columns: 1fr !important;
-                gap: 8px !important;
-            }
-            .custom-input-wrapper {
-                justify-content: center;
-            }
-        }
-
-        /* ===== 主程式 ===== */
-        #mainApp { display: none; }
-        .nav-tabs { display: flex; gap: 0.3rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
-        .tab {
-            background: none; border: none; padding: 0.3rem 0.7rem;
-            font-weight: 600; cursor: pointer;
-            border-radius: 40px; font-size: clamp(0.65rem, 3.5vw, 0.8rem);
-        }
-        .tab.active { background: #4a1d8c; color: white; }
-        #userLabel { font-size: clamp(0.7rem, 4vw, 0.85rem); }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            justify-content: center;
+        /* ===== 練習頁面 ===== */
+        .unit-header {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            z-index: 9999;
-            padding: 20px;
-        }
-        .modal-overlay.show { display: flex; }
-        .modal-box {
-            background: white;
-            border-radius: 24px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 85vh;
-            overflow-y: auto;
-            padding: 24px 28px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            position: relative;
-        }
-        .modal-box .close-btn {
-            position: absolute;
-            top: 12px;
-            right: 16px;
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
-        .modal-box h2 { color: #2e0f5a; margin-bottom: 4px; font-size: 20px; }
-        .modal-box .sub { color: #888; font-size: 14px; margin-bottom: 16px; }
-        .modal-box .form-group { margin-bottom: 12px; }
-        .modal-box .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: #2e0f5a;
-            margin-bottom: 3px;
-        }
-        .modal-box .form-group input {
-            width: 100%;
-            padding: 10px 14px;
+            padding: 8px 12px;
+            background: #f3f0ff;
             border-radius: 12px;
-            border: 2px solid #e0d6f5;
-            font-size: 14px;
-            outline: none;
+            margin: 6px 0 2px 0;
+            cursor: pointer;
+            border-left: 4px solid #4a1d8c;
         }
-        .modal-box .btn-primary { background: #4a1d8c; color: white; }
-        .modal-box .btn-success { background: #10b981; color: white; }
-        .modal-box .btn-outline { background: white; color: #4a1d8c; border: 2px solid #4a1d8c; }
-        .modal-box .inline-flex { display: flex; gap: 8px; }
-        .modal-box .inline-flex .btn { flex: 1; }
-        .mt-8 { margin-top: 8px; }
-        .hidden { display: none !important; }
+        .unit-header:hover {
+            background: #ede9fe;
+        }
+        .unit-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #2e0f5a;
+            font-size: 0.95rem;
+        }
+        .unit-header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .unit-toggle {
+            font-size: 0.7rem;
+            color: #4a1d8c;
+            transition: transform 0.2s ease;
+        }
+        .unit-toggle.open {
+            transform: rotate(90deg);
+        }
+        .chapters-container {
+            margin-left: 1.5rem;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease;
+        }
+        .chapters-container.open {
+            max-height: 500px;
+        }
+        .chapter-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            margin-bottom: 3px;
+            background: #f9f7ff;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+        .chapter-item:hover {
+            background: #ede9fe;
+            transform: translateX(4px);
+        }
+        .chapter-name {
+            font-size: 0.85rem;
+            color: #2e0f5a;
+        }
 
         /* ===== 設定彈窗 ===== */
         .modal {
@@ -210,6 +117,9 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+        }
+        .modal.show {
+            display: flex;
         }
         .modal-content {
             background: white;
@@ -244,6 +154,14 @@
             color: #2e0f5a;
             margin-bottom: 0.3rem;
         }
+        .difficulty-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
         .btn-row {
             display: flex;
             gap: 0.5rem;
@@ -274,6 +192,21 @@
             cursor: not-allowed;
             background: #f0f0f0;
         }
+        .special-btn {
+            background: #dc2626;
+            border: none;
+            color: white;
+            width: 100%;
+            text-align: center;
+            padding: 0.3rem;
+            font-weight: bold;
+            border-radius: 60px;
+        }
+        .special-btn.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #aaa;
+        }
         .action-btn-full {
             background: linear-gradient(135deg, #4a1d8c, #7c3aed);
             color: white;
@@ -295,6 +228,17 @@
             font-size: clamp(0.75rem, 3.5vw, 0.85rem);
             cursor: pointer;
             width: 100%;
+        }
+        .dev-btn-full {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 0.3rem 0.5rem;
+            font-size: clamp(0.7rem, 3.5vw, 0.75rem);
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 0.3rem;
         }
         .count-buttons-row {
             display: grid;
@@ -318,6 +262,11 @@
             border: 1px solid #e0d6f5;
             white-space: nowrap;
         }
+        .custom-input-wrapper span {
+            font-size: 0.75rem;
+            color: #4a1d8c;
+            font-weight: 500;
+        }
         .custom-input-wrapper input {
             width: 60px;
             padding: 6px 4px;
@@ -329,13 +278,60 @@
             font-weight: 500;
             color: #4a1d8c;
         }
+        .custom-input-wrapper input:disabled {
+            background: #f0f0f0;
+            color: #999;
+        }
         .setting-hint {
             font-size: clamp(0.55rem, 2.5vw, 0.6rem);
             color: #999;
             margin-top: 0.2rem;
         }
 
-        /* ===== 問題彈窗 ===== */
+        /* ===== 手機版設定 ===== */
+        @media (max-width: 640px) {
+            .settings-two-columns {
+                flex-direction: column !important;
+                gap: 0.5rem !important;
+            }
+            .settings-left, .settings-right {
+                width: 100% !important;
+            }
+            .count-row {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 8px !important;
+            }
+            .count-row .setting-btn {
+                width: 100%;
+                text-align: center;
+            }
+            .custom-input-wrapper {
+                justify-content: center;
+                width: 100%;
+            }
+            .settings-right > div:last-child {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 4px;
+                margin-top: 0.1rem;
+            }
+            .settings-right > div:last-child .dev-btn-full,
+            .settings-right > div:last-child .action-btn-full,
+            .settings-right > div:last-child .cancel-btn-full {
+                padding: 0.15rem 0.1rem;
+                font-size: clamp(0.7rem, 2.8vw, 0.85rem) !important;
+                margin-bottom: 0;
+                min-height: 32px;
+                border-radius: 40px;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                line-height: 1;
+            }
+        }
+
+        /* ===== 問題彈窗（手機版） ===== */
         #quizModal .modal-content {
             transition: background-color 0.4s ease;
         }
@@ -364,6 +360,7 @@
         .question-text {
             font-weight: 500;
             word-break: break-word;
+            font-size: 1rem;
         }
         .q-nav-btn {
             width: 28px;
@@ -429,6 +426,21 @@
             font-weight: 600;
             color: #dc2626;
         }
+        .image-area-mobile {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 100%;
+            margin: 4px 0;
+        }
+        .image-area-mobile img {
+            max-height: 130px;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        #periodicTableBtn {
+            display: none;
+        }
 
         /* ===== 手機版底部按鈕 ===== */
         @media (max-width: 640px) {
@@ -466,6 +478,7 @@
                 color: white !important;
                 border: 1px solid rgba(255,255,255,0.3) !important;
                 box-shadow: 0 0 15px rgba(59, 130, 246, 0.3) !important;
+                display: inline-block !important;
             }
             #prevBtn, #nextBtn {
                 flex: 0.6 !important;
@@ -474,617 +487,297 @@
             }
         }
 
-        /* ===== 桌面版 ===== */
-        #desktopQuizModal .modal-content {
-            width: 1000px;
-            max-width: 98%;
-            height: 620px;
-            max-height: 90vh;
-            padding: 0;
-            border-radius: 28px;
-            display: flex;
-            overflow: hidden;
-            background: white;
-            flex-direction: row;
-        }
-        #desktopQuizModal .main-panel {
-            flex: 1;
-            padding: 24px 28px 20px 28px;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            background: #ffffff;
-        }
-        #desktopQuizModal .question-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-        }
-        #desktopQuizModal .question-text {
-            font-size: 18px;
-            font-weight: 600;
-            line-height: 1.5;
-            color: #1a1a2e;
-            margin-bottom: 12px;
-            flex-shrink: 0;
-            word-break: break-word;
-        }
-        #desktopQuizModal .image-area {
-            text-align: center;
-            margin-bottom: 10px;
-            flex-shrink: 0;
-        }
-        #desktopQuizModal .image-area img {
-            max-height: 110px;
-            max-width: 100%;
-            object-fit: contain;
-            border-radius: 8px;
-            border: 1px solid #e9e4f5;
-            padding: 4px;
-            cursor: pointer;
-        }
-        #desktopQuizModal .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            flex: 1;
-            align-content: center;
-            min-height: 0;
-        }
-        #desktopQuizModal .option-btn {
-            background: #faf8ff;
-            border: 2px solid #e0d6f5;
-            border-radius: 12px;
-            padding: 14px 18px;
-            font-size: 15px;
-            font-weight: 500;
-            color: #1e1b4b;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: left;
-            min-height: 44px;
-        }
-        #desktopQuizModal .option-btn.selected {
-            border-color: #4a1d8c;
-            background: #4a1d8c;
-            color: white;
-        }
-        #desktopQuizModal .sidebar {
-            width: 210px;
-            min-width: 170px;
-            background: linear-gradient(145deg, #3b1a6e, #2d0f54);
-            padding: 18px 14px 14px 14px;
-            display: flex;
-            flex-direction: column;
-            border-left: 1px solid rgba(255,255,255,0.08);
-            flex-shrink: 0;
-        }
-        #desktopQuizModal .sidebar-row-1 {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 6px;
-            border-bottom: 1px solid rgba(255,255,255,0.12);
-            flex-shrink: 0;
-        }
-        #desktopQuizModal .sidebar-row-1 .difficulty {
-            font-size: 13px;
-            font-weight: 600;
-            color: #ffffff;
-        }
-        #desktopQuizModal .sidebar-row-1 .timer {
-            font-size: 14px;
-            font-weight: 600;
-            color: #fca5a5;
-        }
-        #desktopQuizModal .sidebar-row-2 {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.12);
-            flex-shrink: 0;
-        }
-        #desktopQuizModal .sidebar-row-2 .table-btn {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 30px;
-            padding: 4px 14px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #ffffff;
-            cursor: pointer;
-        }
-        #desktopQuizModal .sidebar-row-2 .counter {
-            font-size: 15px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-        #desktopQuizModal .nav-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 3px;
-            padding: 10px 0 8px 0;
-            flex: 1;
-            align-content: flex-start;
-            min-height: 0;
-            overflow-y: auto;
-            border-bottom: 1px solid rgba(255,255,255,0.12);
-            margin-bottom: 8px;
-        }
-        #desktopQuizModal .nav-dot {
-            border-radius: 50%;
-            background: rgba(255,255,255,0.15);
-            border: none;
-            font-weight: 600;
-            color: #c4b5d4;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            width: 24px;
-            height: 24px;
-            font-size: 9px;
-        }
-        #desktopQuizModal .nav-dot.current {
-            background: #8b5cf6;
-            color: white;
-            box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
-        }
-        #desktopQuizModal .nav-dot.answered {
-            background: #34d399;
-            color: white;
-        }
-        #desktopQuizModal .nav-dot.unanswered {
-            background: #fbbf24;
-            color: #7c5a00;
-        }
-        #desktopQuizModal .sidebar-actions {
-            display: flex;
-            gap: 4px;
-            flex-shrink: 0;
-        }
-        #desktopQuizModal .sidebar-actions .btn {
-            flex: 1;
-            padding: 6px 4px;
-            border: none;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-            text-align: center;
-            min-height: 28px;
-        }
-        #desktopQuizModal .btn-prev {
-            background: #ffffff;
-            color: #4a1d8c;
-        }
-        #desktopQuizModal .btn-next {
-            background: #ffffff;
-            color: #4a1d8c;
-        }
-        #desktopQuizModal .btn-submit {
-            background: #10b981;
-            color: white;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        /* ===== 結果彈窗 ===== */
-        .result-container { overflow-y: auto; max-height: 60vh; }
-        .result-summary-bar {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #e9e4f5, #f9f7ff);
-            padding: 12px 16px;
-            border-radius: 40px;
-        }
-        .result-progress {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-            flex-wrap: wrap;
-        }
-        .result-progress span {
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .big-progress-bar {
-            flex: 1;
-            min-width: 150px;
-            height: 24px;
-            background: #ddd;
-            border-radius: 30px;
-            overflow: hidden;
-        }
-        .big-progress-fill {
-            height: 100%;
-            width: 0%;
-            border-radius: 30px;
-            transition: width 0.3s ease;
-        }
-        .result-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .result-buttons .btn {
-            padding: 6px 14px;
-            font-size: 0.8rem;
-            width: auto;
-        }
-        .results-card-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-top: 16px;
-        }
-        .result-card {
-            background: white;
-            border-radius: 20px;
-            padding: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            border-left: 6px solid #ddd;
-        }
-        .result-card.correct { border-left-color: #10b981; }
-        .result-card.wrong { border-left-color: #dc2626; }
-        .result-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-            gap: 12px;
-        }
-        .result-card-question {
-            font-weight: 600;
-            font-size: 1rem;
-            flex: 1;
-            word-break: break-word;
-        }
-        .result-card-icon { font-size: 1.5rem; flex-shrink: 0; }
-        .result-card-details {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin: 12px 0;
-            padding: 10px 0;
-            border-top: 1px solid #e9e4f5;
-            border-bottom: 1px solid #e9e4f5;
-        }
-        .result-card-details span {
-            background: #f5f0ff;
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            color: #4a1d8c;
-            font-weight: 500;
-        }
-        .result-card-actions {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 8px;
-        }
-        .result-card-actions button {
-            background: #f5f0ff;
-            border: none;
-            color: #4a1d8c;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.85rem;
-            padding: 8px 16px;
-            border-radius: 40px;
-        }
-
-        /* ===== 圖片放大 ===== */
-        #imageZoomModal .modal-content {
-            max-width: 600px;
-            text-align: center;
-            position: relative;
-            padding: 20px;
-        }
-        #imageZoomModal img {
-            max-height: 70vh;
-            max-width: 100%;
-            object-fit: contain;
-        }
-
-        /* ===== 其他 ===== */
-        #userLabel {
-            font-size: clamp(0.7rem, 4vw, 0.85rem);
-            color: #2e0f5a;
-        }
-        .btn-icon {
-            background: none;
-            border: none;
-            font-size: 1rem;
-            cursor: pointer;
-            padding: 4px 6px;
-        }
-        .image-area-mobile {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            max-width: 100%;
-            margin: 4px 0;
-        }
-        .image-area-mobile img {
-            max-height: 130px;
-            max-width: 100%;
-            object-fit: contain;
-        }
-
-        /* ===== 手機橫置模式（項目4a） ===== */
+        /* ============================================================
+           橫置模式：變身桌面版風格（項目4a）
+           ============================================================ */
         @media (max-width: 900px) and (orientation: landscape) {
             #quizModal .modal-content {
-                min-height: 85vh;
-                max-height: 95vh;
-                padding: 0.3rem 0.6rem;
-                flex-direction: row;
-                flex-wrap: wrap;
-                align-content: flex-start;
-            }
-            .quiz-header {
-                width: 100%;
-                order: 0;
-                flex-shrink: 0;
-            }
-            .question-nav {
-                width: 100%;
-                order: 1;
-                flex-shrink: 0;
-                max-height: 40px !important;
-                overflow-y: hidden;
-                gap: 3px;
-            }
-            .q-nav-btn {
-                width: 22px !important;
-                height: 22px !important;
-                font-size: 0.55rem !important;
-            }
-            .quiz-body {
-                flex-direction: row;
-                flex-wrap: wrap;
-                width: 100%;
-                order: 2;
-                gap: 0.3rem;
-                min-height: 0;
-                flex: 1;
-            }
-            .question-text {
-                width: 100%;
-                font-size: clamp(1rem, 2.5vw, 1.2rem) !important;
-                max-height: 20vh;
-                flex-shrink: 0;
-                order: 0;
-                margin-bottom: 0.1rem;
-            }
-            .quiz-layout-mobile {
-                flex-direction: row !important;
-                flex-wrap: wrap;
-                width: 100%;
-                gap: 0.2rem;
-                flex: 1;
-                min-height: 0;
-            }
-            .image-area-mobile {
-                flex: 0 0 35% !important;
-                max-width: 35% !important;
-                max-height: 200px !important;
-                order: 1 !important;
+                width: 1000px;
+                max-width: 98%;
+                height: 620px;
+                max-height: 90vh;
+                padding: 0;
+                border-radius: 28px;
                 display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                padding-right: 0.3rem;
+                overflow: hidden;
+                background: white;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                align-content: stretch !important;
+                min-height: unset !important;
             }
-            .image-area-mobile img {
-                max-height: 160px !important;
+
+            /* 左側主面板 */
+            #quizModal .main-panel {
+                flex: 1;
+                padding: 24px 28px 20px 28px;
+                display: flex !important;
+                flex-direction: column;
+                min-width: 0;
+                background: #ffffff;
+                order: 0;
+                width: auto;
+            }
+
+            #quizModal .question-area {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+            }
+
+            #quizModal .question-text {
+                font-size: 18px !important;
+                font-weight: 600;
+                line-height: 1.5;
+                color: #1a1a2e;
+                margin-bottom: 12px;
+                flex-shrink: 0;
+                max-height: none !important;
+                width: 100%;
+                order: 0;
+            }
+
+            #quizModal .image-area-mobile {
+                text-align: center;
+                margin-bottom: 10px;
+                flex-shrink: 0;
+                flex: 0 0 auto !important;
+                max-width: 100% !important;
+                max-height: 110px !important;
+                order: 1;
+                padding-right: 0;
+            }
+            #quizModal .image-area-mobile img {
+                max-height: 110px !important;
                 max-width: 100%;
                 width: auto;
                 height: auto;
             }
-            .options-area-mobile {
-                flex: 1 1 60% !important;
-                min-width: 0;
-                order: 2 !important;
-                padding-top: 0;
-            }
-            .quiz-layout-mobile .options-area-mobile .options-grid {
+
+            #quizModal .options-grid {
                 display: grid !important;
                 grid-template-columns: 1fr 1fr !important;
-                gap: 6px !important;
-                align-content: flex-start;
-            }
-            .options-area-mobile .option-btn {
-                padding: 0.3rem 0.4rem !important;
-                font-size: clamp(0.8rem, 2.2vw, 0.95rem) !important;
-                min-height: 36px !important;
-                border-radius: 8px !important;
-            }
-            .quiz-footer {
+                gap: 10px !important;
+                flex: 1;
+                align-content: center;
+                min-height: 0;
+                order: 2;
                 width: 100%;
-                order: 3;
+            }
+
+            #quizModal .option-btn {
+                background: #faf8ff;
+                border: 2px solid #e0d6f5;
+                border-radius: 12px;
+                padding: 14px 18px !important;
+                font-size: 15px !important;
+                font-weight: 500;
+                color: #1e1b4b;
+                cursor: pointer;
+                min-height: 44px;
+                text-align: left;
+                margin: 0 !important;
+            }
+            #quizModal .option-btn.selected {
+                border-color: #4a1d8c;
+                background: #4a1d8c;
+                color: white;
+            }
+
+            /* 右側邊欄 */
+            #quizModal .sidebar {
+                width: 210px;
+                min-width: 170px;
+                background: linear-gradient(145deg, #3b1a6e, #2d0f54);
+                padding: 18px 14px 14px 14px;
+                display: flex !important;
+                flex-direction: column;
+                border-left: 1px solid rgba(255,255,255,0.08);
                 flex-shrink: 0;
-                padding: 0.1rem 0;
-                min-height: 34px;
-                gap: 0.3rem;
+                order: 1;
+                height: auto;
+                max-height: none;
+                overflow-y: auto;
             }
-            .quiz-footer .btn {
-                padding: 0.1rem 0.2rem !important;
-                font-size: clamp(0.55rem, 1.8vw, 0.7rem) !important;
-                min-height: 28px !important;
+
+            #quizModal .sidebar-row-1 {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-bottom: 6px;
+                border-bottom: 1px solid rgba(255,255,255,0.12);
+                flex-shrink: 0;
+            }
+            #quizModal .sidebar-row-1 .difficulty {
+                font-size: 13px;
+                font-weight: 600;
+                color: #ffffff;
+            }
+            #quizModal .sidebar-row-1 .timer {
+                font-size: 14px;
+                font-weight: 600;
+                color: #fca5a5;
+            }
+
+            #quizModal .sidebar-row-2 {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 6px 0 10px 0;
+                border-bottom: 1px solid rgba(255,255,255,0.12);
+                flex-shrink: 0;
+            }
+            #quizModal .sidebar-row-2 .table-btn {
+                background: rgba(255,255,255,0.15);
+                border: 1px solid rgba(255,255,255,0.2);
+                border-radius: 30px;
+                padding: 4px 14px;
+                font-size: 12px;
+                font-weight: 600;
+                color: #ffffff;
+                cursor: pointer;
+            }
+            #quizModal .sidebar-row-2 .counter {
+                font-size: 15px;
+                font-weight: 700;
+                color: #ffffff;
+            }
+
+            #quizModal .nav-grid {
+                display: flex !important;
+                flex-wrap: wrap;
+                gap: 3px;
+                padding: 10px 0 8px 0;
+                flex: 1;
+                align-content: flex-start;
+                min-height: 0;
+                overflow-y: auto;
+                border-bottom: 1px solid rgba(255,255,255,0.12);
+                margin-bottom: 8px;
+            }
+            #quizModal .nav-dot {
+                border-radius: 50%;
+                background: rgba(255,255,255,0.15);
+                border: none;
+                font-weight: 600;
+                color: #c4b5d4;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                width: 24px;
+                height: 24px;
+                font-size: 9px;
+            }
+            #quizModal .nav-dot.current {
+                background: #8b5cf6;
+                color: white;
+                box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+            }
+            #quizModal .nav-dot.answered {
+                background: #34d399;
+                color: white;
+            }
+            #quizModal .nav-dot.unanswered {
+                background: #fbbf24;
+                color: #7c5a00;
+            }
+
+            #quizModal .sidebar-actions {
+                display: flex;
+                gap: 4px;
+                flex-shrink: 0;
+            }
+            #quizModal .sidebar-actions .btn {
+                flex: 1;
+                padding: 6px 4px;
+                border: none;
+                border-radius: 30px;
+                font-weight: 600;
+                font-size: 12px;
+                cursor: pointer;
+                text-align: center;
+                min-height: 28px;
+            }
+            #quizModal .btn-prev {
+                background: #ffffff;
+                color: #4a1d8c;
+            }
+            #quizModal .btn-next {
+                background: #ffffff;
+                color: #4a1d8c;
+            }
+            #quizModal .btn-submit {
+                background: #10b981;
+                color: white;
+                font-size: 13px;
+                font-weight: 700;
+            }
+
+            /* 橫置時隱藏手機版元素，顯示桌面版元素 */
+            #quizModal .question-nav {
+                display: none !important;
+            }
+            #quizModal .quiz-footer {
+                display: none !important;
+            }
+            #quizModal .quiz-header {
+                display: none !important;
+            }
+
+            /* 橫置時顯示桌面版元素 */
+            #quizModal .main-panel { display: flex !important; }
+            #quizModal .sidebar { display: flex !important; }
+            #quizModal .nav-grid { display: flex !important; }
+            #quizModal .sidebar-row-1 { display: flex !important; }
+            #quizModal .sidebar-row-2 { display: flex !important; }
+            #quizModal .sidebar-actions { display: flex !important; }
+
+            /* 橫置時圖片區正常顯示 */
+            #quizModal .image-area-mobile {
+                display: flex !important;
             }
         }
 
-        /* ===== 周期表按鈕 - 手機版（項目4c） ===== */
-        @media (max-width: 640px) {
-            #periodicTableBtn {
-                background: linear-gradient(135deg, #3b82f6, #7c3aed) !important;
-                border: 2px solid rgba(255,255,255,0.3) !important;
-                color: white !important;
-                font-weight: 700 !important;
-                padding: 0.2rem 0.5rem !important;
-                font-size: clamp(0.65rem, 2.5vw, 0.8rem) !important;
-                border-radius: 40px !important;
-                box-shadow: 0 0 20px rgba(59, 130, 246, 0.4) !important;
-                flex: 0.8 !important;
-                min-height: 36px !important;
-                transition: all 0.3s ease !important;
-            }
-            #periodicTableBtn:active {
-                transform: scale(0.95);
-                box-shadow: 0 0 30px rgba(59, 130, 246, 0.6) !important;
-            }
+        /* 直置時隱藏桌面版元素 */
+        @media (max-width: 900px) and (orientation: portrait) {
+            #quizModal .main-panel { display: none !important; }
+            #quizModal .sidebar { display: none !important; }
+            #quizModal .nav-grid { display: none !important; }
+            #quizModal .sidebar-row-1 { display: none !important; }
+            #quizModal .sidebar-row-2 { display: none !important; }
+            #quizModal .sidebar-actions { display: none !important; }
+
+            #quizModal .question-nav { display: flex !important; }
+            #quizModal .quiz-footer { display: flex !important; }
+            #quizModal .quiz-header { display: flex !important; }
         }
 
-        /* ===== 周期表按鈕 - 桌面版（項目4c） ===== */
-        @media (min-width: 641px) {
-            #desktopQuizModal .sidebar-row-2 .table-btn {
-                background: linear-gradient(135deg, #3b82f6, #7c3aed) !important;
-                border: 2px solid rgba(255,255,255,0.3) !important;
-                color: white !important;
-                font-weight: 700 !important;
-                padding: 6px 18px !important;
-                font-size: 13px !important;
-                border-radius: 40px !important;
-                box-shadow: 0 0 20px rgba(59, 130, 246, 0.3) !important;
-                transition: all 0.3s ease !important;
-            }
-            #desktopQuizModal .sidebar-row-2 .table-btn:hover {
-                transform: scale(1.05);
-                box-shadow: 0 0 35px rgba(59, 130, 246, 0.5) !important;
-            }
-            #desktopQuizModal .sidebar-row-2 .table-btn:active {
-                transform: scale(0.95);
-            }
-        }
-
-        /* ===== 練習頁面佈局（項目16） ===== */
-        .unit-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            background: #f3f0ff;
-            border-radius: 12px;
-            margin: 6px 0 2px 0;
-            cursor: pointer;
-            transition: background 0.2s ease;
-            border-left: 4px solid #4a1d8c;
-        }
-        .unit-header:hover {
-            background: #ede9fe;
-        }
-        .unit-header-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: #2e0f5a;
-            font-size: 0.95rem;
-        }
-        .unit-header-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .unit-toggle {
-            font-size: 0.7rem;
-            color: #4a1d8c;
-            transition: transform 0.2s ease;
-        }
-        .unit-toggle.open {
-            transform: rotate(90deg);
-        }
-
-        /* 章節容器 - 預設隱藏 */
-        .chapters-container {
-            margin-left: 1.5rem;
-            overflow: hidden;
-            max-height: 0;
-            transition: max-height 0.3s ease;
-        }
-        .chapters-container.open {
-            max-height: 500px;
-        }
-
-        .chapter-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 12px;
-            margin-bottom: 3px;
-            background: #f9f7ff;
-            border-radius: 10px;
-            transition: all 0.2s ease;
-        }
-        .chapter-item:hover {
-            background: #ede9fe;
-            transform: translateX(4px);
-        }
-        .chapter-name {
-            font-size: 0.85rem;
-            color: #2e0f5a;
+        /* 桌面版（>900px）隱藏手機版元素，顯示桌面版 */
+        @media (min-width: 901px) {
+            #quizModal .question-nav { display: none !important; }
+            #quizModal .quiz-footer { display: none !important; }
+            #quizModal .quiz-header { display: none !important; }
+            #quizModal .main-panel { display: flex !important; }
+            #quizModal .sidebar { display: flex !important; }
+            #quizModal .nav-grid { display: flex !important; }
+            #quizModal .sidebar-row-1 { display: flex !important; }
+            #quizModal .sidebar-row-2 { display: flex !important; }
+            #quizModal .sidebar-actions { display: flex !important; }
         }
     </style>
 </head>
 <body>
 
-<!-- ===== 登入畫面 ===== -->
-<div id="loginScreen" class="card">
-    <h2 style="color: #4a1d8c; font-size: clamp(1.2rem, 6vw, 1.6rem);">🧪 Mastering Science</h2>
-    <div style="margin: 8px 0 16px;">
-        <div>一步步掌握科學概念</div>
-        <div>Master science, one step at a time</div>
-    </div>
-    <div id="loginError"></div>
-    <div class="form-group-login">
-        <label for="loginUserId">登入 ID（學號）</label>
-        <!-- ✅ 項目1：移除 VIP 示例 -->
-        <input type="text" id="loginUserId" placeholder="例如：20240001">
-    </div>
-    <div class="form-group-login">
-        <label for="loginPassword">密碼</label>
-        <div class="password-wrapper">
-            <input type="password" id="loginPassword" placeholder="請輸入密碼">
-            <button type="button" class="toggle-password-btn" id="togglePasswordBtn">👁️</button>
-        </div>
-    </div>
-    <div style="display:flex; align-items:center; gap:8px; margin:12px 0 16px 0;">
-        <input type="checkbox" id="rememberMeCheckbox" style="width:16px; height:16px; cursor:pointer;">
-        <label for="rememberMeCheckbox" style="font-size:0.85rem; color:#2e0f5a; cursor:pointer;">🔒 記住我</label>
-    </div>
-    <button class="btn" id="loginBtn" style="width:100%; padding:12px; font-size:1rem;">🔒 登入</button>
-    <div style="margin-top:14px; text-align:center; font-size:0.8rem; color:#999;">
-        <span>第一次登入？請向老師索取初始密碼</span>
-    </div>
-</div>
-
-<!-- ===== 主程式 ===== -->
-<div id="mainApp" style="display:none;">
+<!-- ===== 練習頁面（無登入） ===== -->
+<div id="mainApp">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem; flex-wrap:wrap; gap:0.4rem;">
-        <h1 style="color: #4a1d8c; font-size: clamp(1.1rem, 6vw, 1.4rem);">📘 Mastering Science</h1>
-        <span id="userLabel"></span>
-    </div>
-    <div class="nav-tabs">
-        <button class="tab active" data-tab="practice">📖 練習</button>
-        <button class="tab" data-tab="myMistakes">❌ 我的錯題</button>
-        <button class="tab" data-tab="pinned">⭐ 收藏</button>
-        <button class="tab" data-tab="history">📋 做題紀錄</button>
-        <button class="tab" data-tab="achievements">🏆 我的成就</button>
-        <button class="tab" data-tab="teacher" id="teacherTab" style="display:none;">🧑‍🏫 老師後台</button>
+        <h1 style="color: #4a1d8c; font-size: clamp(1.1rem, 6vw, 1.4rem);">📘 Mastering Science（測試）</h1>
+        <span style="font-size:0.8rem; color:#888;">無登入 · 直接測試</span>
     </div>
     <div id="practicePanel"></div>
-    <div id="myMistakesPanel" style="display:none;"></div>
-    <div id="pinnedPanel" style="display:none;"></div>
-    <div id="historyPanel" style="display:none;"></div>
-    <div id="achievementsPanel" style="display:none;"></div>
-    <div id="teacherPanel" style="display:none;"></div>
 </div>
 
 <!-- ===== 設定彈窗 ===== -->
@@ -1094,13 +787,25 @@
         <div class="settings-two-columns">
             <div class="settings-left">
                 <div class="setting-group">
-                    <div class="setting-title">⭐ 難度偏好</div>
+                    <div class="difficulty-header-row">
+                        <span class="setting-title" style="margin-bottom: 0;">⭐ 難度偏好</span>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.7rem; font-weight: normal;">
+                            <input type="checkbox" id="excludeTranslate" checked style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
+                            <span>排除翻譯題</span>
+                        </label>
+                    </div>
                     <div class="btn-row" id="difficultySelector">
-                        <button id="diff-easy" class="setting-btn active"><span>★</span><span>1 星</span></button>
-                        <button id="diff-medium" class="setting-btn locked"><span>★★★</span><span>3 星 🔒</span></button>
-                        <button id="diff-hard" class="setting-btn locked"><span>★★★★★</span><span>5 星 🔒</span></button>
+                        <button id="diff-easy" class="setting-btn active"><span class="stars">★</span><span class="label">1 星</span></button>
+                        <button id="diff-medium" class="setting-btn locked"><span class="stars">★★★</span><span class="label">3 星 🔒</span></button>
+                        <button id="diff-hard" class="setting-btn locked"><span class="stars">★★★★★</span><span class="label">5 星 🔒</span></button>
                     </div>
                     <div class="setting-hint" id="diffHint">🔒 3星需Basic正確率達80%解鎖</div>
+                </div>
+                <div class="setting-group">
+                    <div class="setting-title">🔥 特殊模式</div>
+                    <!-- ✅ 5** 試煉模式按鈕存在 -->
+                    <button id="trial-mode" class="special-btn locked">🔥 5** 試煉模式 🔒</button>
+                    <div class="setting-hint" id="trialHint">🔒 需5星正確率達80%解鎖</div>
                 </div>
             </div>
             <div class="settings-right">
@@ -1110,6 +815,7 @@
                         <button id="count-10" class="setting-btn active" data-count="10">10 題</button>
                         <button id="count-20" class="setting-btn" data-count="20">20 題</button>
                     </div>
+                    <!-- ✅ 36題 和 自訂輸入框 水平排列 -->
                     <div class="count-row">
                         <button id="count-36" class="setting-btn locked" data-count="36" disabled>36 題 🔒</button>
                         <div class="custom-input-wrapper">
@@ -1121,6 +827,7 @@
                     <div class="setting-hint" id="countHint">🔒 36題及自訂題數需Basic正確率達80%解鎖</div>
                 </div>
                 <div>
+                    <button id="devUnlockBtn" class="dev-btn-full">🔓 一鍵解鎖 (僅測試)</button>
                     <button id="startPracticeBtn" class="action-btn-full">開始練習</button>
                     <button id="cancelSettingsBtn" class="cancel-btn-full">取消</button>
                 </div>
@@ -1129,48 +836,37 @@
     </div>
 </div>
 
-<!-- ===== 手機版問題彈窗 ===== -->
+<!-- ===== 問題彈窗（手機版 + 橫置變桌面版） ===== -->
 <div id="quizModal" class="modal">
     <div class="modal-content">
+
+        <!-- 手機版標題（直置時顯示） -->
         <div class="quiz-header">
             <span id="quizDifficulty"></span>
             <span id="quizCounter"></span>
             <span id="timerDisplay" class="quiz-timer">00:00</span>
         </div>
-        <div id="questionNav" class="question-nav"></div>
-        <div class="quiz-body">
-            <div id="modalQuestionText" class="question-text"></div>
-            <div id="modalImageArea" class="image-area-mobile"></div>
-            <div id="modalOptions" class="options-grid"></div>
-        </div>
-        <div class="quiz-footer">
-            <button id="prevBtn" class="btn btn-outline">◀ 上一題</button>
-            <!-- ✅ 項目4c：改為「開啟周期表」，移除📊 -->
-            <button id="periodicTableBtn" class="btn btn-outline" style="display:none;">開啟周期表</button>
-            <button id="nextBtn" class="btn btn-outline">下一題 ▶</button>
-            <button id="submitAllBtn" class="btn" style="background:#10b981;">提交並離開</button>
-        </div>
-    </div>
-</div>
 
-<!-- ===== 桌面版問題彈窗 ===== -->
-<div id="desktopQuizModal" class="modal">
-    <div class="modal-content">
-        <div class="main-panel" id="desktopMainPanel">
+        <!-- 手機版導航（直置時顯示） -->
+        <div id="questionNav" class="question-nav"></div>
+
+        <!-- 主內容區（橫置時變左側面板） -->
+        <div class="main-panel" id="mainPanel">
             <div class="question-area">
-                <div class="question-text" id="desktopQuestionText">載入中...</div>
-                <div class="image-area" id="desktopImageArea"></div>
-                <div class="options-grid" id="desktopOptions"></div>
+                <div id="modalQuestionText" class="question-text">載入中...</div>
+                <div id="modalImageArea" class="image-area-mobile"></div>
+                <div id="modalOptions" class="options-grid"></div>
             </div>
         </div>
+
+        <!-- 橫置時顯示的側邊欄 -->
         <div class="sidebar" id="desktopSidebar">
             <div class="sidebar-row-1">
                 <span class="difficulty" id="desktopDifficulty">📈 Advanced</span>
                 <span class="timer" id="desktopTimer">⏱️ 00:00</span>
             </div>
             <div class="sidebar-row-2">
-                <!-- ✅ 項目4c：改為「開啟周期表」，移除📊 -->
-                <button class="table-btn" id="desktopPeriodicBtn">開啟周期表</button>
+                <button class="table-btn" id="desktopPeriodicBtn">📊 周期表</button>
                 <span class="counter" id="desktopCounter">1 / 10</span>
             </div>
             <div class="nav-grid" id="desktopNav"></div>
@@ -1180,6 +876,15 @@
                 <button class="btn btn-submit" id="desktopSubmitBtn">提交並離開</button>
             </div>
         </div>
+
+        <!-- 手機版底部（直置時顯示） -->
+        <div class="quiz-footer">
+            <button id="prevBtn" class="btn btn-outline">◀ 上一題</button>
+            <button id="periodicTableBtn" class="btn btn-outline">開啟周期表</button>
+            <button id="nextBtn" class="btn btn-outline">下一題 ▶</button>
+            <button id="submitAllBtn" class="btn" style="background:#10b981;">提交並離開</button>
+        </div>
+
     </div>
 </div>
 
@@ -1192,22 +897,8 @@
     </div>
 </div>
 
-<!-- ===== 圖片放大彈窗 ===== -->
-<div id="imageZoomModal" class="modal">
-    <div class="modal-content">
-        <button onclick="closeImageZoom()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666; position:absolute; top:10px; right:16px; z-index:10;">✕</button>
-        <img id="zoomImage" src="" style="width:100%; max-height:70vh; object-fit:contain;">
-        <button id="closeZoomBtn" class="btn" style="width:auto; margin:0.8rem auto 0 auto; padding:8px 30px;">關閉</button>
-    </div>
-</div>
-
-<!-- ===== 狀態指示燈 ===== -->
-<div id="statusIndicator" style="position:fixed; bottom:20px; right:20px; z-index:99999; display:flex; align-items:center; gap:8px;">
-    <span id="statusDot" style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#f59e0b;"></span>
-    <span id="statusText" style="font-size:0.7rem; color:#666;">連線中...</span>
-</div>
-
 <script>
+// ===== 模擬題庫 =====
 window.ALL_UNITS = {
     "2": {
         "name": "⚛️ Microscopic World I",
@@ -1230,29 +921,401 @@ window.ALL_UNITS = {
         }
     }
 };
+
+// ===== 全域變量 =====
+var currentQuestions = [];
+var currentAnswers = [];
+var currentQIndex = 0;
+var timerInterval = null;
+var timeRemaining = 0;
+var pendingUnit = null;
+var pendingChapter = null;
+
+// ===== 渲染練習頁面 =====
+function renderPractice() {
+    var container = document.getElementById('practicePanel');
+    if (!container) return;
+    var html = '<div class="card"><h3>📖 選擇單元練習</h3>';
+
+    for (var unit in window.ALL_UNITS) {
+        var unitObj = window.ALL_UNITS[unit];
+        html += '<div class="unit-header" data-unit="' + unit + '" onclick="toggleUnit(\'' + unit + '\')">';
+        html += '  <div class="unit-header-left">';
+        html += '    <span class="unit-toggle" id="toggle-' + unit + '">▶</span>';
+        html += '    <span>' + unitObj.name + '</span>';
+        html += '  </div>';
+        html += '  <div class="unit-header-right">';
+        html += '    <button class="btn unit-test-btn" data-unit="' + unit + '" style="padding:2px 10px; font-size:0.7rem; background:#f59e0b; color:white; border:none; border-radius:40px; cursor:pointer;">📝 單元測驗</button>';
+        html += '  </div>';
+        html += '</div>';
+
+        html += '<div class="chapters-container" id="chapters-' + unit + '">';
+        for (var ch in unitObj.chapters) {
+            var chObj = unitObj.chapters[ch];
+            html += '<div class="chapter-item">';
+            html += '  <span class="chapter-name">' + chObj.name + ' (' + chObj.questions.length + ' 題)</span>';
+            html += '  <button class="btn practice-chapter" data-unit="' + unit + '" data-chapter="' + ch + '" style="padding:4px 12px; font-size:0.75rem;">✏️ 練習</button>';
+            html += '</div>';
+        }
+        html += '</div>';
+    }
+    html += '</div>';
+    container.innerHTML = html;
+
+    // 練習按鈕
+    document.querySelectorAll('.practice-chapter').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            pendingUnit = btn.dataset.unit;
+            pendingChapter = btn.dataset.chapter;
+            showSettingsModal();
+        });
+    });
+
+    // 單元測驗按鈕
+    document.querySelectorAll('.unit-test-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var unit = btn.dataset.unit;
+            var unitObj = window.ALL_UNITS[unit];
+            var unitName = unitObj ? unitObj.name : '單元 ' + unit;
+            var confirmMsg = '📝 確認開始單元測驗？\n\n你即將挑戰【' + unitName + '】的單元測驗，共 36 題。\n\n⏱️ 每題限時 90 秒\n📊 完成後會顯示 DSE 等級預測\n\n準備好了嗎？';
+            if (confirm(confirmMsg)) {
+                startUnitTest(unit);
+            }
+        });
+    });
+}
+
+function toggleUnit(unit) {
+    var container = document.getElementById('chapters-' + unit);
+    var toggle = document.getElementById('toggle-' + unit);
+    if (container) {
+        container.classList.toggle('open');
+        if (toggle) toggle.classList.toggle('open');
+    }
+}
+
+// ===== 顯示設定彈窗 =====
+function showSettingsModal() {
+    document.getElementById('settingsModal').classList.add('show');
+}
+
+document.getElementById('cancelSettingsBtn').addEventListener('click', function() {
+    document.getElementById('settingsModal').classList.remove('show');
+});
+
+// ===== 開始練習 =====
+document.getElementById('startPracticeBtn').addEventListener('click', function() {
+    var unit = pendingUnit;
+    var chapter = pendingChapter;
+    if (!unit || !chapter) {
+        alert('請先選擇一個章節');
+        return;
+    }
+    var allQuestions = window.ALL_UNITS[unit].chapters[chapter].questions;
+    var count = parseInt(document.getElementById('customCount').value) || 10;
+    if (count > allQuestions.length) count = allQuestions.length;
+
+    var selected = [];
+    for (var i = 0; i < count && i < allQuestions.length; i++) {
+        selected.push(allQuestions[i]);
+    }
+    currentQuestions = selected;
+    currentAnswers = new Array(currentQuestions.length).fill(null);
+    currentQIndex = 0;
+
+    document.getElementById('settingsModal').classList.remove('show');
+
+    timeRemaining = currentQuestions.length * 90;
+    updateTimerDisplay();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(function() {
+        if (timeRemaining <= 0) submitAll();
+        else { timeRemaining--; updateTimerDisplay(); }
+    }, 1000);
+
+    showQuizModal();
+});
+
+function startUnitTest(unit) {
+    var allQuestions = [];
+    for (var ch in window.ALL_UNITS[unit].chapters) {
+        var qs = window.ALL_UNITS[unit].chapters[ch].questions;
+        for (var i = 0; i < qs.length; i++) {
+            allQuestions.push(qs[i]);
+        }
+    }
+    if (allQuestions.length === 0) {
+        alert('此單元暫無題目');
+        return;
+    }
+    var count = Math.min(36, allQuestions.length);
+    var selected = [];
+    for (var i = 0; i < count && i < allQuestions.length; i++) {
+        selected.push(allQuestions[i]);
+    }
+    currentQuestions = selected;
+    currentAnswers = new Array(currentQuestions.length).fill(null);
+    currentQIndex = 0;
+
+    timeRemaining = currentQuestions.length * 90;
+    updateTimerDisplay();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(function() {
+        if (timeRemaining <= 0) submitAll();
+        else { timeRemaining--; updateTimerDisplay(); }
+    }, 1000);
+
+    showQuizModal();
+}
+
+// ===== 顯示問題彈窗 =====
+function showQuizModal() {
+    renderQuizNav();
+    renderCurrentQuestion();
+    document.getElementById('quizModal').classList.add('show');
+
+    var periodicBtn = document.getElementById('periodicTableBtn');
+    if (periodicBtn) {
+        periodicBtn.onclick = function() {
+            alert('📊 周期表功能（測試用）');
+        };
+    }
+    var desktopPeriodicBtn = document.getElementById('desktopPeriodicBtn');
+    if (desktopPeriodicBtn) {
+        desktopPeriodicBtn.onclick = function() {
+            alert('📊 周期表功能（測試用）');
+        };
+    }
+
+    var submitBtn = document.getElementById('submitAllBtn');
+    if (submitBtn) submitBtn.textContent = '提交並離開';
+    var desktopSubmitBtn = document.getElementById('desktopSubmitBtn');
+    if (desktopSubmitBtn) desktopSubmitBtn.textContent = '提交並離開';
+}
+
+function renderQuizNav() {
+    var nav = document.getElementById('questionNav');
+    var html = '';
+    for (var i = 0; i < currentQuestions.length; i++) {
+        var cls = '';
+        if (i === currentQIndex) cls = 'current';
+        else if (currentAnswers[i] !== null) cls = 'answered';
+        else cls = 'unanswered';
+        html += '<button class="q-nav-btn ' + cls + '" data-idx="' + i + '">' + (i + 1) + '</button>';
+    }
+    nav.innerHTML = html;
+    document.getElementById('quizCounter').textContent = (currentQIndex + 1) + ' / ' + currentQuestions.length;
+    document.getElementById('desktopCounter').textContent = (currentQIndex + 1) + ' / ' + currentQuestions.length;
+
+    document.querySelectorAll('.q-nav-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            currentQIndex = parseInt(btn.dataset.idx);
+            renderQuizNav();
+            renderCurrentQuestion();
+            updateDesktopNav();
+        });
+    });
+}
+
+function updateDesktopNav() {
+    var nav = document.getElementById('desktopNav');
+    var html = '';
+    for (var i = 0; i < currentQuestions.length; i++) {
+        var cls = '';
+        if (i === currentQIndex) cls = 'current';
+        else if (currentAnswers[i] !== null) cls = 'answered';
+        else cls = 'unanswered';
+        html += '<button class="nav-dot ' + cls + '" data-idx="' + i + '">' + (i + 1) + '</button>';
+    }
+    nav.innerHTML = html;
+    document.getElementById('desktopCounter').textContent = (currentQIndex + 1) + ' / ' + currentQuestions.length;
+
+    document.querySelectorAll('#desktopNav .nav-dot').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            currentQIndex = parseInt(btn.dataset.idx);
+            renderQuizNav();
+            renderCurrentQuestion();
+            updateDesktopNav();
+        });
+    });
+}
+
+function renderCurrentQuestion() {
+    var q = currentQuestions[currentQIndex];
+    document.getElementById('modalQuestionText').textContent = q.text;
+    document.getElementById('quizDifficulty').textContent = q.difficulty;
+    document.getElementById('desktopDifficulty').textContent = q.difficulty;
+    document.getElementById('quizCounter').textContent = (currentQIndex + 1) + ' / ' + currentQuestions.length;
+    document.getElementById('desktopCounter').textContent = (currentQIndex + 1) + ' / ' + currentQuestions.length;
+
+    var imgArea = document.getElementById('modalImageArea');
+    if (q.imageUrl) {
+        imgArea.innerHTML = '<img src="' + q.imageUrl + '" style="max-height:130px; max-width:100%; object-fit:contain; border-radius:8px; cursor:pointer;">';
+        imgArea.style.display = 'block';
+    } else {
+        imgArea.innerHTML = '';
+        imgArea.style.display = 'none';
+    }
+
+    var optsDiv = document.getElementById('modalOptions');
+    optsDiv.innerHTML = '';
+    for (var i = 0; i < q.options.length; i++) {
+        var opt = q.options[i];
+        var letter = opt.charAt(0);
+        var text = opt.substring(3);
+        var btn = document.createElement('button');
+        btn.className = 'option-btn';
+        if (currentAnswers[currentQIndex] === letter) btn.classList.add('selected');
+        btn.textContent = letter + '. ' + text;
+        btn.dataset.letter = letter;
+        btn.addEventListener('click', function() {
+            currentAnswers[currentQIndex] = this.dataset.letter;
+            renderCurrentQuestion();
+            renderQuizNav();
+            updateDesktopNav();
+        });
+        optsDiv.appendChild(btn);
+    }
+
+    document.getElementById('prevBtn').disabled = (currentQIndex === 0);
+    document.getElementById('nextBtn').disabled = (currentQIndex === currentQuestions.length - 1);
+    document.getElementById('desktopPrevBtn').disabled = (currentQIndex === 0);
+    document.getElementById('desktopNextBtn').disabled = (currentQIndex === currentQuestions.length - 1);
+}
+
+function updateTimerDisplay() {
+    var m = Math.floor(timeRemaining / 60);
+    var s = timeRemaining % 60;
+    var timerEl = document.getElementById('timerDisplay');
+    if (timerEl) timerEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    var desktopTimer = document.getElementById('desktopTimer');
+    if (desktopTimer) desktopTimer.textContent = '⏱️ ' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+// ===== 按鈕事件 =====
+document.getElementById('prevBtn').addEventListener('click', function() {
+    if (currentQIndex > 0) { currentQIndex--; renderQuizNav(); renderCurrentQuestion(); updateDesktopNav(); }
+});
+document.getElementById('nextBtn').addEventListener('click', function() {
+    if (currentQIndex < currentQuestions.length - 1) { currentQIndex++; renderQuizNav(); renderCurrentQuestion(); updateDesktopNav(); }
+});
+document.getElementById('desktopPrevBtn').addEventListener('click', function() {
+    if (currentQIndex > 0) { currentQIndex--; renderQuizNav(); renderCurrentQuestion(); updateDesktopNav(); }
+});
+document.getElementById('desktopNextBtn').addEventListener('click', function() {
+    if (currentQIndex < currentQuestions.length - 1) { currentQIndex++; renderQuizNav(); renderCurrentQuestion(); updateDesktopNav(); }
+});
+
+document.getElementById('submitAllBtn').addEventListener('click', function() {
+    submitAll();
+});
+document.getElementById('desktopSubmitBtn').addEventListener('click', function() {
+    submitAll();
+});
+
+function submitAll() {
+    if (timerInterval) clearInterval(timerInterval);
+    var correctCount = 0;
+    var results = [];
+    for (var i = 0; i < currentQuestions.length; i++) {
+        var q = currentQuestions[i];
+        var userLetter = currentAnswers[i];
+        var correctLetter = q.correct;
+        var isCorrect = (userLetter === correctLetter);
+        if (isCorrect) correctCount++;
+        results.push({ question: q, userLetter: userLetter || '?', correctLetter: correctLetter, isCorrect: isCorrect });
+    }
+    var accuracy = Math.round(correctCount / currentQuestions.length * 100);
+    document.getElementById('quizModal').classList.remove('show');
+    displayResults(results, accuracy, correctCount);
+}
+
+function displayResults(results, accuracy, correctCount) {
+    var container = document.getElementById('resultContent');
+    var total = results.length;
+    var color = accuracy < 40 ? '#dc2626' : (accuracy < 70 ? '#f59e0b' : '#10b981');
+    var html = '<div class="result-summary-bar"><div class="result-progress"><span>✅ ' + accuracy + '% (' + correctCount + '/' + total + ')</span><div class="big-progress-bar"><div class="big-progress-fill" style="width:' + accuracy + '%; background:' + color + ';"></div></div></div></div>';
+    html += '<div class="results-card-list">';
+    for (var i = 0; i < results.length; i++) {
+        var r = results[i];
+        var cardClass = r.isCorrect ? 'correct' : 'wrong';
+        var icon = r.isCorrect ? '✅' : '❌';
+        html += '<div class="result-card ' + cardClass + '">';
+        html += '<div class="result-card-header"><span class="result-card-question">' + (i + 1) + '. ' + r.question.text + '</span><span class="result-card-icon">' + icon + '</span></div>';
+        html += '<div class="result-card-details"><span>📝 你的答案：' + r.userLetter + '</span><span>✓ 正解：' + r.correctLetter + '</span></div>';
+        html += '</div>';
+    }
+    html += '</div>';
+    container.innerHTML = html;
+    document.getElementById('resultModal').classList.add('show');
+}
+
+document.getElementById('closeResultBtn').addEventListener('click', function() {
+    document.getElementById('resultModal').classList.remove('show');
+});
+
+// ===== 一鍵解鎖 =====
+document.getElementById('devUnlockBtn').addEventListener('click', function() {
+    alert('🔓 一鍵解鎖（測試用）');
+});
+
+// ===== 難度選擇 =====
+document.getElementById('diff-easy').addEventListener('click', function() {
+    document.getElementById('diff-easy').classList.add('active');
+    document.getElementById('diff-medium').classList.remove('active');
+    document.getElementById('diff-hard').classList.remove('active');
+});
+document.getElementById('diff-medium').addEventListener('click', function() {
+    if (document.getElementById('diff-medium').disabled) return;
+    document.getElementById('diff-easy').classList.remove('active');
+    document.getElementById('diff-medium').classList.add('active');
+    document.getElementById('diff-hard').classList.remove('active');
+});
+document.getElementById('diff-hard').addEventListener('click', function() {
+    if (document.getElementById('diff-hard').disabled) return;
+    document.getElementById('diff-easy').classList.remove('active');
+    document.getElementById('diff-medium').classList.remove('active');
+    document.getElementById('diff-hard').classList.add('active');
+});
+
+// ===== 題數選擇 =====
+document.getElementById('count-10').addEventListener('click', function() {
+    document.getElementById('count-10').classList.add('active');
+    document.getElementById('count-20').classList.remove('active');
+    document.getElementById('count-36').classList.remove('active');
+    document.getElementById('customCount').value = 10;
+});
+document.getElementById('count-20').addEventListener('click', function() {
+    if (document.getElementById('count-20').disabled) return;
+    document.getElementById('count-10').classList.remove('active');
+    document.getElementById('count-20').classList.add('active');
+    document.getElementById('count-36').classList.remove('active');
+    document.getElementById('customCount').value = 20;
+});
+document.getElementById('count-36').addEventListener('click', function() {
+    if (document.getElementById('count-36').disabled) return;
+    document.getElementById('count-10').classList.remove('active');
+    document.getElementById('count-20').classList.remove('active');
+    document.getElementById('count-36').classList.add('active');
+    document.getElementById('customCount').value = 36;
+});
+
+// ===== 頁面載入 =====
+document.addEventListener('DOMContentLoaded', function() {
+    renderPractice();
+    updateDesktopNav();
+
+    // 預設展開第一個單元
+    var firstUnit = document.querySelector('.chapters-container');
+    if (firstUnit) {
+        firstUnit.classList.add('open');
+        var toggle = document.getElementById('toggle-2');
+        if (toggle) toggle.classList.add('open');
+    }
+});
 </script>
-
-<!-- ===== Firebase SDK ===== -->
-<script src="https://cdn.jsdelivr.net/npm/firebase@12.15.0/firebase-app-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@12.15.0/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@12.15.0/firebase-auth-compat.js"></script>
-
-<script>
-const firebaseConfig = {
-    apiKey: "AIzaSyBWUr-qFjDuAbRn2ueCOA24Bx5vHhGwCzs",
-    authDomain: "mastering-science.firebaseapp.com",
-    projectId: "mastering-science",
-    storageBucket: "mastering-science.firebasestorage.app",
-    messagingSenderId: "969510026630",
-    appId: "1:969510026630:web:5c0ff3ffc7b3bdc04c8007"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
-console.log('🔥 Firebase 已初始化（測試版）');
-</script>
-
-<script src="script.js"></script>
 
 </body>
 </html>
