@@ -1959,6 +1959,13 @@ function startUnitTest(unit) {
     
     startTime = Date.now();
     
+    // 如果當前是手機版，隱藏手機版彈窗再顯示（確保乾淨狀態）
+    const quizModal = document.getElementById('quizModal');
+    const desktopModal = document.getElementById('desktopQuizModal');
+    if (quizModal) quizModal.style.display = 'none';
+    if (desktopModal) desktopModal.style.display = 'none';
+    
+    // 根據是否為手機決定顯示哪個版本
     if (isMobile()) {
         showQuizModal();
     } else {
@@ -2028,6 +2035,13 @@ function startSingleQuestion(qid, source) {
     
     document.getElementById('settingsModal').style.display = 'none';
     startTime = Date.now();
+    
+    // 隱藏其他彈窗
+    const quizModal = document.getElementById('quizModal');
+    const desktopModal = document.getElementById('desktopQuizModal');
+    if (quizModal) quizModal.style.display = 'none';
+    if (desktopModal) desktopModal.style.display = 'none';
+    
     showQuizModal();
 }
 
@@ -2644,6 +2658,12 @@ function startPracticeWithSettings() {
     
     startTime = Date.now();
     
+    // 隱藏其他彈窗
+    const quizModal = document.getElementById('quizModal');
+    const desktopModal = document.getElementById('desktopQuizModal');
+    if (quizModal) quizModal.style.display = 'none';
+    if (desktopModal) desktopModal.style.display = 'none';
+    
     if (isMobile()) {
         showQuizModal();
     } else {
@@ -2835,12 +2855,13 @@ function closeDSEResult() {
     }
 }
 
-// ==================== V6: 全屏功能 ====================
+// ==================== V7: 全屏功能（完美版：按全屏 → 自動橫置 + 桌面版） ====================
 async function toggleFullscreen() {
     const btn = document.getElementById('fullscreenBtn');
+    const desktopBtn = document.getElementById('desktopFullscreenBtn');
     
     // 如果已經是全屏 → 退出
-    if (document.fullscreenElement || document.webkitFullscreenElement) {
+    if (isFullscreen || document.fullscreenElement || document.webkitFullscreenElement) {
         try {
             if (document.exitFullscreen) {
                 await document.exitFullscreen();
@@ -2854,9 +2875,21 @@ async function toggleFullscreen() {
                 }
             } catch(e) {}
             isFullscreen = false;
-            if (btn) {
-                btn.textContent = '⛶ 全屏';
-                btn.classList.remove('active');
+            // 更新所有全屏按鈕
+            updateFullscreenButtons('⛶ 全屏', false);
+            // 退出全屏後，如果當前顯示的是桌面版，切換回手機版（除非在桌面設備上）
+            const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            if (isMobileDevice) {
+                const desktopModal = document.getElementById('desktopQuizModal');
+                const quizModal = document.getElementById('quizModal');
+                if (desktopModal && desktopModal.style.display === 'flex') {
+                    desktopModal.style.display = 'none';
+                    if (quizModal) {
+                        quizModal.style.display = 'flex';
+                        // 確保手機版顯示當前題目
+                        renderCurrentQuestion();
+                    }
+                }
             }
             console.log('✅ 已退出全屏');
         } catch(e) {
@@ -2868,13 +2901,16 @@ async function toggleFullscreen() {
     // 否則 → 進入全屏
     try {
         // 1. 鎖定為橫置（僅在手機上嘗試）
-        try {
-            if (screen.orientation && screen.orientation.lock) {
-                await screen.orientation.lock('landscape');
-                console.log('✅ 方向已鎖定為橫置');
+        const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        if (isMobileDevice) {
+            try {
+                if (screen.orientation && screen.orientation.lock) {
+                    await screen.orientation.lock('landscape');
+                    console.log('✅ 方向已鎖定為橫置');
+                }
+            } catch(e) {
+                console.warn('⚠️ 方向鎖定失敗（可能手機不支援）:', e);
             }
-        } catch(e) {
-            console.warn('⚠️ 方向鎖定失敗（可能手機不支援）:', e);
         }
         
         // 2. 進入全屏
@@ -2884,23 +2920,34 @@ async function toggleFullscreen() {
         } else if (el.webkitRequestFullscreen) {
             await el.webkitRequestFullscreen();
         } else {
-            // 如果全屏 API 不支援，至少嘗試滾動
-            const quizBody = document.querySelector('#quizModal .quiz-body');
-            if (quizBody) {
-                quizBody.scrollTo(0, 1);
-            }
-            alert('⚠️ 您的瀏覽器不支援全屏功能，已嘗試自動調整畫面。');
+            alert('⚠️ 您的瀏覽器不支援全屏功能。');
             return;
         }
         
         isFullscreen = true;
-        if (btn) {
-            btn.textContent = '⛶ 退出';
-            btn.classList.add('active');
-        }
+        updateFullscreenButtons('⛶ 退出', true);
         console.log('✅ 已進入全屏模式');
         
-        // 3. 輔助：滾動 1px 確保網址列消失
+        // 3. 如果是手機，自動切換到桌面版彈窗（橫置效果）
+        if (isMobileDevice) {
+            const quizModal = document.getElementById('quizModal');
+            const desktopModal = document.getElementById('desktopQuizModal');
+            
+            // 如果手機版正在顯示，切換到桌面版
+            if (quizModal && quizModal.style.display === 'flex') {
+                quizModal.style.display = 'none';
+                if (desktopModal) {
+                    // 確保桌面版顯示當前題目
+                    desktopModal.style.display = 'flex';
+                    renderDesktopCurrentQuestion();
+                    // 確保桌面版計時器更新
+                    updateTimerDisplay();
+                    console.log('✅ 已自動切換到桌面版（橫置模式）');
+                }
+            }
+        }
+        
+        // 4. 輔助：滾動 1px 確保網址列消失
         setTimeout(() => {
             const quizBody = document.querySelector('#quizModal .quiz-body');
             if (quizBody) {
@@ -2914,14 +2961,47 @@ async function toggleFullscreen() {
     }
 }
 
+// 更新所有全屏按鈕的狀態
+function updateFullscreenButtons(text, active) {
+    const btn = document.getElementById('fullscreenBtn');
+    const desktopBtn = document.getElementById('desktopFullscreenBtn');
+    
+    if (btn) {
+        btn.textContent = text;
+        if (active) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    }
+    if (desktopBtn) {
+        desktopBtn.textContent = text;
+        if (active) {
+            desktopBtn.classList.add('active');
+        } else {
+            desktopBtn.classList.remove('active');
+        }
+    }
+}
+
 // 監聽全屏退出事件（用戶按 ESC 或系統退出）
 document.addEventListener('fullscreenchange', function() {
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    const isFullscreenNow = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    if (!isFullscreenNow && isFullscreen) {
         isFullscreen = false;
-        const btn = document.getElementById('fullscreenBtn');
-        if (btn) {
-            btn.textContent = '⛶ 全屏';
-            btn.classList.remove('active');
+        updateFullscreenButtons('⛶ 全屏', false);
+        // 退出全屏後，如果當前顯示的是桌面版，切換回手機版（僅在手機上）
+        const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        if (isMobileDevice) {
+            const desktopModal = document.getElementById('desktopQuizModal');
+            const quizModal = document.getElementById('quizModal');
+            if (desktopModal && desktopModal.style.display === 'flex') {
+                desktopModal.style.display = 'none';
+                if (quizModal) {
+                    quizModal.style.display = 'flex';
+                    renderCurrentQuestion();
+                }
+            }
         }
         try {
             if (screen.orientation && screen.orientation.unlock) {
@@ -3131,7 +3211,20 @@ function renderCurrentQuestion() {
 
 function updateNavButtons() { let prev = document.getElementById('prevBtn'), next = document.getElementById('nextBtn'); prev.disabled = (currentQIndex === 0); next.disabled = (currentQIndex === currentQuestions.length - 1); }
 
-function updateTimerDisplay() { let m = Math.floor(timeRemaining / 60), s = timeRemaining % 60; document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`; }
+// ✅ 修復：同時更新手機版和桌面版計時器
+function updateTimerDisplay() {
+    let m = Math.floor(timeRemaining / 60);
+    let s = timeRemaining % 60;
+    let timeStr = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    
+    // 更新手機版
+    const timerDisplay = document.getElementById('timerDisplay');
+    if (timerDisplay) timerDisplay.innerText = timeStr;
+    
+    // 更新桌面版
+    const desktopTimer = document.getElementById('desktopTimer');
+    if (desktopTimer) desktopTimer.innerText = `⏱️ ${timeStr}`;
+}
 
 function checkAllQuestionsAnswered() {
     if (currentQuestions.length === 0) return;
@@ -3394,6 +3487,16 @@ function showDesktopQuizModal() {
     renderDesktopQuizNav();
     renderDesktopCurrentQuestion();
     document.getElementById('desktopQuizModal').style.display = 'flex';
+    
+    // 綁定桌面版全屏按鈕事件（如果存在）
+    const desktopFullscreenBtn = document.getElementById('desktopFullscreenBtn');
+    if (desktopFullscreenBtn) {
+        desktopFullscreenBtn.addEventListener('click', toggleFullscreen);
+        if (isFullscreen || document.fullscreenElement || document.webkitFullscreenElement) {
+            desktopFullscreenBtn.textContent = '⛶ 退出';
+            desktopFullscreenBtn.classList.add('active');
+        }
+    }
 }
 
 function renderDesktopQuizNav() {
@@ -3510,9 +3613,8 @@ function updateDesktopNavButtons() {
 }
 
 function updateDesktopTimerDisplay() {
-    let m = Math.floor(timeRemaining / 60), s = timeRemaining % 60;
-    const timerEl = document.getElementById('desktopTimer');
-    if (timerEl) timerEl.innerText = `⏱️ ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    // 已由 updateTimerDisplay() 統一處理
+    updateTimerDisplay();
 }
 
 function checkDesktopAllQuestionsAnswered() {
@@ -4883,35 +4985,11 @@ async function saveClassSettings(className, settings) {
     }
 }
 
-// ==================== #6 螢幕旋轉監聽（手機橫置↔垂直切換） ====================
-function handleScreenRotation() {
-    // 只有在問題彈窗正在顯示時才處理
-    const quizModal = document.getElementById('quizModal');
-    const desktopModal = document.getElementById('desktopQuizModal');
-    const isQuizVisible = (quizModal && quizModal.style.display === 'flex') || 
-                          (desktopModal && desktopModal.style.display === 'flex');
-    
-    if (!isQuizVisible) return;
-    
-    // 重新判斷應該顯示哪個版本
-    if (isMobile()) {
-        // 切換到手機版
-        if (desktopModal) desktopModal.style.display = 'none';
-        if (quizModal) {
-            quizModal.style.display = 'flex';
-            // 重新渲染當前題目（確保佈局正確）
-            renderCurrentQuestion();
-        }
-    } else {
-        // 切換到桌面版
-        if (quizModal) quizModal.style.display = 'none';
-        if (desktopModal) {
-            desktopModal.style.display = 'flex';
-            // 重新渲染桌面版
-            renderDesktopCurrentQuestion();
-        }
-    }
-}
+// ==================== 移除所有自動橫置監聽（已完全移除 handleScreenRotation 和 resize 監聽） ====================
+// 註：以下已移除：
+// - handleScreenRotation() 函數
+// - window.addEventListener('resize', ...) 監聽
+// - showRotateBanner() / hideRotateBanner() / dismissRotateBanner() 函數
 
 // ==================== DOMContentLoaded ====================
 document.addEventListener('DOMContentLoaded', function() {
@@ -4929,14 +5007,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // #6: 螢幕旋轉監聽
-    let rotationTimeout = null;
-    window.addEventListener('resize', function() {
-        clearTimeout(rotationTimeout);
-        rotationTimeout = setTimeout(function() {
-            handleScreenRotation();
-        }, 300);
-    });
+    // 注意：已移除 window.addEventListener('resize', ...) 監聽
     
     // 難度選擇
     document.getElementById('diff-easy').addEventListener('click', () => { selectedDifficulty = 0; document.getElementById('diff-easy').classList.add('active'); document.getElementById('diff-medium').classList.remove('active'); document.getElementById('diff-hard').classList.remove('active'); isTrialMode = false; updateSettingsUnlockStatus(); });
