@@ -72,7 +72,6 @@ const ACHIEVEMENT_POINTS = {
 
 // ==================== 在登入畫面顯示狀態（中文） ====================
 function showFirestoreStatus(text, bg, color) {
-    // 改為更新狀態指示器（#5）
     updateStatusDot(text, bg, color);
 }
 
@@ -1927,18 +1926,25 @@ function startUnitTest(unit) {
     
     let timePerQuestion = 90;
     timeRemaining = selectedQuestions.length * timePerQuestion;
-    updateTimerDisplay();
+    
+    // 🔧 修正：更新計時器顯示（桌面版）
+    updateDesktopTimerDisplay();
+    
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
-        if (timeRemaining <= 0) submitAll();
-        else { timeRemaining--; updateTimerDisplay(); }
+        if (timeRemaining <= 0) {
+            submitDesktopAll();
+        } else {
+            timeRemaining--;
+            updateDesktopTimerDisplay();
+        }
     }, 1000);
     
     if (blinkInterval) {
         clearInterval(blinkInterval);
         blinkInterval = null;
     }
-    const submitBtn = document.getElementById('submitAllBtn');
+    const submitBtn = document.getElementById('desktopSubmitBtn');
     if (submitBtn) submitBtn.style.animation = '';
     
     document.getElementById('settingsModal').style.display = 'none';
@@ -1999,18 +2005,25 @@ function startSingleQuestion(qid, source) {
     selectedDifficulty = 1;
     
     timeRemaining = 90;
-    updateTimerDisplay();
+    
+    // 🔧 修正：更新計時器顯示（桌面版）
+    updateDesktopTimerDisplay();
+    
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
-        if (timeRemaining <= 0) submitAll();
-        else { timeRemaining--; updateTimerDisplay(); }
+        if (timeRemaining <= 0) {
+            submitDesktopAll();
+        } else {
+            timeRemaining--;
+            updateDesktopTimerDisplay();
+        }
     }, 1000);
     
     if (blinkInterval) {
         clearInterval(blinkInterval);
         blinkInterval = null;
     }
-    const submitBtn = document.getElementById('submitAllBtn');
+    const submitBtn = document.getElementById('desktopSubmitBtn');
     if (submitBtn) submitBtn.style.animation = '';
     
     document.getElementById('settingsModal').style.display = 'none';
@@ -2610,18 +2623,25 @@ function startPracticeWithSettings() {
     isSingleQuestionMode = false;
     let timePerQuestion = selectedDifficulty == 0 ? 108 : (selectedDifficulty == 2 ? 75 : 90);
     timeRemaining = selectedQuestions.length * timePerQuestion;
-    updateTimerDisplay();
+    
+    // 🔧 修正：更新計時器顯示（桌面版）
+    updateDesktopTimerDisplay();
+    
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
-        if (timeRemaining <= 0) submitAll();
-        else { timeRemaining--; updateTimerDisplay(); }
+        if (timeRemaining <= 0) {
+            submitDesktopAll();
+        } else {
+            timeRemaining--;
+            updateDesktopTimerDisplay();
+        }
     }, 1000);
     
     if (blinkInterval) {
         clearInterval(blinkInterval);
         blinkInterval = null;
     }
-    const submitBtn = document.getElementById('submitAllBtn');
+    const submitBtn = document.getElementById('desktopSubmitBtn');
     if (submitBtn) submitBtn.style.animation = '';
     
     document.getElementById('settingsModal').style.display = 'none';
@@ -2826,6 +2846,12 @@ function showDesktopQuizModal() {
     renderDesktopQuizNav();
     renderDesktopCurrentQuestion();
     document.getElementById('desktopQuizModal').style.display = 'flex';
+    
+    // 🔧 修正：確保退出全屏按鈕可見
+    const exitBtn = document.getElementById('exitFullscreenBtn');
+    if (exitBtn && document.fullscreenElement) {
+        exitBtn.style.display = 'block';
+    }
 }
 
 function renderDesktopQuizNav() {
@@ -2941,10 +2967,14 @@ function updateDesktopNavButtons() {
     if (next) next.disabled = (currentQIndex === currentQuestions.length - 1);
 }
 
+// 🔧 修正：桌面版計時器更新函數（被定時器呼叫）
 function updateDesktopTimerDisplay() {
-    let m = Math.floor(timeRemaining / 60), s = timeRemaining % 60;
+    let m = Math.floor(timeRemaining / 60);
+    let s = timeRemaining % 60;
     const timerEl = document.getElementById('desktopTimer');
-    if (timerEl) timerEl.innerText = `⏱️ ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    if (timerEl) {
+        timerEl.innerText = `⏱️ ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
 }
 
 function checkDesktopAllQuestionsAnswered() {
@@ -2985,6 +3015,7 @@ function updateDesktopPeriodicButton() {
     }
 }
 
+// 🔧 修正：提交函數 - 正確顯示結果
 function submitDesktopAll() {
     if (blinkInterval) {
         clearInterval(blinkInterval);
@@ -2992,7 +3023,11 @@ function submitDesktopAll() {
         const submitBtn = document.getElementById('desktopSubmitBtn');
         if (submitBtn) submitBtn.style.animation = '';
     }
-    if (timerInterval) clearInterval(timerInterval);
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    
     const timeSpentSeconds = Math.round((Date.now() - startTime) / 1000);
     
     let results = [], batch = [], correctCount = 0;
@@ -3072,6 +3107,7 @@ function submitDesktopAll() {
         return;
     }
     
+    // 🔧 修正：直接顯示結果，確保 lastResults 正確傳遞
     displayResults(results);
     document.getElementById('desktopQuizModal').style.display = 'none';
     exitFullscreenMode();
@@ -3106,7 +3142,8 @@ function updateNavButtons() {
 }
 
 function updateTimerDisplay() {
-    // 已棄用，改用 updateDesktopTimerDisplay()
+    // 🔧 修正：改為呼叫桌面版計時器更新
+    updateDesktopTimerDisplay();
 }
 
 function checkAllQuestionsAnswered() {
@@ -3427,9 +3464,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentAnswers = new Array(1).fill(null);
                 currentQIndex = 0;
                 timeRemaining = 90;
-                updateTimerDisplay();
+                updateDesktopTimerDisplay();
                 if (timerInterval) clearInterval(timerInterval);
-                timerInterval = setInterval(() => { if (timeRemaining <= 0) submitAll(); else { timeRemaining--; updateTimerDisplay(); } }, 1000);
+                timerInterval = setInterval(() => { if (timeRemaining <= 0) submitDesktopAll(); else { timeRemaining--; updateDesktopTimerDisplay(); } }, 1000);
                 document.getElementById('settingsModal').style.display = 'none';
                 forceLandscapeAndFullscreen().then(() => {
                     showDesktopQuizModal();
@@ -4544,3 +4581,4 @@ function handleScreenRotation() {
 }
 
 console.log('✅ Mastering Science 已載入（全屏橫置 + 桌面版統一）');
+console.log('🔧 計時器、元素表、提交按鈕已修正');
