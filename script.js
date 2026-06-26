@@ -420,74 +420,86 @@ function submitAll() {
     
     document.getElementById('quizModal').style.display = 'none';
     document.getElementById('desktopQuizModal').style.display = 'none';
+    
+    // 如果係全屏狀態，退出全屏
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+        try {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        } catch(e) {}
+    }
 }
 
 // ============================================================
-// ✅ 重點：全屏功能（最簡版，只有切換 + alert）
+// ✅ 最終全屏功能（移除所有 alert）
 // ============================================================
 async function toggleFullscreen() {
-    // 第 1 步：確認函數被執行
-    alert('🔍 Step 1: toggleFullscreen() 被執行了！');
-    console.log('🔍 Step 1: toggleFullscreen() 被執行');
+    console.log('🔍 全屏按鈕被點擊');
     
-    // 第 2 步：檢查當前顯示狀態
-    const quizModal = document.getElementById('quizModal');
-    const desktopModal = document.getElementById('desktopQuizModal');
-    
-    alert(`🔍 Step 2: quizModal display = ${quizModal ? quizModal.style.display : 'not found'}, desktopModal display = ${desktopModal ? desktopModal.style.display : 'not found'}`);
-    console.log(`quizModal display: ${quizModal ? quizModal.style.display : 'not found'}`);
-    console.log(`desktopModal display: ${desktopModal ? desktopModal.style.display : 'not found'}`);
-    
-    // 第 3 步：強制切換到桌面版
-    alert('🔍 Step 3: 準備強制切換到桌面版');
-    
-    if (quizModal) {
-        quizModal.style.display = 'none';
-        alert('✅ Step 3a: 手機版已隱藏');
-        console.log('✅ 手機版已隱藏');
+    // 如果已經係全屏 → 退出
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+        try {
+            if (document.exitFullscreen) await document.exitFullscreen();
+            else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+            
+            const btn = document.getElementById('fullscreenBtn');
+            if (btn) {
+                btn.textContent = '⛶ 全屏';
+                btn.classList.remove('active');
+            }
+            
+            const desktopModal = document.getElementById('desktopQuizModal');
+            const quizModal = document.getElementById('quizModal');
+            if (desktopModal) desktopModal.style.display = 'none';
+            if (quizModal) {
+                quizModal.style.display = 'flex';
+                renderCurrentQuestion();
+            }
+            return;
+        } catch(e) {
+            console.warn('退出全屏失敗:', e);
+        }
     }
     
+    // ===== 進入全屏：直接切換 =====
+    console.log('📱 切換到桌面版');
+    
+    // 1. 隱藏手機版
+    const quizModal = document.getElementById('quizModal');
+    if (quizModal) quizModal.style.display = 'none';
+    
+    // 2. 顯示桌面版
+    const desktopModal = document.getElementById('desktopQuizModal');
     if (desktopModal) {
         desktopModal.style.display = 'flex';
-        alert('✅ Step 3b: 桌面版已顯示');
-        console.log('✅ 桌面版已顯示');
-        
-        // 嘗試同步內容
-        try {
-            renderDesktopCurrentQuestion();
-            updateTimerDisplay();
-            alert('✅ Step 3c: 內容已同步');
-            console.log('✅ 內容已同步');
-        } catch(e) {
-            alert('❌ Step 3c 失敗: ' + e.message);
-            console.error('內容同步失敗:', e);
-        }
-    } else {
-        alert('❌ Step 3b 失敗: 找不到 desktopModal');
+        renderDesktopCurrentQuestion();
+        updateTimerDisplay();
+        renderDesktopQuizNav();
     }
     
-    // 第 4 步：嘗試 Fullscreen API
-    alert('🔍 Step 4: 準備嘗試 Fullscreen API');
+    // 3. 更新按鈕
+    const btn = document.getElementById('fullscreenBtn');
+    if (btn) {
+        btn.textContent = '⛶ 退出';
+        btn.classList.add('active');
+    }
+    
+    // 4. 嘗試 Fullscreen API（用最簡單方式，唔用 await）
     try {
         const el = document.documentElement;
         if (el.requestFullscreen) {
-            await el.requestFullscreen();
-            alert('✅ Step 4a: Fullscreen API 成功！');
-            console.log('✅ Fullscreen API 成功');
+            el.requestFullscreen().catch(e => {
+                console.log('ℹ️ Fullscreen 失敗（已切換到桌面版）:', e.message);
+            });
         } else if (el.webkitRequestFullscreen) {
-            await el.webkitRequestFullscreen();
-            alert('✅ Step 4a: Fullscreen API (webkit) 成功！');
-            console.log('✅ Fullscreen API (webkit) 成功');
-        } else {
-            alert('ℹ️ Step 4b: 瀏覽器唔支援 Fullscreen API');
-            console.log('ℹ️ 瀏覽器唔支援 Fullscreen API');
+            el.webkitRequestFullscreen();
         }
     } catch(e) {
-        alert('❌ Step 4c: Fullscreen API 失敗: ' + e.message);
-        console.error('Fullscreen API 失敗:', e);
+        console.log('ℹ️ Fullscreen 失敗（已切換到桌面版）:', e.message);
     }
     
-    alert('🏁 全屏流程完成！');
+    // 5. 滾動
+    setTimeout(() => window.scrollTo(0, 1), 300);
 }
 
 // ==================== 桌面版函數（最簡版） ====================
