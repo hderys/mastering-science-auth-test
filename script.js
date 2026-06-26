@@ -75,7 +75,6 @@ const ACHIEVEMENT_POINTS = {
 
 // ==================== 在登入畫面顯示狀態（中文） ====================
 function showFirestoreStatus(text, bg, color) {
-    // 改為更新狀態指示器（#5）
     updateStatusDot(text, bg, color);
 }
 
@@ -2836,175 +2835,26 @@ function closeDSEResult() {
     }
 }
 
-// ==================== V8: 全屏功能（100% 可靠版 - 強制切換） ====================
+// ============================================================
+// ✅ 終極極簡版全屏功能（Final Minimal Version）
+// 邏輯：㩒全屏 = 強制切換到桌面版，唔 check 任何嘢
+// ============================================================
 async function toggleFullscreen() {
-    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
-    
-    // 如果已經是全屏 → 退出
-    if (isFullscreen || document.fullscreenElement || document.webkitFullscreenElement) {
+    // 如果已經係全屏 → 退出
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
         try {
             if (document.exitFullscreen) {
                 await document.exitFullscreen();
             } else if (document.webkitExitFullscreen) {
                 await document.webkitExitFullscreen();
             }
-            try {
-                if (screen.orientation && screen.orientation.unlock) {
-                    screen.orientation.unlock();
-                }
-            } catch(e) {}
-            isFullscreen = false;
-            updateFullscreenButtons('⛶ 全屏', false);
-            
-            // 退出全屏後切換回手機版（如果係手機）
-            if (isMobileDevice) {
-                const desktopModal = document.getElementById('desktopQuizModal');
-                const quizModal = document.getElementById('quizModal');
-                if (desktopModal && desktopModal.style.display === 'flex') {
-                    desktopModal.style.display = 'none';
-                    if (quizModal) {
-                        quizModal.style.display = 'flex';
-                        renderCurrentQuestion();
-                    }
-                }
+            // 更新按鈕文字
+            const btn = document.getElementById('fullscreenBtn');
+            if (btn) {
+                btn.textContent = '⛶ 全屏';
+                btn.classList.remove('active');
             }
-            console.log('✅ 已退出全屏');
-        } catch(e) {
-            console.warn('⚠️ 退出全屏失敗:', e);
-        }
-        return;
-    }
-    
-    // ===== 進入全屏 =====
-    try {
-        // 1. 嘗試鎖定橫置（僅手機）
-        if (isMobileDevice) {
-            try {
-                if (screen.orientation && screen.orientation.lock) {
-                    await screen.orientation.lock('landscape');
-                    console.log('✅ 方向已鎖定為橫置');
-                }
-            } catch(e) {
-                console.warn('⚠️ 鎖定方向失敗（可能自動旋轉已鎖定）:', e);
-            }
-        }
-        
-        // 2. 進入全屏
-        const el = document.documentElement;
-        if (el.requestFullscreen) {
-            await el.requestFullscreen();
-        } else if (el.webkitRequestFullscreen) {
-            await el.webkitRequestFullscreen();
-        }
-        
-        isFullscreen = true;
-        updateFullscreenButtons('⛶ 退出', true);
-        console.log('✅ 已進入全屏模式');
-        
-        // 3. ✅ 強制切換到桌面版彈窗（唔理任何條件）
-        if (isMobileDevice) {
-            const quizModal = document.getElementById('quizModal');
-            const desktopModal = document.getElementById('desktopQuizModal');
-            
-            // 直接強制切換，唔檢查任何條件
-            if (quizModal) {
-                quizModal.style.display = 'none';
-                console.log('📱 已隱藏手機版彈窗');
-            }
-            if (desktopModal) {
-                desktopModal.style.display = 'flex';
-                renderDesktopCurrentQuestion();
-                updateTimerDisplay();
-                console.log('✅ 已強制切換到桌面版（橫置風格）');
-            } else {
-                console.warn('⚠️ 找不到桌面版彈窗元素');
-            }
-        }
-        
-        // 4. 滾動 1px 確保網址列消失
-        setTimeout(() => {
-            window.scrollTo(0, 1);
-            const quizBody = document.querySelector('#quizModal .quiz-body');
-            if (quizBody) quizBody.scrollTo(0, 1);
-        }, 300);
-        
-    } catch(e) {
-        console.warn('⚠️ 全屏失敗:', e);
-        // 就算全屏失敗，都嘗試切換到桌面版
-        if (isMobileDevice) {
-            const quizModal = document.getElementById('quizModal');
-            const desktopModal = document.getElementById('desktopQuizModal');
-            if (quizModal) {
-                quizModal.style.display = 'none';
-                console.log('📱 已隱藏手機版彈窗（fallback）');
-            }
-            if (desktopModal) {
-                desktopModal.style.display = 'flex';
-                renderDesktopCurrentQuestion();
-                updateTimerDisplay();
-                console.log('✅ 已切換到桌面版（fallback）');
-            }
-        }
-    }
-}
-
-// 更新所有全屏按鈕的狀態
-function updateFullscreenButtons(text, active) {
-    const btn = document.getElementById('fullscreenBtn');
-    const desktopBtn = document.getElementById('desktopFullscreenBtn');
-    
-    if (btn) {
-        btn.textContent = text;
-        if (active) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    }
-    if (desktopBtn) {
-        desktopBtn.textContent = text;
-        if (active) {
-            desktopBtn.classList.add('active');
-        } else {
-            desktopBtn.classList.remove('active');
-        }
-    }
-}
-
-// Toast 輕提示
-function showToast(msg) {
-    // 移除舊 toast
-    const old = document.querySelector('.custom-toast');
-    if (old) old.remove();
-    
-    const toast = document.createElement('div');
-    toast.className = 'custom-toast';
-    toast.textContent = msg;
-    toast.style.cssText = `
-        position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-        background: rgba(0,0,0,0.85); color: white; padding: 12px 24px;
-        border-radius: 40px; font-size: 15px; z-index: 99999;
-        animation: fadeIn 0.3s ease; max-width: 90%; text-align: center;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-        pointer-events: none;
-    `;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-// 監聽全屏退出事件（用戶按 ESC 或系統退出）
-document.addEventListener('fullscreenchange', function() {
-    const isFullscreenNow = !!(document.fullscreenElement || document.webkitFullscreenElement);
-    if (!isFullscreenNow && isFullscreen) {
-        isFullscreen = false;
-        updateFullscreenButtons('⛶ 全屏', false);
-        // 退出全屏後，如果當前顯示的是桌面版，切換回手機版（僅在手機上）
-        const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
-        if (isMobileDevice) {
+            // 退出全屏後，如果 desktop 顯示緊，轉返手機版
             const desktopModal = document.getElementById('desktopQuizModal');
             const quizModal = document.getElementById('quizModal');
             if (desktopModal && desktopModal.style.display === 'flex') {
@@ -3014,60 +2864,58 @@ document.addEventListener('fullscreenchange', function() {
                     renderCurrentQuestion();
                 }
             }
+            return;
+        } catch(e) {
+            console.warn('⚠️ 退出全屏失敗:', e);
         }
-        try {
-            if (screen.orientation && screen.orientation.unlock) {
-                screen.orientation.unlock();
-            }
-        } catch(e) {}
     }
-});
-
-// ==================== 手機版橫置自動切換到桌面版 ====================
-function handleScreenRotation() {
-    // 只在手機上生效
-    const isMobileDevice = window.innerWidth <= 768;
-    if (!isMobileDevice) return;
     
-    // 如果已經在全屏模式，唔好自動切換（由全屏按鈕控制）
-    if (isFullscreen || document.fullscreenElement || document.webkitFullscreenElement) return;
+    // ===== 㩒全屏：強制切換到桌面版 =====
+    console.log('✅ 㩒全屏 → 強制切換到桌面版');
     
-    const isLandscape = window.innerWidth > window.innerHeight;
+    // 1. 隱藏手機版
     const quizModal = document.getElementById('quizModal');
-    const desktopModal = document.getElementById('desktopQuizModal');
-    
-    if (isLandscape) {
-        // 橫置 → 顯示桌面版
-        if (quizModal && quizModal.style.display === 'flex') {
-            quizModal.style.display = 'none';
-            if (desktopModal) {
-                desktopModal.style.display = 'flex';
-                renderDesktopCurrentQuestion();
-                updateTimerDisplay();
-                console.log('🔄 手機橫置 → 自動切換到桌面版');
-            }
-        }
-    } else {
-        // 直立 → 顯示手機版
-        if (desktopModal && desktopModal.style.display === 'flex') {
-            desktopModal.style.display = 'none';
-            if (quizModal) {
-                quizModal.style.display = 'flex';
-                renderCurrentQuestion();
-                console.log('🔄 手機直立 → 自動切換到手機版');
-            }
-        }
+    if (quizModal) {
+        quizModal.style.display = 'none';
+        console.log('📱 已隱藏手機版');
     }
-}
-
-// 監聽螢幕旋轉
-let rotationTimeout = null;
-window.addEventListener('resize', function() {
-    clearTimeout(rotationTimeout);
-    rotationTimeout = setTimeout(function() {
-        handleScreenRotation();
+    
+    // 2. 顯示桌面版
+    const desktopModal = document.getElementById('desktopQuizModal');
+    if (desktopModal) {
+        desktopModal.style.display = 'flex';
+        renderDesktopCurrentQuestion();
+        updateTimerDisplay();
+        console.log('🖥️ 已顯示桌面版');
+    }
+    
+    // 3. 更新按鈕文字
+    const btn = document.getElementById('fullscreenBtn');
+    if (btn) {
+        btn.textContent = '⛶ 退出';
+        btn.classList.add('active');
+    }
+    
+    // 4. 嘗試 Fullscreen API（得就得，唔得就算）
+    try {
+        const el = document.documentElement;
+        if (el.requestFullscreen) {
+            await el.requestFullscreen();
+            console.log('✅ Fullscreen API 成功，網址消失');
+        } else if (el.webkitRequestFullscreen) {
+            await el.webkitRequestFullscreen();
+            console.log('✅ Fullscreen API (webkit) 成功');
+        }
+    } catch(e) {
+        // Fullscreen 失敗，但已經切換到桌面版，用戶體驗仍然 OK
+        console.log('ℹ️ Fullscreen API 失敗，但已切換到桌面版:', e.message);
+    }
+    
+    // 5. 輔助滾動
+    setTimeout(() => {
+        window.scrollTo(0, 1);
     }, 300);
-});
+}
 
 // ==================== showQuizModal（手機版） ====================
 function showQuizModal() { 
@@ -3083,14 +2931,15 @@ function showQuizModal() {
     // 綁定全屏按鈕事件
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     if (fullscreenBtn) {
-        // 移除舊事件避免重複綁定
         fullscreenBtn.removeEventListener('click', toggleFullscreen);
         fullscreenBtn.addEventListener('click', toggleFullscreen);
         // 檢查當前是否已在全屏狀態
         if (document.fullscreenElement || document.webkitFullscreenElement) {
             fullscreenBtn.textContent = '⛶ 退出';
             fullscreenBtn.classList.add('active');
-            isFullscreen = true;
+        } else {
+            fullscreenBtn.textContent = '⛶ 全屏';
+            fullscreenBtn.classList.remove('active');
         }
     }
     
@@ -3553,14 +3402,19 @@ function showDesktopQuizModal() {
     renderDesktopCurrentQuestion();
     document.getElementById('desktopQuizModal').style.display = 'flex';
     
-    // 綁定桌面版全屏按鈕事件
-    const desktopFullscreenBtn = document.getElementById('desktopFullscreenBtn');
-    if (desktopFullscreenBtn) {
-        desktopFullscreenBtn.removeEventListener('click', toggleFullscreen);
-        desktopFullscreenBtn.addEventListener('click', toggleFullscreen);
-        if (isFullscreen || document.fullscreenElement || document.webkitFullscreenElement) {
-            desktopFullscreenBtn.textContent = '⛶ 退出';
-            desktopFullscreenBtn.classList.add('active');
+    // 檢查有冇全屏退出按鈕，如果冇就動態加一個
+    let exitBtn = document.getElementById('dynamicFullscreenBtn');
+    if (!exitBtn) {
+        exitBtn = document.createElement('button');
+        exitBtn.id = 'dynamicFullscreenBtn';
+        exitBtn.className = 'btn btn-fullscreen';
+        exitBtn.textContent = '⛶ 退出';
+        exitBtn.style.cssText = 'flex:0.5; font-size:10px; background:rgba(255,255,255,0.15); color:white; border:1px solid rgba(255,255,255,0.2); border-radius:30px; cursor:pointer;';
+        exitBtn.addEventListener('click', toggleFullscreen);
+        const actions = document.querySelector('#desktopQuizModal .sidebar-actions');
+        if (actions) {
+            actions.appendChild(exitBtn);
+            console.log('✅ 動態加入退出全屏按鈕');
         }
     }
 }
