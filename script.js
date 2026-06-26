@@ -2847,6 +2847,12 @@ function showDesktopQuizModal() {
     renderDesktopCurrentQuestion();
     document.getElementById('desktopQuizModal').style.display = 'flex';
     
+    // 🔧 修正：元素表彈窗強制顯示在最上層
+    const zoomModal = document.getElementById('imageZoomModal');
+    if (zoomModal) {
+        zoomModal.style.zIndex = '99999';
+    }
+    
     // 🔧 修正：確保退出全屏按鈕可見
     const exitBtn = document.getElementById('exitFullscreenBtn');
     if (exitBtn && document.fullscreenElement) {
@@ -3015,8 +3021,18 @@ function updateDesktopPeriodicButton() {
     }
 }
 
-// 🔧 修正：提交函數 - 正確顯示結果
+// 🔧 修正：提交函數 - 加入「未完成」確認彈窗
 function submitDesktopAll() {
+    // 🔧 修正：檢查是否有未作答的題目
+    let answeredCount = currentAnswers.filter(a => a !== null && a !== undefined).length;
+    let unansweredCount = currentQuestions.length - answeredCount;
+    
+    if (unansweredCount > 0) {
+        if (!confirm(`⚠️ 你還有 ${unansweredCount} 題未作答，確定要提交嗎？`)) {
+            return;  // 用戶按「取消」，不做任何事
+        }
+    }
+    
     if (blinkInterval) {
         clearInterval(blinkInterval);
         blinkInterval = null;
@@ -3032,8 +3048,8 @@ function submitDesktopAll() {
     
     let results = [], batch = [], correctCount = 0;
     let consecutiveCorrect = userData.stats.consecutiveCorrect || 0;
-    let answeredCount = currentAnswers.filter(a => a !== null).length;
-    let isBlankPaper = (answeredCount === 0);
+    let answeredCount2 = currentAnswers.filter(a => a !== null).length;
+    let isBlankPaper = (answeredCount2 === 0);
     const isUnitTestMode = (currentChapter === null && currentQuestions.length > 1);
 
     for (let i = 0; i < currentQuestions.length; i++) {
@@ -3107,10 +3123,15 @@ function submitDesktopAll() {
         return;
     }
     
-    // 🔧 修正：直接顯示結果，確保 lastResults 正確傳遞
-    displayResults(results);
+    // 顯示結果
     document.getElementById('desktopQuizModal').style.display = 'none';
     exitFullscreenMode();
+    
+    // 延遲一點點顯示結果，確保視窗已關閉
+    setTimeout(function() {
+        displayResults(results);
+    }, 100);
+    
     renderPractice();
     renderMyMistakes();
     renderPastMistakes();
@@ -4581,4 +4602,4 @@ function handleScreenRotation() {
 }
 
 console.log('✅ Mastering Science 已載入（全屏橫置 + 桌面版統一）');
-console.log('🔧 計時器、元素表、提交按鈕已修正');
+console.log('🔧 計時器、元素表、提交確認已修正');
