@@ -47,6 +47,9 @@ const MAX_LOGIN_ATTEMPTS = 5;
 // Firebase 同步狀態
 let firestoreEnabled = false;
 
+// 全屏狀態
+let isFullscreen = false;
+
 // 成就積分對應表
 const ACHIEVEMENT_POINTS = {
     'firstPractice': 10,
@@ -2832,11 +2835,119 @@ function closeDSEResult() {
     }
 }
 
+// ==================== V6: 全屏功能 ====================
+async function toggleFullscreen() {
+    const btn = document.getElementById('fullscreenBtn');
+    
+    // 如果已經是全屏 → 退出
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+        try {
+            if (document.exitFullscreen) {
+                await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                await document.webkitExitFullscreen();
+            }
+            // 解鎖方向
+            try {
+                if (screen.orientation && screen.orientation.unlock) {
+                    screen.orientation.unlock();
+                }
+            } catch(e) {}
+            isFullscreen = false;
+            if (btn) {
+                btn.textContent = '⛶ 全屏';
+                btn.classList.remove('active');
+            }
+            console.log('✅ 已退出全屏');
+        } catch(e) {
+            console.warn('⚠️ 退出全屏失敗:', e);
+        }
+        return;
+    }
+    
+    // 否則 → 進入全屏
+    try {
+        // 1. 鎖定為橫置（僅在手機上嘗試）
+        try {
+            if (screen.orientation && screen.orientation.lock) {
+                await screen.orientation.lock('landscape');
+                console.log('✅ 方向已鎖定為橫置');
+            }
+        } catch(e) {
+            console.warn('⚠️ 方向鎖定失敗（可能手機不支援）:', e);
+        }
+        
+        // 2. 進入全屏
+        const el = document.documentElement;
+        if (el.requestFullscreen) {
+            await el.requestFullscreen();
+        } else if (el.webkitRequestFullscreen) {
+            await el.webkitRequestFullscreen();
+        } else {
+            // 如果全屏 API 不支援，至少嘗試滾動
+            const quizBody = document.querySelector('#quizModal .quiz-body');
+            if (quizBody) {
+                quizBody.scrollTo(0, 1);
+            }
+            alert('⚠️ 您的瀏覽器不支援全屏功能，已嘗試自動調整畫面。');
+            return;
+        }
+        
+        isFullscreen = true;
+        if (btn) {
+            btn.textContent = '⛶ 退出';
+            btn.classList.add('active');
+        }
+        console.log('✅ 已進入全屏模式');
+        
+        // 3. 輔助：滾動 1px 確保網址列消失
+        setTimeout(() => {
+            const quizBody = document.querySelector('#quizModal .quiz-body');
+            if (quizBody) {
+                quizBody.scrollTo(0, 1);
+            }
+        }, 300);
+        
+    } catch(e) {
+        console.warn('⚠️ 全屏失敗:', e);
+        alert('⚠️ 無法進入全屏模式，請嘗試手動將手機橫置。');
+    }
+}
+
+// 監聽全屏退出事件（用戶按 ESC 或系統退出）
+document.addEventListener('fullscreenchange', function() {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        isFullscreen = false;
+        const btn = document.getElementById('fullscreenBtn');
+        if (btn) {
+            btn.textContent = '⛶ 全屏';
+            btn.classList.remove('active');
+        }
+        try {
+            if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+            }
+        } catch(e) {}
+    }
+});
+
 // ==================== showQuizModal（手機版） ====================
 function showQuizModal() { 
     renderQuizNav(); 
     renderCurrentQuestion(); 
     document.getElementById('quizModal').style.display = 'flex';
+    
+    // 綁定全屏按鈕事件
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        // 檢查當前是否已在全屏狀態
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+            fullscreenBtn.textContent = '⛶ 退出';
+            fullscreenBtn.classList.add('active');
+            isFullscreen = true;
+        }
+    }
     
     const isMobileDevice = window.innerWidth <= 640;
     const footerClass = isMobileDevice ? 'quiz-footer-mobile' : 'quiz-footer-desktop';
@@ -4772,66 +4883,13 @@ async function saveClassSettings(className, settings) {
     }
 }
 
-// ==================== #25: 垂直手機橫置提示條 ====================
-let rotateBannerShown = false;
-
-function showRotateBanner() {
-    // 只在手機垂直模式 + 練習進行中顯示
-    if (!isMobile()) return;
-    if (window.innerWidth > window.innerHeight) return; // 已經是橫置
-    if (rotateBannerShown) return;
-    
-    // ✅ V4: 檢查是否正在做題
-    const quizModal = document.getElementById('quizModal');
-    const desktopModal = document.getElementById('desktopQuizModal');
-    const isQuizVisible = (quizModal && quizModal.style.display === 'flex') || 
-                          (desktopModal && desktopModal.style.display === 'flex');
-    if (!isQuizVisible) return;
-    
-    // 檢查是否已關閉過（存 localStorage）
-    if (localStorage.getItem('ms_chem_rotate_banner_dismissed') === 'true') return;
-    
-    const banner = document.getElementById('rotateBanner');
-    if (banner) {
-        banner.classList.add('show');
-        rotateBannerShown = true;
-    }
-}
-
-function hideRotateBanner() {
-    const banner = document.getElementById('rotateBanner');
-    if (banner) {
-        banner.classList.remove('show');
-    }
-    rotateBannerShown = false;
-}
-
-function dismissRotateBanner() {
-    localStorage.setItem('ms_chem_rotate_banner_dismissed', 'true');
-    hideRotateBanner();
-}
-
-// ==================== #6 螢幕旋轉監聽 ====================
+// ==================== #6 螢幕旋轉監聽（手機橫置↔垂直切換） ====================
 function handleScreenRotation() {
     // 只有在問題彈窗正在顯示時才處理
     const quizModal = document.getElementById('quizModal');
     const desktopModal = document.getElementById('desktopQuizModal');
     const isQuizVisible = (quizModal && quizModal.style.display === 'flex') || 
                           (desktopModal && desktopModal.style.display === 'flex');
-    
-    // #25: 只有做題時才顯示橫置提示
-    if (isMobile() && isQuizVisible) {
-        if (window.innerWidth > window.innerHeight) {
-            // 橫置 → 隱藏提示條
-            hideRotateBanner();
-        } else {
-            // 垂直 → 顯示提示條
-            showRotateBanner();
-        }
-    } else {
-        // 不在做題時，隱藏提示條
-        hideRotateBanner();
-    }
     
     if (!isQuizVisible) return;
     
@@ -4843,13 +4901,6 @@ function handleScreenRotation() {
             quizModal.style.display = 'flex';
             // 重新渲染當前題目（確保佈局正確）
             renderCurrentQuestion();
-        }
-        
-        // ===== #9: 橫置時觸發 1px 滾動，讓瀏覽器自動隱藏網址列 =====
-        if (window.innerWidth > window.innerHeight) {
-            try {
-                window.scrollTo(0, 1);
-            } catch(e) {}
         }
     } else {
         // 切換到桌面版
@@ -4864,18 +4915,6 @@ function handleScreenRotation() {
 
 // ==================== DOMContentLoaded ====================
 document.addEventListener('DOMContentLoaded', function() {
-    // #25: 建立橫置提示條
-    const bannerHtml = `
-        <div id="rotateBanner" class="rotate-banner">
-            <div class="banner-content">
-                <span class="icon">🔄</span>
-                <span>將手機橫置可獲得更好體驗</span>
-            </div>
-            <button class="banner-close" onclick="dismissRotateBanner()">✕</button>
-        </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', bannerHtml);
-    
     const hasAutoLogin = checkAutoLogin();
     checkFirebase();
     if (!hasAutoLogin) {
@@ -4898,9 +4937,6 @@ document.addEventListener('DOMContentLoaded', function() {
             handleScreenRotation();
         }, 300);
     });
-    
-    // 頁面載入後不自動顯示提示條（只在做題時顯示）
-    // 已移除自動顯示邏輯
     
     // 難度選擇
     document.getElementById('diff-easy').addEventListener('click', () => { selectedDifficulty = 0; document.getElementById('diff-easy').classList.add('active'); document.getElementById('diff-medium').classList.remove('active'); document.getElementById('diff-hard').classList.remove('active'); isTrialMode = false; updateSettingsUnlockStatus(); });
