@@ -263,353 +263,6 @@
             display: inline-block;
             margin: 4px 0;
         }
-
-        /* ============================================================
-           手機橫置模式 - 變身桌面版（只限做題時）- 從測試版複製
-           ============================================================ */
-        @media (max-width: 900px) and (orientation: landscape) {
-            #quizModal .modal-content {
-                flex-direction: row !important;
-                height: 100vh !important;
-                max-height: 100vh !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                border-radius: 0 !important;
-                background: white;
-                padding: 0 !important;
-            }
-
-            /* 隱藏手機版元素 */
-            #quizModal .quiz-header { display: none !important; }
-            #quizModal .question-nav { display: none !important; }
-            #quizModal .quiz-footer { display: none !important; }
-
-            /* 題目區域佔左邊 */
-            #quizModal .question-area {
-                flex: 1;
-                padding: 20px 24px 16px 24px !important;
-                min-height: 0;
-                display: flex !important;
-                flex-direction: column;
-            }
-            #quizModal .question-text {
-                font-size: 1.2rem !important;
-                margin-bottom: 12px;
-            }
-            #quizModal .image-area img {
-                max-height: 120px !important;
-            }
-            #quizModal .options-grid {
-                grid-template-columns: 1fr 1fr !important;
-                gap: 10px !important;
-                flex: 1;
-                align-content: center;
-            }
-            #quizModal .option-btn {
-                padding: 14px 18px !important;
-                font-size: 1rem !important;
-                min-height: 48px !important;
-            }
-
-            /* 顯示側邊欄 */
-            #quizModal .sidebar {
-                display: flex !important;
-                width: 200px;
-                min-width: 160px;
-            }
-        }
-
-        /* 直置時隱藏側邊欄 */
-        @media (max-width: 900px) and (orientation: portrait) {
-            #quizModal .sidebar { display: none !important; }
-        }
-
-        /* 桌面版（>900px）永遠顯示側邊欄 */
-        @media (min-width: 901px) {
-            #quizModal .sidebar { display: flex !important; }
-            #quizModal .quiz-header { display: none !important; }
-            #quizModal .question-nav { display: none !important; }
-            #quizModal .quiz-footer { display: none !important; }
-        }
-
-        /* ===== 全屏模式 ===== */
-        #quizModal:-webkit-full-screen .modal-content {
-            border-radius: 0 !important;
-            height: 100vh !important;
-            max-height: 100vh !important;
-            width: 100% !important;
-            max-width: 100% !important;
-        }
-        #quizModal:fullscreen .modal-content {
-            border-radius: 0 !important;
-            height: 100vh !important;
-            max-height: 100vh !important;
-            width: 100% !important;
-            max-width: 100% !important;
-        }
-
-        /* ===== 全屏提示 ===== */
-        .fullscreen-hint {
-            position: absolute;
-            bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.6);
-            color: white;
-            font-size: 0.65rem;
-            padding: 4px 14px;
-            border-radius: 20px;
-            z-index: 15;
-            opacity: 0.7;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-        @media (orientation: landscape) and (max-width: 900px) {
-            .fullscreen-hint { display: block; }
-        }
-        @media (orientation: portrait) {
-            .fullscreen-hint { display: none; }
-        }
-        @media (min-width: 901px) {
-            .fullscreen-hint { display: none; }
-        }
-        #quizModal:-webkit-full-screen .fullscreen-hint { display: none !important; }
-        #quizModal:fullscreen .fullscreen-hint { display: none !important; }
-
-        /* ===== 橫置提示 ===== */
-        .landscape-hint {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 99999;
-            padding: 20px;
-        }
-        .landscape-hint.show {
-            display: flex;
-        }
-        .landscape-hint-content {
-            background: white;
-            border-radius: 24px;
-            padding: 32px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-        }
-        .landscape-hint-content h2 {
-            color: #2e0f5a;
-            margin-bottom: 8px;
-        }
-        .landscape-hint-content p {
-            color: #666;
-            font-size: 0.95rem;
-            margin-bottom: 16px;
-            line-height: 1.6;
-        }
-        .landscape-hint-content .btn {
-            width: auto;
-            padding: 10px 40px;
-        }
-
-        /* ============================================================
-           桌面版側邊欄樣式（在 #quizModal 內）
-           ============================================================ */
-        #quizModal .sidebar {
-            width: 210px;
-            min-width: 170px;
-            background: linear-gradient(145deg, #3b1a6e, #2d0f54);
-            padding: 18px 14px 14px 14px;
-            display: none;
-            flex-direction: column;
-            border-left: 1px solid rgba(255,255,255,0.08);
-            flex-shrink: 0;
-            transition: background 0.4s ease;
-        }
-
-        #quizModal .sidebar.difficulty-translate { background: linear-gradient(145deg, #065f46, #047857); }
-        #quizModal .sidebar.difficulty-basic { background: linear-gradient(145deg, #1e40af, #1d4ed8); }
-        #quizModal .sidebar.difficulty-advanced { background: linear-gradient(145deg, #4c1d95, #6d28d9); }
-        #quizModal .sidebar.difficulty-challenge { background: linear-gradient(145deg, #78350f, #b45309); }
-
-        #quizModal .sidebar-row-1 {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 6px;
-            border-bottom: 1px solid rgba(255,255,255,0.12);
-            flex-shrink: 0;
-        }
-        #quizModal .sidebar-row-1 .difficulty {
-            font-size: 13px;
-            font-weight: 600;
-            color: #ffffff;
-        }
-        #quizModal .sidebar-row-1 .timer {
-            font-size: 14px;
-            font-weight: 600;
-            color: #fca5a5;
-        }
-
-        #quizModal .sidebar-row-2 {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.12);
-            flex-shrink: 0;
-        }
-        #quizModal .sidebar-row-2 .table-btn {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 30px;
-            padding: 4px 14px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #ffffff;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        #quizModal .sidebar-row-2 .table-btn:hover {
-            background: rgba(255,255,255,0.25);
-        }
-        #quizModal .sidebar-row-2 .counter {
-            font-size: 15px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        #quizModal .nav-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 3px;
-            padding: 10px 0 8px 0;
-            flex: 1;
-            align-content: flex-start;
-            min-height: 0;
-            overflow-y: auto;
-            border-bottom: 1px solid rgba(255,255,255,0.12);
-            margin-bottom: 8px;
-        }
-        #quizModal .nav-grid::-webkit-scrollbar {
-            width: 2px;
-        }
-        #quizModal .nav-grid::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-        }
-        #quizModal .nav-grid::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.2);
-            border-radius: 10px;
-        }
-
-        #quizModal .nav-dot {
-            border-radius: 50%;
-            background: rgba(255,255,255,0.15);
-            border: none;
-            font-weight: 600;
-            color: #c4b5d4;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            width: 24px;
-            height: 24px;
-            font-size: 9px;
-        }
-        #quizModal .nav-dot.small {
-            width: 20px;
-            height: 20px;
-            font-size: 8px;
-        }
-        #quizModal .nav-dot.tiny {
-            width: 17px;
-            height: 17px;
-            font-size: 7px;
-        }
-        #quizModal .nav-dot.current {
-            background: #8b5cf6;
-            color: white;
-            box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
-        }
-        #quizModal .nav-dot.answered {
-            background: #34d399;
-            color: white;
-        }
-        #quizModal .nav-dot.unanswered {
-            background: #fbbf24;
-            color: #7c5a00;
-        }
-        #quizModal .nav-dot:hover {
-            transform: scale(1.1);
-        }
-
-        #quizModal .sidebar-actions {
-            display: flex;
-            gap: 4px;
-            flex-shrink: 0;
-        }
-        #quizModal .sidebar-actions .btn {
-            flex: 1;
-            padding: 6px 4px;
-            border: none;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-            min-height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #quizModal .sidebar-actions .btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-        #quizModal .btn-prev {
-            background: #ffffff;
-            color: #4a1d8c;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-        #quizModal .btn-prev:hover:not(:disabled) {
-            background: #f5f0ff;
-            transform: translateY(-1px);
-        }
-        #quizModal .btn-next {
-            background: #ffffff;
-            color: #4a1d8c;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-        #quizModal .btn-next:hover:not(:disabled) {
-            background: #f5f0ff;
-            transform: translateY(-1px);
-        }
-        #quizModal .btn-submit {
-            background: #10b981;
-            color: white;
-        }
-        #quizModal .btn-submit:hover:not(:disabled) {
-            background: #059669;
-            transform: translateY(-1px);
-        }
-        #quizModal .btn-submit:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        /* ===== 難度顏色 ===== */
-        #quizModal .modal-content.difficulty-translate { background: #dcfce7; }
-        #quizModal .modal-content.difficulty-basic { background: #dbeafe; }
-        #quizModal .modal-content.difficulty-advanced { background: #ede9fe; }
-        #quizModal .modal-content.difficulty-challenge { background: #fef3c7; }
     </style>
     
     <!-- ===== Firebase SDK (改用 jsdelivr CDN，提升手機相容性) ===== -->
@@ -648,16 +301,6 @@
     </script>
 </head>
 <body>
-
-<!-- ===== 橫置提示（首次做題橫置時顯示） ===== -->
-<div id="landscapeHint" class="landscape-hint">
-    <div class="landscape-hint-content">
-        <div style="font-size: 3rem; margin-bottom: 8px;">📱</div>
-        <h2>💡 橫置手機獲得桌面體驗</h2>
-        <p>將手機橫置，題目和選項會自動調整為桌面版佈局，<br>方便閱讀和作答！</p>
-        <button class="btn btn-primary" id="dismissLandscapeHint">我知道了</button>
-    </div>
-</div>
 
 <div id="orientationWarning" class="orientation-warning">
     <div class="rotate-icon">🔄</div>
@@ -838,46 +481,30 @@
 
 <div id="explainModal" class="modal"><div class="modal-content"><div id="explainContent" class="explain-content"></div><button id="closeExplainBtn" class="btn">返回成績總表</button></div></div>
 
-<!-- ===== 手機版問題彈窗（只有一個彈窗！） ===== -->
-<div id="quizModal" class="modal">
+<!-- ===== 手機版問題彈窗 ===== -->
+<div id="quizModal" class="modal"><div class="modal-content"><div class="quiz-header"><span id="quizDifficulty"></span><span id="quizCounter"></span><span id="timerDisplay" class="quiz-timer">00:00</span></div><div id="questionNav" class="question-nav"></div><div class="quiz-body"><div id="modalQuestionText" class="question-text"></div><div id="modalImageArea"></div><div id="modalOptions"></div></div><div class="quiz-footer"><button id="prevBtn" class="btn btn-outline">◀ 上一題</button><button id="nextBtn" class="btn btn-outline">下一題 ▶</button><button id="submitAllBtn" class="btn" style="background:#10b981;">提交並離開</button></div></div></div>
+
+<!-- ===== 桌面版獨立彈窗 ===== -->
+<div id="desktopQuizModal" class="modal">
     <div class="modal-content">
-
-        <!-- 全屏提示 -->
-        <div class="fullscreen-hint">🔍 已進入全屏模式</div>
-
-        <!-- ===== 手機版標題（直置時顯示） ===== -->
-        <div class="quiz-header">
-            <span id="quizDifficulty"></span>
-            <span id="quizCounter"></span>
-            <span id="timerDisplay" class="quiz-timer">00:00</span>
+        <div class="main-panel" id="desktopMainPanel">
+            <div class="question-area">
+                <div class="question-text" id="desktopQuestionText">
+                    載入中...
+                </div>
+                <div class="image-area" id="desktopImageArea">
+                </div>
+                <div class="options-grid" id="desktopOptions">
+                </div>
+            </div>
         </div>
-
-        <!-- ===== 手機版導航（直置時顯示） ===== -->
-        <div id="questionNav" class="question-nav"></div>
-
-        <!-- ===== 題目區域（永遠顯示） ===== -->
-        <div class="question-area">
-            <div id="modalQuestionText" class="question-text"></div>
-            <div id="modalImageArea" class="image-area-mobile"></div>
-            <div id="modalOptions" class="options-grid"></div>
-        </div>
-
-        <!-- ===== 手機版底部（直置時顯示） ===== -->
-        <div class="quiz-footer">
-            <button id="prevBtn" class="btn btn-outline">◀ 上一題</button>
-            <button id="periodicTableBtn" class="btn btn-outline" style="display:none;">開啟周期表</button>
-            <button id="nextBtn" class="btn btn-outline">下一題 ▶</button>
-            <button id="submitAllBtn" class="btn" style="background:#10b981;">提交並離開</button>
-        </div>
-
-        <!-- ===== 側邊欄（橫置時/桌面版顯示） ===== -->
         <div class="sidebar" id="desktopSidebar">
             <div class="sidebar-row-1">
                 <span class="difficulty" id="desktopDifficulty">📈 Advanced</span>
                 <span class="timer" id="desktopTimer">⏱️ 00:00</span>
             </div>
             <div class="sidebar-row-2">
-                <button class="table-btn" id="desktopPeriodicBtn">開啟周期表</button>
+                <button class="table-btn" id="desktopPeriodicBtn">📊 周期表</button>
                 <span class="counter" id="desktopCounter">1 / 10</span>
             </div>
             <div class="nav-grid" id="desktopNav"></div>
@@ -887,7 +514,6 @@
                 <button class="btn btn-submit" id="desktopSubmitBtn">提交並離開</button>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -17970,11 +17596,6 @@ window.ALL_UNITS = {
   }
 };
 </script>
-<script src="core.js"></script>
-<script src="practice.js"></script>
-<script src="mistakes.js"></script>
-<script src="achievement.js"></script>
-<script src="teacher.js"></script>
-<script src="landscape.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
