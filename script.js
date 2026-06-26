@@ -2864,6 +2864,13 @@ function showQuizModal() {
             periodicBtn.style.display = 'none';
         }
     }
+    
+    // ===== V5: 彈窗顯示後主動觸發橫置提示 =====
+    setTimeout(() => {
+        if (isMobile() && window.innerWidth < window.innerHeight) {
+            showRotateBanner();
+        }
+    }, 300);
 }
 
 function renderQuizNav() {
@@ -3251,6 +3258,13 @@ function showDesktopQuizModal() {
     renderDesktopQuizNav();
     renderDesktopCurrentQuestion();
     document.getElementById('desktopQuizModal').style.display = 'flex';
+    
+    // ===== V5: 彈窗顯示後主動觸發橫置提示 =====
+    setTimeout(() => {
+        if (isMobile() && window.innerWidth < window.innerHeight) {
+            showRotateBanner();
+        }
+    }, 300);
 }
 
 function renderDesktopQuizNav() {
@@ -4787,9 +4801,15 @@ function handleScreenRotation() {
             renderCurrentQuestion();
         }
         
-        // ===== #9: 橫置時自動全屏 =====
+        // ===== #9: 橫置時自動全屏（觸發瀏覽器收縮網址列） =====
         if (window.innerWidth > window.innerHeight) {
-            // 橫置 → 嘗試進入全屏
+            // 橫置 → 觸發 1px 滾動，讓瀏覽器自動隱藏網址列
+            try {
+                window.scrollTo(0, 1);
+            } catch(e) {
+                // 忽略錯誤
+            }
+            // 同時嘗試進入全屏
             try {
                 if (!document.fullscreenElement) {
                     document.documentElement.requestFullscreen?.().catch(() => {
