@@ -482,7 +482,27 @@
 <div id="explainModal" class="modal"><div class="modal-content"><div id="explainContent" class="explain-content"></div><button id="closeExplainBtn" class="btn">返回成績總表</button></div></div>
 
 <!-- ===== 手機版問題彈窗 ===== -->
-<div id="quizModal" class="modal"><div class="modal-content"><div class="quiz-header"><span id="quizDifficulty"></span><span id="quizCounter"></span><span id="timerDisplay" class="quiz-timer">00:00</span></div><div id="questionNav" class="question-nav"></div><div class="quiz-body"><div id="modalQuestionText" class="question-text"></div><div id="modalImageArea"></div><div id="modalOptions"></div></div><div class="quiz-footer"><button id="prevBtn" class="btn btn-outline">◀ 上一題</button><button id="nextBtn" class="btn btn-outline">下一題 ▶</button><button id="submitAllBtn" class="btn" style="background:#10b981;">提交並離開</button></div></div></div>
+<div id="quizModal" class="modal">
+    <div class="modal-content">
+        <div class="quiz-header">
+            <span id="quizDifficulty"></span>
+            <span id="quizCounter"></span>
+            <span id="timerDisplay" class="quiz-timer">00:00</span>
+        </div>
+        <div id="questionNav" class="question-nav"></div>
+        <div class="quiz-body">
+            <div id="modalQuestionText" class="question-text"></div>
+            <div id="modalImageArea"></div>
+            <div id="modalOptions"></div>
+        </div>
+        <div class="quiz-footer">
+            <button id="prevBtn" class="btn btn-outline">◀ 上一題</button>
+            <button id="nextBtn" class="btn btn-outline">下一題 ▶</button>
+            <button id="fullscreenBtn" class="btn btn-fullscreen">⛶ 全屏</button>
+            <button id="submitAllBtn" class="btn" style="background:#10b981;">提交並離開</button>
+        </div>
+    </div>
+</div>
 
 <!-- ===== 桌面版獨立彈窗 ===== -->
 <div id="desktopQuizModal" class="modal">
@@ -1886,6 +1906,86 @@ window.ALL_UNITS = {
             "imageUrl": "https://raw.githubusercontent.com/hderys/mastering-science-images/main/webp_image/C01G068.webp",
             "difficulty": "✅ Basic",
             "difficulty_level": 1,
+            "sf": 1
+          },
+          {
+            "id": "C11G069",
+            "text": "Which of the following is NOT an observation?",
+            "options": [
+              "A. The solution turns from colourless to blue.",
+              "B. Bubbles of gas are given off.",
+              "C. Hydrogen gas is released.",
+              "D. A grey solid forms on the surface of the metal."
+            ],
+            "correct": "C",
+            "explanation": "“Hydrogen gas” is the identity of the gas. The observer can only see “bubbles of colourless gas” – identifying it as hydrogen requires a test (e.g. popping test). This is an inference, not an observation.",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 1
+          },
+          {
+            "id": "C11G070",
+            "text": "Which of the following is an observation?",
+            "options": [
+              "A. Copper oxide is formed.",
+              "B. Sodium chloride solution is produced.",
+              "C. A white precipitate appears.",
+              "D. Hydrogen gas is released."
+            ],
+            "correct": "C",
+            "explanation": "“Copper oxide”, \"Sodium chloride\", \"Hydrogen\" are the names/identities of a substance. They cannot be observed directly.",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 1
+          },
+          {
+            "id": "C11G071",
+            "text": "Which of the following is NOT an observation?",
+            "options": [
+              "A. The magnesium ribbon disappears gradually.",
+              "B. A colourless gas is produced.",
+              "C. Zinc displaces copper from copper sulphate solution.",
+              "D. The flame turns lilac (purple)."
+            ],
+            "correct": "C",
+            "explanation": "“Displaces copper” is a chemical interpretation of what is happening at the particle level. The observer actually sees: the blue solution fades, and a brown solid deposits on the zinc.",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 1
+          },
+          {
+            "id": "C11G072",
+            "text": "Which of the following is an observation?",
+            "options": [
+              "A. The metal dissolves in the acid.",
+              "B. The gas given off is oxygen.",
+              "C. The white solid is calcium oxide.",
+              "D. The reaction is a displacement reaction."
+            ],
+            "correct": "A",
+            "explanation": "“Oxygen” is the identity of the gas – this requires a test (e.g. glowing splint). The observer only sees “bubbles of gas”.<br>“Calcium oxide” is the chemical name – the observer sees a white solid, not “calcium oxide”.<br> “Displacement reaction” is a chemical classification/concept, not something directly seen.",
+            "imageUrl": null,
+            "difficulty": "🔥 Challenge",
+            "difficulty_level": 3,
+            "sf": 1
+          },
+          {
+            "id": "C11G073",
+            "text": "Which of the following is NOT an observation?",
+            "options": [
+              "A. The solution becomes warm.",
+              "B. Bubbles of colourless gas escape from the liquid.",
+              "C. A silver-grey deposit coats the copper wire.",
+              "D. The metal burns to give metal oxide."
+            ],
+            "correct": "D",
+            "explanation": "“Metal oxide” is the chemical identity of the product. The observer actually sees a flame and a solid residue forming – but identifying that solid as “metal oxide” requires chemical knowledge or testing. This is an inference, not a direct observation.",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
             "sf": 1
           }
         ]
@@ -18315,6 +18415,214 @@ window.ALL_UNITS = {
             "difficulty": "✅ Basic",
             "difficulty_level": 1,
             "sf": 1
+          },
+          {
+            "id": "C311A014",
+            "text": "What is the possible observation when a piece of magnesium is added to dilute sulphuric acid?",
+            "options": [
+              "A. No observable change occurs.",
+              "B. A brown solid forms and the solution turns blue.",
+              "C. Effervescence (bubbles of gas) occurs, and the magnesium dissolves gradually. The solution remains colourless.",
+              "D. A white precipitate forms and the solution becomes cloudy."
+            ],
+            "correct": "C",
+            "explanation": "Magnesium is a reactive metal (above hydrogen in the reactivity series). It reacts with dilute sulphuric acid to produce magnesium sulphate and hydrogen gas.",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 1
+          },
+          {
+            "id": "C311A015",
+            "text": "What is the possible observation when a piece of calcium is heated strongly in air?",
+            "options": [
+              "A. It melts and forms a black solid.",
+              "B. It burns and produces a white solid (ash).",
+              "C. It glows red and produces a yellow flame, forming a brown solid.",
+              "D. No reaction occurs; it remains unchanged."
+            ],
+            "correct": "B",
+            "explanation": "Calcium is a reactive alkaline earth metal. When heated strongly in air, it reacts with oxygen to form calcium oxide (CaO), a white solid",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 1
+          },
+          {
+            "id": "C311A016",
+            "text": "What is the possible observation when a piece of potassium is added to cold water?",
+            "options": [
+              "A. It sinks and dissolves slowly with no visible change.",
+              "B. It floats, moves around vigorously, melts into a silvery ball, effervesces (bubbles of gas), and may catch fire with a lilac flame.",
+              "C. It reacts quietly, producing a white precipitate.",
+              "D. It turns the water blue and forms a green solid."
+            ],
+            "correct": "B",
+            "explanation": "Potassium is an extremely reactive alkali metal (Group I). It reacts violently with cold water to produce potassium hydroxide (KOH) and hydrogen gas (H₂). The reaction is highly exothermic.",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 1
+          },
+          {
+            "id": "C311A017",
+            "text": "What is the possible observation when a piece of magnesium is heated with steam?",
+            "options": [
+              "A. It reacts vigorously, producing a white flame and a white solid, and a colorless gas is released.",
+              "B. It dissolves completely, forming a colourless solution.",
+              "C. No reaction occurs because magnesium does not react with steam.",
+              "D.  It produces a brown gas and a yellow residue."
+            ],
+            "correct": "A",
+            "explanation": "Magnesium reacts with steam (not cold water) when heated strongly. It produces magnesium oxide (MgO) – a white solid – and hydrogen gas",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 1
+          },
+          {
+            "id": "C311A018",
+            "text": "What is the possible observation when a piece of zinc is added to dilute hydrochloric acid?",
+            "options": [
+              "A. No observable change occurs.",
+              "B. Effervescence (bubbles of gas) occurs, and the zinc gradually dissolves. The solution remains colourless.",
+              "C. A white precipitate forms immediately.",
+              "D. The solution turns pink and the zinc becomes coated with a grey deposit."
+            ],
+            "correct": "B",
+            "explanation": "Zinc is a moderately reactive metal (above hydrogen in the reactivity series). It reacts with dilute hydrochloric acid to produce zinc chloride and hydrogen gas.",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 1
+          },
+          {
+            "id": "C311A019",
+            "text": "What is the possible observation when a piece of copper wire is added to silver nitrate solution?",
+            "options": [
+              "A. No observable change occurs.",
+              "B. The copper wire dissolves, and the solution turns blue. A grey/silvery deposit forms on the copper wire.",
+              "C. A brown gas is released, and the solution turns colourless.",
+              "D. The copper wire becomes coated with a white precipitate, and the solution turns green."
+            ],
+            "correct": "B",
+            "explanation": "Copper is higher than silver in the reactivity series, so it displaces silver from silver nitrate solution.",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 1
+          },
+          {
+            "id": "C311B001",
+            "text": "Which of the following statements about some reactions of metals are INCORRECT?<br>(1) Gold burns in air with a golden yellow flame under strong heating.<br>(2) Iron reacts with steam to give iron(III) oxide and hydrogen.<br>(3) Calcium burns under strong heating to give oxygen.",
+            "options": [
+              "A. (1) and (2) only",
+              "B. (1) and (3) only",
+              "C. (2) and (3) only",
+              "D. (1), (2) and (3) "
+            ],
+            "correct": "D",
+            "explanation": "Gold does not react with air even under strong heating. Iron reacts with steam to give iron(II, III) oxide and hydrogen. Calcium burns under strong heating to give calcium oxide.",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 0
+          },
+          {
+            "id": "C311B002",
+            "text": "Both sodium and calcium can react with cold water. Which of the following statements are correct for both of the reactions?<br>(1) The metals move quickly on the water surface with a hissing sound.<br>(2) A colourless gas is produced.<br>(3) The resultant solutions are alkaline.",
+            "options": [
+              "A. (1) and (2) only",
+              "B. (1) and (3) only",
+              "C. (2) and (3) only",
+              "D. (1), (2) and (3) "
+            ],
+            "correct": "C",
+            "explanation": "When calcium is added to cold water, it sinks. Since metal hydroxides are produced, the presence of hydroxide ions makes the solutions alkaline.",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 0
+          },
+          {
+            "id": "C311B003",
+            "text": "Which of the following combinations describing the resultant solution and gas evolved in the reaction between sodium and water is correct?",
+            "options": [
+              "A. acidic, oxygen",
+              "B. alkaline, oxygen",
+              "C. acidic, hydrogen",
+              "D. alkaline, hydrogen"
+            ],
+            "correct": "D",
+            "explanation": "Sodium reacts with water to form sodium hydroxide and hydrogen. Sodium hydroxide in water gives hydroxide ions, making the solution alkaline.",
+            "imageUrl": null,
+            "difficulty": "✅ Basic",
+            "difficulty_level": 1,
+            "sf": 1
+          },
+          {
+            "id": "C311B004",
+            "text": "Which of the following metals should be added to dilute sulphuric acid so that hydrogen can be safely produced in the school laboratory?",
+            "options": [
+              "A. Copper",
+              "B. Lead",
+              "C. Potassium",
+              "D. Zinc"
+            ],
+            "correct": "D",
+            "explanation": "Zinc reacts moderately with dilute sulphuric acid and the reaction is easier to control. Lead reacts with dilute sulphuric acid to form an insoluble layer (PbSO₄) on the surface of lead so as to prevent further reaction. Potassium reacts with the acid but it is extremely dangerous. Copper does not react with dilute sulphuric acid.",
+            "imageUrl": null,
+            "difficulty": "🔥 Challenge",
+            "difficulty_level": 3,
+            "sf": 1
+          },
+          {
+            "id": "C311B005",
+            "text": "Which of the following reactions does NOT give hydrogen?",
+            "options": [
+              "A. Adding calcium granules to cold water.",
+              "B. Adding zinc granules to dilute hydrochloric acid.",
+              "C. Passing steam over a hot magnesium ribbon.",
+              "D. Adding an iron nail to cold water."
+            ],
+            "correct": "D",
+            "explanation": "Iron does not react with water.",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 1
+          },
+          {
+            "id": "C311B006",
+            "text": "Which of the following statements concerning the reactions of zinc are INCORRECT?<br>(1) Zinc reacts with hot water to give zinc oxide and hydrogen.<br>(2) Zinc reacts with dilute sulphuric acid to give hydrogen.<br>(3) Zinc burns in air to give oxygen under very strong heating.",
+            "options": [
+              "A. (1) and (2) only",
+              "B. (1) and (3) only",
+              "C. (2) and (3) only",
+              "D. (1), (2) and (3) "
+            ],
+            "correct": "B",
+            "explanation": "Zinc does not react with hot water but it does react with steam to give zinc oxide and hydrogen. Zinc burns in air to give zinc oxide under very strong heating.",
+            "imageUrl": null,
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 0
+          },
+          {
+            "id": "C311B007",
+            "text": "Metal 𝑋 reacts with cold water readily while metal 𝑌 and metal 𝑍 do not. Metal 𝑌 reacts with dilute hydrochloric acid but metal 𝑍 does not. Which of the following combinations is correct?",
+            "options": [
+              "A. ",
+              "B. ",
+              "C. ",
+              "D. "
+            ],
+            "correct": "D",
+            "explanation": "Calcium reacts with cold water readily to form calcium hydroxide and hydrogen. Iron reacts with dilute hydrochloric acid to form iron(II) chloride and hydrogen. Copper does not react with neither water and dilute hydrochloric acid.",
+            "imageUrl": "https://raw.githubusercontent.com/hderys/mastering-science-images/main/webp_image/C11B007.webp",
+            "difficulty": "📈 Advanced",
+            "difficulty_level": 2,
+            "sf": 0
           }
         ]
       }
