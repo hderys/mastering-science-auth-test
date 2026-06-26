@@ -2851,7 +2851,6 @@ function showQuizModal() {
             periodicBtn = document.createElement('button');
             periodicBtn.id = 'periodicTableBtn';
             periodicBtn.className = 'btn btn-outline';
-            // ===== #4: 周期表按鈕文字改為「打開周期表」 =====
             periodicBtn.textContent = '📊 打開周期表';
             periodicBtn.addEventListener('click', showPeriodicTable);
             const nextBtn = document.getElementById('nextBtn');
@@ -3045,7 +3044,7 @@ function checkAllQuestionsAnswered() {
     }
 }
 
-// ==================== submitAll（#3 增強未答完提醒） ====================
+// ==================== submitAll ====================
 function submitAll() {
     if (blinkInterval) {
         clearInterval(blinkInterval);
@@ -3053,38 +3052,6 @@ function submitAll() {
         const submitBtn = document.getElementById('submitAllBtn');
         if (submitBtn) submitBtn.style.animation = '';
     }
-    
-    // ===== #3: 檢查未答題數 =====
-    const unansweredIndices = [];
-    for (let i = 0; i < currentAnswers.length; i++) {
-        if (currentAnswers[i] === null || currentAnswers[i] === undefined) {
-            unansweredIndices.push(i);
-        }
-    }
-    
-    if (unansweredIndices.length > 0) {
-        const total = currentAnswers.length;
-        const unansweredCount = unansweredIndices.length;
-        
-        // 構建提示訊息
-        let hintMsg = `⚠️ 你還有 ${unansweredCount} 題未作答（共 ${total} 題）\n\n`;
-        hintMsg += `💡 提示：\n`;
-        hintMsg += `   • 按「下一題 ▶」按鈕繼續作答\n`;
-        hintMsg += `   • 或點擊上方的圓圈號碼（如 ① ② ③）跳轉到未作答的題目\n\n`;
-        hintMsg += `確定要提交並離開嗎？\n（提交後無法修改答案）`;
-        
-        if (!confirm(hintMsg)) {
-            // 用戶選擇「繼續作答」，跳到第一個未答題
-            const firstUnanswered = unansweredIndices[0];
-            currentQIndex = firstUnanswered;
-            renderQuizNav();
-            renderCurrentQuestion();
-            updateNavButtons();
-            return;
-        }
-    }
-    
-    // 原有的提交邏輯繼續
     if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
@@ -3427,7 +3394,6 @@ function checkDesktopAllQuestionsAnswered() {
     }
 }
 
-// ===== #4: 桌面版周期表按鈕文字改為「打開元素周期表」 =====
 function updateDesktopPeriodicButton() {
     const periodicBtn = document.getElementById('desktopPeriodicBtn');
     if (!periodicBtn) return;
@@ -3451,35 +3417,6 @@ function submitDesktopAll() {
         const submitBtn = document.getElementById('desktopSubmitBtn');
         if (submitBtn) submitBtn.style.animation = '';
     }
-    
-    // ===== #3: 檢查未答題數（桌面版） =====
-    const unansweredIndices = [];
-    for (let i = 0; i < currentAnswers.length; i++) {
-        if (currentAnswers[i] === null || currentAnswers[i] === undefined) {
-            unansweredIndices.push(i);
-        }
-    }
-    
-    if (unansweredIndices.length > 0) {
-        const total = currentAnswers.length;
-        const unansweredCount = unansweredIndices.length;
-        
-        let hintMsg = `⚠️ 你還有 ${unansweredCount} 題未作答（共 ${total} 題）\n\n`;
-        hintMsg += `💡 提示：\n`;
-        hintMsg += `   • 按「下一題 ▶」按鈕繼續作答\n`;
-        hintMsg += `   • 或點擊右側的圓圈號碼跳轉到未作答的題目\n\n`;
-        hintMsg += `確定要提交並離開嗎？\n（提交後無法修改答案）`;
-        
-        if (!confirm(hintMsg)) {
-            const firstUnanswered = unansweredIndices[0];
-            currentQIndex = firstUnanswered;
-            renderDesktopQuizNav();
-            renderDesktopCurrentQuestion();
-            updateDesktopNavButtons();
-            return;
-        }
-    }
-    
     if (timerInterval) clearInterval(timerInterval);
     const timeSpentSeconds = Math.round((Date.now() - startTime) / 1000);
     
@@ -4872,9 +4809,6 @@ function handleScreenRotation() {
         }
     }
 }
-
-// ==================== #2: index.html 中的提交按鈕文字已改為「提交並離開」 ====================
-// （在 index.html 中修改，此處無需額外程式碼）
 
 // ==================== DOMContentLoaded ====================
 document.addEventListener('DOMContentLoaded', function() {
