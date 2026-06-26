@@ -2598,6 +2598,20 @@ async function renderAchievements() {
     container.innerHTML = html;
 }
 
+function updateTimerDisplay() {
+    const m = Math.floor(timeRemaining / 60);
+    const s = timeRemaining % 60;
+    const timeStr = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    
+    // 更新手機版
+    const timerDisplay = document.getElementById('timerDisplay');
+    if (timerDisplay) timerDisplay.innerText = timeStr;
+    
+    // 更新桌面版
+    const desktopTimer = document.getElementById('desktopTimer');
+    if (desktopTimer) desktopTimer.innerText = `⏱️ ${timeStr}`;
+}
+
 function startPracticeWithSettings() {
     let unit = pendingUnit, chapter = pendingChapter;
     let allQuestions = [...window.ALL_UNITS[unit].chapters[chapter].questions], total = allQuestions.length;
