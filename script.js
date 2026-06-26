@@ -3021,18 +3021,115 @@ function updateDesktopPeriodicButton() {
     }
 }
 
-// 🔧 修正：提交函數 - 加入「未完成」確認彈窗
+// ============================================================
+// 🔧 提交函數 - 包含自訂「未作答」確認彈窗
+// ============================================================
 function submitDesktopAll() {
-    // 🔧 修正：檢查是否有未作答的題目
+    // 檢查是否有未作答的題目
     let answeredCount = currentAnswers.filter(a => a !== null && a !== undefined).length;
     let unansweredCount = currentQuestions.length - answeredCount;
     
     if (unansweredCount > 0) {
-        if (!confirm(`⚠️ 你還有 ${unansweredCount} 題未作答，確定要提交嗎？`)) {
-            return;  // 用戶按「取消」，不做任何事
-        }
+        // 找出第一題未作答的索引
+        let firstUnansweredIndex = currentAnswers.findIndex(a => a === null || a === undefined);
+        if (firstUnansweredIndex === -1) firstUnansweredIndex = 0;
+        
+        // 建立自訂彈窗
+        const overlay = document.createElement('div');
+        overlay.id = 'unansweredConfirmOverlay';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.65); display: flex; justify-content: center; align-items: center;
+            z-index: 99999; animation: fadeIn 0.25s ease;
+            backdrop-filter: blur(4px);
+        `;
+        
+        const card = document.createElement('div');
+        card.style.cssText = `
+            background: linear-gradient(145deg, #ffffff, #f8f5ff);
+            border-radius: 32px; padding: 32px 36px; max-width: 440px; width: 92%;
+            text-align: center; box-shadow: 0 24px 80px rgba(74, 29, 140, 0.3);
+            animation: slideUp 0.3s ease; border: 2px solid #e9e4f5;
+        `;
+        
+        card.innerHTML = `
+            <div style="font-size: 52px; margin-bottom: 4px;">🧐</div>
+            <h2 style="color: #2e0f5a; margin-bottom: 4px; font-size: 1.3rem;">你還有 <span style="color: #dc2626; font-weight: 900;">${unansweredCount}</span> 題未作答</h2>
+            <div style="color: #888; font-size: 0.95rem; margin-bottom: 20px; line-height: 1.6;">
+                完成所有題目才能獲得完整成績分析喔！
+                <br><span style="font-size: 0.8rem; color: #aaa;">💡 點擊下方按鈕快速跳到未作答的題目</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button id="gotoUnansweredBtn" style="
+                    background: linear-gradient(135deg, #4a1d8c, #7c3aed);
+                    color: white; border: none; padding: 14px 0;
+                    border-radius: 60px; font-size: 1rem; font-weight: 700;
+                    cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+                    box-shadow: 0 4px 16px rgba(74, 29, 140, 0.3);
+                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    📋 跳到第 ${firstUnansweredIndex + 1} 題（未作答）
+                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button id="forceSubmitBtn" style="
+                        flex: 1; background: #dc2626; color: white; border: none; padding: 12px 0;
+                        border-radius: 60px; font-size: 0.9rem; font-weight: 600;
+                        cursor: pointer; transition: transform 0.15s;
+                    " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                        ⚠️ 還是提交
+                    </button>
+                    <button id="continueBtn" style="
+                        flex: 1; background: #f0edf8; color: #4a1d8c; border: none; padding: 12px 0;
+                        border-radius: 60px; font-size: 0.9rem; font-weight: 600;
+                        cursor: pointer; transition: transform 0.15s;
+                    " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                        ✕ 繼續作答
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+        
+        // 點擊背景關閉（繼續作答）
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                overlay.remove();
+            }
+        });
+        
+        // 「跳到未作答」按鈕
+        document.getElementById('gotoUnansweredBtn').addEventListener('click', function() {
+            overlay.remove();
+            // 跳轉到第一題未作答
+            currentQIndex = firstUnansweredIndex;
+            renderDesktopQuizNav();
+            renderDesktopCurrentQuestion();
+            updateDesktopNavButtons();
+            checkDesktopAllQuestionsAnswered();
+        });
+        
+        // 「繼續作答」按鈕
+        document.getElementById('continueBtn').addEventListener('click', function() {
+            overlay.remove();
+        });
+        
+        // 「還是提交」按鈕 — 繼續執行提交
+        document.getElementById('forceSubmitBtn').addEventListener('click', function() {
+            overlay.remove();
+            // 繼續執行提交（重新呼叫 submitDesktopAll，但跳過檢查）
+            continueSubmitDesktopAll();
+        });
+        
+        return;  // 停止執行，等待用戶操作
     }
     
+    // 如果全部已作答，直接提交
+    continueSubmitDesktopAll();
+}
+
+// 將原本的提交邏輯抽出為獨立函數
+function continueSubmitDesktopAll() {
     if (blinkInterval) {
         clearInterval(blinkInterval);
         blinkInterval = null;
@@ -3127,7 +3224,6 @@ function submitDesktopAll() {
     document.getElementById('desktopQuizModal').style.display = 'none';
     exitFullscreenMode();
     
-    // 延遲一點點顯示結果，確保視窗已關閉
     setTimeout(function() {
         displayResults(results);
     }, 100);
