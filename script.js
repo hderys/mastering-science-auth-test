@@ -4774,13 +4774,56 @@ async function saveClassSettings(className, settings) {
     }
 }
 
-// ==================== #6 螢幕旋轉監聽（手機橫置↔垂直切換） ====================
+// ==================== #25: 垂直手機橫置提示條 ====================
+let rotateBannerShown = false;
+
+function showRotateBanner() {
+    // 只在手機垂直模式顯示
+    if (!isMobile()) return;
+    if (window.innerWidth > window.innerHeight) return; // 已經是橫置
+    if (rotateBannerShown) return;
+    
+    // 檢查是否已關閉過（存 localStorage）
+    if (localStorage.getItem('ms_chem_rotate_banner_dismissed') === 'true') return;
+    
+    const banner = document.getElementById('rotateBanner');
+    if (banner) {
+        banner.classList.add('show');
+        rotateBannerShown = true;
+    }
+}
+
+function hideRotateBanner() {
+    const banner = document.getElementById('rotateBanner');
+    if (banner) {
+        banner.classList.remove('show');
+    }
+    rotateBannerShown = false;
+}
+
+function dismissRotateBanner() {
+    localStorage.setItem('ms_chem_rotate_banner_dismissed', 'true');
+    hideRotateBanner();
+}
+
+// ==================== #6 螢幕旋轉監聽（手機橫置↔垂直切換 + #9 自動全屏） ====================
 function handleScreenRotation() {
     // 只有在問題彈窗正在顯示時才處理
     const quizModal = document.getElementById('quizModal');
     const desktopModal = document.getElementById('desktopQuizModal');
     const isQuizVisible = (quizModal && quizModal.style.display === 'flex') || 
                           (desktopModal && desktopModal.style.display === 'flex');
+    
+    // #25: 顯示/隱藏橫置提示條（不只在練習時，也在主畫面）
+    if (isMobile()) {
+        if (window.innerWidth > window.innerHeight) {
+            // 橫置 → 隱藏提示條
+            hideRotateBanner();
+        } else {
+            // 垂直 → 顯示提示條
+            showRotateBanner();
+        }
+    }
     
     if (!isQuizVisible) return;
     
@@ -4795,6 +4838,29 @@ function handleScreenRotation() {
             quizModal.style.display = 'flex';
             // 重新渲染當前題目（確保佈局正確）
             renderCurrentQuestion();
+        }
+        
+        // ===== #9: 橫置時自動全屏 =====
+        if (window.innerWidth > window.innerHeight) {
+            // 橫置 → 嘗試進入全屏
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen?.().catch(() => {
+                        // 忽略錯誤（某些瀏覽器需要用戶點擊觸發）
+                    });
+                }
+            } catch(e) {
+                // 忽略錯誤
+            }
+        } else {
+            // 垂直 → 退出全屏
+            try {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen?.().catch(() => {});
+                }
+            } catch(e) {
+                // 忽略錯誤
+            }
         }
     } else {
         // 切換到桌面版
@@ -4812,6 +4878,18 @@ function handleScreenRotation() {
 
 // ==================== DOMContentLoaded ====================
 document.addEventListener('DOMContentLoaded', function() {
+    // #25: 建立橫置提示條
+    const bannerHtml = `
+        <div id="rotateBanner" class="rotate-banner">
+            <div class="banner-content">
+                <span class="icon">🔄</span>
+                <span>將手機橫置可獲得更好體驗</span>
+            </div>
+            <button class="banner-close" onclick="dismissRotateBanner()">✕</button>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', bannerHtml);
+    
     const hasAutoLogin = checkAutoLogin();
     checkFirebase();
     if (!hasAutoLogin) {
@@ -4834,6 +4912,13 @@ document.addEventListener('DOMContentLoaded', function() {
             handleScreenRotation();
         }, 300);
     });
+    
+    // 頁面載入後檢查是否需要顯示提示條
+    setTimeout(function() {
+        if (isMobile() && window.innerWidth < window.innerHeight) {
+            showRotateBanner();
+        }
+    }, 1000);
     
     // 難度選擇
     document.getElementById('diff-easy').addEventListener('click', () => { selectedDifficulty = 0; document.getElementById('diff-easy').classList.add('active'); document.getElementById('diff-medium').classList.remove('active'); document.getElementById('diff-hard').classList.remove('active'); isTrialMode = false; updateSettingsUnlockStatus(); });
