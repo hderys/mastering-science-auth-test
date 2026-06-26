@@ -428,10 +428,16 @@ function submitAll() {
             else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
         } catch(e) {}
     }
+    // 解鎖方向
+    try {
+        if (screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
+        }
+    } catch(e) {}
 }
 
 // ============================================================
-// ✅ 最終全屏功能（移除所有 alert）
+// ✅ 最終全屏功能（加返 orientation lock）
 // ============================================================
 async function toggleFullscreen() {
     console.log('🔍 全屏按鈕被點擊');
@@ -441,6 +447,13 @@ async function toggleFullscreen() {
         try {
             if (document.exitFullscreen) await document.exitFullscreen();
             else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+            
+            // 解鎖方向
+            try {
+                if (screen.orientation && screen.orientation.unlock) {
+                    screen.orientation.unlock();
+                }
+            } catch(e) {}
             
             const btn = document.getElementById('fullscreenBtn');
             if (btn) {
@@ -461,14 +474,23 @@ async function toggleFullscreen() {
         }
     }
     
-    // ===== 進入全屏：直接切換 =====
-    console.log('📱 切換到桌面版');
+    // ===== 進入全屏 =====
     
-    // 1. 隱藏手機版
+    // 1. ✅ 即刻鎖定橫置（喺用戶手勢期間執行）
+    try {
+        if (screen.orientation && screen.orientation.lock) {
+            await screen.orientation.lock('landscape');
+            console.log('✅ 方向已鎖定為橫置');
+        }
+    } catch(e) {
+        console.log('ℹ️ 鎖定方向失敗（可能裝置唔支援）:', e.message);
+    }
+    
+    // 2. 隱藏手機版
     const quizModal = document.getElementById('quizModal');
     if (quizModal) quizModal.style.display = 'none';
     
-    // 2. 顯示桌面版
+    // 3. 顯示桌面版
     const desktopModal = document.getElementById('desktopQuizModal');
     if (desktopModal) {
         desktopModal.style.display = 'flex';
@@ -477,14 +499,14 @@ async function toggleFullscreen() {
         renderDesktopQuizNav();
     }
     
-    // 3. 更新按鈕
+    // 4. 更新按鈕
     const btn = document.getElementById('fullscreenBtn');
     if (btn) {
         btn.textContent = '⛶ 退出';
         btn.classList.add('active');
     }
     
-    // 4. 嘗試 Fullscreen API（用最簡單方式，唔用 await）
+    // 5. 嘗試 Fullscreen API
     try {
         const el = document.documentElement;
         if (el.requestFullscreen) {
@@ -498,7 +520,7 @@ async function toggleFullscreen() {
         console.log('ℹ️ Fullscreen 失敗（已切換到桌面版）:', e.message);
     }
     
-    // 5. 滾動
+    // 6. 滾動
     setTimeout(() => window.scrollTo(0, 1), 300);
 }
 
