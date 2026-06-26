@@ -4715,10 +4715,17 @@ async function saveClassSettings(className, settings) {
 let rotateBannerShown = false;
 
 function showRotateBanner() {
-    // 只在手機垂直模式顯示
+    // 只在手機垂直模式 + 練習進行中顯示
     if (!isMobile()) return;
     if (window.innerWidth > window.innerHeight) return; // 已經是橫置
     if (rotateBannerShown) return;
+    
+    // ✅ V4: 檢查是否正在做題
+    const quizModal = document.getElementById('quizModal');
+    const desktopModal = document.getElementById('desktopQuizModal');
+    const isQuizVisible = (quizModal && quizModal.style.display === 'flex') || 
+                          (desktopModal && desktopModal.style.display === 'flex');
+    if (!isQuizVisible) return;
     
     // 檢查是否已關閉過（存 localStorage）
     if (localStorage.getItem('ms_chem_rotate_banner_dismissed') === 'true') return;
@@ -4751,8 +4758,8 @@ function handleScreenRotation() {
     const isQuizVisible = (quizModal && quizModal.style.display === 'flex') || 
                           (desktopModal && desktopModal.style.display === 'flex');
     
-    // #25: 顯示/隱藏橫置提示條（不只在練習時，也在主畫面）
-    if (isMobile()) {
+    // #25: 只有做題時才顯示橫置提示
+    if (isMobile() && isQuizVisible) {
         if (window.innerWidth > window.innerHeight) {
             // 橫置 → 隱藏提示條
             hideRotateBanner();
@@ -4760,6 +4767,9 @@ function handleScreenRotation() {
             // 垂直 → 顯示提示條
             showRotateBanner();
         }
+    } else {
+        // 不在做題時，隱藏提示條
+        hideRotateBanner();
     }
     
     if (!isQuizVisible) return;
@@ -4847,12 +4857,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 300);
     });
     
-    // 頁面載入後檢查是否需要顯示提示條
-    setTimeout(function() {
-        if (isMobile() && window.innerWidth < window.innerHeight) {
-            showRotateBanner();
-        }
-    }, 1000);
+    // 頁面載入後不自動顯示提示條（只在做題時顯示）
+    // 已移除自動顯示邏輯
     
     // 難度選擇
     document.getElementById('diff-easy').addEventListener('click', () => { selectedDifficulty = 0; document.getElementById('diff-easy').classList.add('active'); document.getElementById('diff-medium').classList.remove('active'); document.getElementById('diff-hard').classList.remove('active'); isTrialMode = false; updateSettingsUnlockStatus(); });

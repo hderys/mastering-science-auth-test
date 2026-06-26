@@ -1720,25 +1720,64 @@ body {
         cursor: not-allowed;
     }
     
-    /* ===== V3: 桌面版上下頁按鈕縮小 ===== */
+    /* ===== V4: 桌面版上下頁按鈕大幅縮小 ===== */
     #desktopQuizModal .sidebar-actions .btn-prev,
     #desktopQuizModal .sidebar-actions .btn-next {
+        flex: 0.35 !important;
         font-size: 10px !important;
-        padding: 4px 6px !important;
+        padding: 4px 0 !important;
         min-height: 24px !important;
+        max-width: 44px !important;
+        letter-spacing: 0 !important;
     }
 }
 
 /* ============================================================
-   V3: 手機橫置時自動全屏（撐滿畫面，網址列自動隱藏）
+   V4: 手機橫置時自動全屏（撐滿畫面，網址列自動隱藏）
    ============================================================ */
 @media (max-width: 900px) and (orientation: landscape) {
+    /* 整個彈窗容器撐滿全屏 */
+    #desktopQuizModal {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        background: rgba(0,0,0,0.7) !important;
+        z-index: 99999 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+    
     #desktopQuizModal .modal-content {
-        height: 100vh !important;
-        max-height: 100vh !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
         width: 100% !important;
         max-width: 100% !important;
         border-radius: 0 !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* 隱藏手機版元素（確保乾淨切換） */
+    #quizModal .quiz-header { display: none !important; }
+    #quizModal .question-nav { display: none !important; }
+    #quizModal .quiz-footer { display: none !important; }
+    
+    /* 側邊欄強制顯示 */
+    #desktopQuizModal .sidebar {
+        display: flex !important;
+        width: 200px !important;
+        min-width: 160px !important;
     }
 }
 
