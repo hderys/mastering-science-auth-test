@@ -2693,3 +2693,29 @@ body {
 
 #desktopQuizModal .sidebar .counter {
     font-size: 15px !important;
+}
+
+/* ============================================================
+   桌面版全屏按鈕樣式
+   ============================================================ */
+
+#desktopQuizModal .sidebar-actions .btn-fullscreen {
+    flex: 0.5 !important;
+    font-size: 10px !important;
+    padding: 4px 0 !important;
+    min-height: 24px !important;
+    background: rgba(255,255,255,0.15) !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: 30px !important;
+    cursor: pointer !important;
+}
+
+#desktopQuizModal .sidebar-actions .btn-fullscreen:hover {
+    background: rgba(255,255,255,0.25) !important;
+}
+
+#desktopQuizModal .sidebar-actions .btn-fullscreen.active {
+    background: rgba(239, 68, 68, 0.3) !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+}
