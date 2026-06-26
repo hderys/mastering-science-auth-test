@@ -2836,31 +2836,27 @@ function closeDSEResult() {
     }
 }
 
-// ==================== V8: 全屏功能（100% 可靠版） ====================
+// ==================== V8: 全屏功能（100% 可靠版 - 強制切換） ====================
 async function toggleFullscreen() {
     const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
     
     // 如果已經是全屏 → 退出
     if (isFullscreen || document.fullscreenElement || document.webkitFullscreenElement) {
         try {
-            // 退出全屏
             if (document.exitFullscreen) {
                 await document.exitFullscreen();
             } else if (document.webkitExitFullscreen) {
                 await document.webkitExitFullscreen();
             }
-            // 解鎖方向
             try {
                 if (screen.orientation && screen.orientation.unlock) {
                     screen.orientation.unlock();
                 }
             } catch(e) {}
             isFullscreen = false;
-            
-            // 更新按鈕文字
             updateFullscreenButtons('⛶ 全屏', false);
             
-            // 如果在手機上，退出全屏後切換回手機版
+            // 退出全屏後切換回手機版（如果係手機）
             if (isMobileDevice) {
                 const desktopModal = document.getElementById('desktopQuizModal');
                 const quizModal = document.getElementById('quizModal');
@@ -2887,59 +2883,49 @@ async function toggleFullscreen() {
                 if (screen.orientation && screen.orientation.lock) {
                     await screen.orientation.lock('landscape');
                     console.log('✅ 方向已鎖定為橫置');
-                } else {
-                    // 瀏覽器唔支援鎖方向，但繼續進行
-                    console.log('ℹ️ 瀏覽器唔支援鎖定方向，繼續全屏');
                 }
             } catch(e) {
                 console.warn('⚠️ 鎖定方向失敗（可能自動旋轉已鎖定）:', e);
-                // 顯示輕提示叫用戶手動橫置
-                showToast('📱 請手動將手機橫置以獲得最佳體驗');
             }
         }
         
-        // 2. 進入全屏（呢個係令網址列消失嘅關鍵）
+        // 2. 進入全屏
         const el = document.documentElement;
         if (el.requestFullscreen) {
             await el.requestFullscreen();
         } else if (el.webkitRequestFullscreen) {
             await el.webkitRequestFullscreen();
-        } else {
-            // 如果全屏 API 唔支援，跳過但繼續切換 UI
-            console.warn('⚠️ 瀏覽器唔支援全屏 API');
         }
         
         isFullscreen = true;
         updateFullscreenButtons('⛶ 退出', true);
         console.log('✅ 已進入全屏模式');
         
-        // 3. ✅ 核心：強制切換到桌面版彈窗（模擬橫置風格）
+        // 3. ✅ 強制切換到桌面版彈窗（唔理任何條件）
         if (isMobileDevice) {
             const quizModal = document.getElementById('quizModal');
             const desktopModal = document.getElementById('desktopQuizModal');
             
-            if (quizModal && quizModal.style.display === 'flex') {
+            // 直接強制切換，唔檢查任何條件
+            if (quizModal) {
                 quizModal.style.display = 'none';
-                if (desktopModal) {
-                    desktopModal.style.display = 'flex';
-                    // 同步桌面版內容
-                    renderDesktopCurrentQuestion();
-                    updateTimerDisplay();
-                    console.log('✅ 已自動切換到桌面版（橫置風格）');
-                }
+                console.log('📱 已隱藏手機版彈窗');
+            }
+            if (desktopModal) {
+                desktopModal.style.display = 'flex';
+                renderDesktopCurrentQuestion();
+                updateTimerDisplay();
+                console.log('✅ 已強制切換到桌面版（橫置風格）');
+            } else {
+                console.warn('⚠️ 找不到桌面版彈窗元素');
             }
         }
         
-        // 4. 輔助：滾動 1px 確保網址列消失（如果全屏成功）
+        // 4. 滾動 1px 確保網址列消失
         setTimeout(() => {
+            window.scrollTo(0, 1);
             const quizBody = document.querySelector('#quizModal .quiz-body');
-            if (quizBody) {
-                quizBody.scrollTo(0, 1);
-            }
-            // 如果全屏失敗，至少 hide 手機網址列
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                window.scrollTo(0, 1);
-            }
+            if (quizBody) quizBody.scrollTo(0, 1);
         }, 300);
         
     } catch(e) {
@@ -2948,17 +2934,17 @@ async function toggleFullscreen() {
         if (isMobileDevice) {
             const quizModal = document.getElementById('quizModal');
             const desktopModal = document.getElementById('desktopQuizModal');
-            if (quizModal && quizModal.style.display === 'flex') {
+            if (quizModal) {
                 quizModal.style.display = 'none';
-                if (desktopModal) {
-                    desktopModal.style.display = 'flex';
-                    renderDesktopCurrentQuestion();
-                    updateTimerDisplay();
-                }
+                console.log('📱 已隱藏手機版彈窗（fallback）');
+            }
+            if (desktopModal) {
+                desktopModal.style.display = 'flex';
+                renderDesktopCurrentQuestion();
+                updateTimerDisplay();
+                console.log('✅ 已切換到桌面版（fallback）');
             }
         }
-        // 顯示提示
-        alert('⚠️ 無法進入全屏模式，但已切換到橫置風格。');
     }
 }
 
@@ -2969,11 +2955,19 @@ function updateFullscreenButtons(text, active) {
     
     if (btn) {
         btn.textContent = text;
-        btn.classList.toggle('active', active);
+        if (active) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
     }
     if (desktopBtn) {
         desktopBtn.textContent = text;
-        desktopBtn.classList.toggle('active', active);
+        if (active) {
+            desktopBtn.classList.add('active');
+        } else {
+            desktopBtn.classList.remove('active');
+        }
     }
 }
 
