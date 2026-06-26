@@ -2839,7 +2839,12 @@ function closeDSEResult() {
 // ✅ 終極極簡版全屏功能（Final Minimal Version）
 // 邏輯：㩒全屏 = 強制切換到桌面版，唔 check 任何嘢
 // ============================================================
+
 async function toggleFullscreen() {
+    // 測試用：睇下呢個函數有冇被執行
+    alert('🔍 全屏按鈕被點擊了！');
+    console.log('🔍 全屏按鈕被點擊了！');
+    
     // 如果已經係全屏 → 退出
     if (document.fullscreenElement || document.webkitFullscreenElement) {
         try {
@@ -2901,13 +2906,12 @@ async function toggleFullscreen() {
         const el = document.documentElement;
         if (el.requestFullscreen) {
             await el.requestFullscreen();
-            console.log('✅ Fullscreen API 成功，網址消失');
+            console.log('✅ Fullscreen API 成功');
         } else if (el.webkitRequestFullscreen) {
             await el.webkitRequestFullscreen();
             console.log('✅ Fullscreen API (webkit) 成功');
         }
     } catch(e) {
-        // Fullscreen 失敗，但已經切換到桌面版，用戶體驗仍然 OK
         console.log('ℹ️ Fullscreen API 失敗，但已切換到桌面版:', e.message);
     }
     
@@ -2916,6 +2920,7 @@ async function toggleFullscreen() {
         window.scrollTo(0, 1);
     }, 300);
 }
+
 
 // ==================== showQuizModal（手機版） ====================
 function showQuizModal() { 
