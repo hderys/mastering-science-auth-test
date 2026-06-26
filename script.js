@@ -2864,13 +2864,6 @@ function showQuizModal() {
             periodicBtn.style.display = 'none';
         }
     }
-    
-    // ===== V5: 彈窗顯示後主動觸發橫置提示 =====
-    setTimeout(() => {
-        if (isMobile() && window.innerWidth < window.innerHeight) {
-            showRotateBanner();
-        }
-    }, 300);
 }
 
 function renderQuizNav() {
@@ -3051,7 +3044,7 @@ function checkAllQuestionsAnswered() {
     }
 }
 
-// ==================== submitAll ====================
+// ==================== submitAll（#3 增強未答完提醒） ====================
 function submitAll() {
     if (blinkInterval) {
         clearInterval(blinkInterval);
@@ -3059,6 +3052,38 @@ function submitAll() {
         const submitBtn = document.getElementById('submitAllBtn');
         if (submitBtn) submitBtn.style.animation = '';
     }
+    
+    // ===== #3: 檢查未答題數 =====
+    const unansweredIndices = [];
+    for (let i = 0; i < currentAnswers.length; i++) {
+        if (currentAnswers[i] === null || currentAnswers[i] === undefined) {
+            unansweredIndices.push(i);
+        }
+    }
+    
+    if (unansweredIndices.length > 0) {
+        const total = currentAnswers.length;
+        const unansweredCount = unansweredIndices.length;
+        
+        // 構建提示訊息
+        let hintMsg = `⚠️ 你還有 ${unansweredCount} 題未作答（共 ${total} 題）\n\n`;
+        hintMsg += `💡 提示：\n`;
+        hintMsg += `   • 按「下一題 ▶」按鈕繼續作答\n`;
+        hintMsg += `   • 或點擊上方的圓圈號碼（如 ① ② ③）跳轉到未作答的題目\n\n`;
+        hintMsg += `確定要提交並離開嗎？\n（提交後無法修改答案）`;
+        
+        if (!confirm(hintMsg)) {
+            // 用戶選擇「繼續作答」，跳到第一個未答題
+            const firstUnanswered = unansweredIndices[0];
+            currentQIndex = firstUnanswered;
+            renderQuizNav();
+            renderCurrentQuestion();
+            updateNavButtons();
+            return;
+        }
+    }
+    
+    // 原有的提交邏輯繼續
     if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
@@ -3258,13 +3283,6 @@ function showDesktopQuizModal() {
     renderDesktopQuizNav();
     renderDesktopCurrentQuestion();
     document.getElementById('desktopQuizModal').style.display = 'flex';
-    
-    // ===== V5: 彈窗顯示後主動觸發橫置提示 =====
-    setTimeout(() => {
-        if (isMobile() && window.innerWidth < window.innerHeight) {
-            showRotateBanner();
-        }
-    }, 300);
 }
 
 function renderDesktopQuizNav() {
@@ -3431,6 +3449,35 @@ function submitDesktopAll() {
         const submitBtn = document.getElementById('desktopSubmitBtn');
         if (submitBtn) submitBtn.style.animation = '';
     }
+    
+    // ===== #3: 檢查未答題數（桌面版） =====
+    const unansweredIndices = [];
+    for (let i = 0; i < currentAnswers.length; i++) {
+        if (currentAnswers[i] === null || currentAnswers[i] === undefined) {
+            unansweredIndices.push(i);
+        }
+    }
+    
+    if (unansweredIndices.length > 0) {
+        const total = currentAnswers.length;
+        const unansweredCount = unansweredIndices.length;
+        
+        let hintMsg = `⚠️ 你還有 ${unansweredCount} 題未作答（共 ${total} 題）\n\n`;
+        hintMsg += `💡 提示：\n`;
+        hintMsg += `   • 按「下一題 ▶」按鈕繼續作答\n`;
+        hintMsg += `   • 或點擊右側的圓圈號碼跳轉到未作答的題目\n\n`;
+        hintMsg += `確定要提交並離開嗎？\n（提交後無法修改答案）`;
+        
+        if (!confirm(hintMsg)) {
+            const firstUnanswered = unansweredIndices[0];
+            currentQIndex = firstUnanswered;
+            renderDesktopQuizNav();
+            renderDesktopCurrentQuestion();
+            updateDesktopNavButtons();
+            return;
+        }
+    }
+    
     if (timerInterval) clearInterval(timerInterval);
     const timeSpentSeconds = Math.round((Date.now() - startTime) / 1000);
     
@@ -4764,7 +4811,7 @@ function dismissRotateBanner() {
     hideRotateBanner();
 }
 
-// ==================== #6 螢幕旋轉監聽（手機橫置↔垂直切換 + #9 自動全屏） ====================
+// ==================== #6 螢幕旋轉監聽 ====================
 function handleScreenRotation() {
     // 只有在問題彈窗正在顯示時才處理
     const quizModal = document.getElementById('quizModal');
@@ -4788,9 +4835,6 @@ function handleScreenRotation() {
     
     if (!isQuizVisible) return;
     
-    // 保存當前進度（題目、答案、計時器等都已經在全域變量中）
-    // 不需要額外保存，因為全域變量沒有被清除
-    
     // 重新判斷應該顯示哪個版本
     if (isMobile()) {
         // 切換到手機版
@@ -4801,33 +4845,11 @@ function handleScreenRotation() {
             renderCurrentQuestion();
         }
         
-        // ===== #9: 橫置時自動全屏（觸發瀏覽器收縮網址列） =====
+        // ===== #9: 橫置時觸發 1px 滾動，讓瀏覽器自動隱藏網址列 =====
         if (window.innerWidth > window.innerHeight) {
-            // 橫置 → 觸發 1px 滾動，讓瀏覽器自動隱藏網址列
             try {
                 window.scrollTo(0, 1);
-            } catch(e) {
-                // 忽略錯誤
-            }
-            // 同時嘗試進入全屏
-            try {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen?.().catch(() => {
-                        // 忽略錯誤（某些瀏覽器需要用戶點擊觸發）
-                    });
-                }
-            } catch(e) {
-                // 忽略錯誤
-            }
-        } else {
-            // 垂直 → 退出全屏
-            try {
-                if (document.fullscreenElement) {
-                    document.exitFullscreen?.().catch(() => {});
-                }
-            } catch(e) {
-                // 忽略錯誤
-            }
+            } catch(e) {}
         }
     } else {
         // 切換到桌面版
