@@ -1719,6 +1719,43 @@ body {
         opacity: 0.4;
         cursor: not-allowed;
     }
+    
+    /* ===== V3: 桌面版上下頁按鈕縮小 ===== */
+    #desktopQuizModal .sidebar-actions .btn-prev,
+    #desktopQuizModal .sidebar-actions .btn-next {
+        font-size: 10px !important;
+        padding: 4px 6px !important;
+        min-height: 24px !important;
+    }
+}
+
+/* ============================================================
+   V3: 手機橫置時自動全屏（撐滿畫面，網址列自動隱藏）
+   ============================================================ */
+@media (max-width: 900px) and (orientation: landscape) {
+    #desktopQuizModal .modal-content {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 0 !important;
+    }
+}
+
+/* ============================================================
+   全屏模式（瀏覽器全屏 API 觸發時）
+   ============================================================ */
+#desktopQuizModal:-webkit-full-screen .modal-content,
+#desktopQuizModal:fullscreen .modal-content {
+    border-radius: 0 !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+#desktopQuizModal:-webkit-full-screen .sidebar,
+#desktopQuizModal:fullscreen .sidebar {
+    display: flex !important;
 }
 
 /* ============================================================
@@ -2522,7 +2559,3 @@ body {
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
 }
-
-/* ============================================================
-   手機橫置（模擬桌面版）- 已移除，避免干擾桌面版
-   ============================================================ */
