@@ -418,6 +418,15 @@ function submitAll() {
     const accuracy = Math.round(correctCount / currentQuestions.length * 100);
     alert(`✅ 完成！\n正確率：${accuracy}%（${correctCount}/${currentQuestions.length}）`);
     
+    // 還原旋轉
+    const desktopModal = document.getElementById('desktopQuizModal');
+    if (desktopModal) {
+        desktopModal.style.transform = '';
+        desktopModal.style.width = '';
+        desktopModal.style.height = '';
+        desktopModal.style.transformOrigin = '';
+    }
+    
     document.getElementById('quizModal').style.display = 'none';
     document.getElementById('desktopQuizModal').style.display = 'none';
     
@@ -437,7 +446,7 @@ function submitAll() {
 }
 
 // ============================================================
-// ✅ 最終全屏功能（加返 orientation lock）
+// ✅ 最終全屏功能（強制旋轉 90°）
 // ============================================================
 async function toggleFullscreen() {
     console.log('🔍 全屏按鈕被點擊');
@@ -455,15 +464,22 @@ async function toggleFullscreen() {
                 }
             } catch(e) {}
             
+            // 還原旋轉
+            const desktopModal = document.getElementById('desktopQuizModal');
+            if (desktopModal) {
+                desktopModal.style.transform = '';
+                desktopModal.style.width = '';
+                desktopModal.style.height = '';
+                desktopModal.style.transformOrigin = '';
+            }
+            
             const btn = document.getElementById('fullscreenBtn');
             if (btn) {
                 btn.textContent = '⛶ 全屏';
                 btn.classList.remove('active');
             }
             
-            const desktopModal = document.getElementById('desktopQuizModal');
             const quizModal = document.getElementById('quizModal');
-            if (desktopModal) desktopModal.style.display = 'none';
             if (quizModal) {
                 quizModal.style.display = 'flex';
                 renderCurrentQuestion();
@@ -476,27 +492,26 @@ async function toggleFullscreen() {
     
     // ===== 進入全屏 =====
     
-    // 1. ✅ 即刻鎖定橫置（喺用戶手勢期間執行）
-    try {
-        if (screen.orientation && screen.orientation.lock) {
-            await screen.orientation.lock('landscape');
-            console.log('✅ 方向已鎖定為橫置');
-        }
-    } catch(e) {
-        console.log('ℹ️ 鎖定方向失敗（可能裝置唔支援）:', e.message);
-    }
-    
-    // 2. 隱藏手機版
+    // 1. 隱藏手機版
     const quizModal = document.getElementById('quizModal');
     if (quizModal) quizModal.style.display = 'none';
     
-    // 3. 顯示桌面版
+    // 2. 顯示桌面版
     const desktopModal = document.getElementById('desktopQuizModal');
     if (desktopModal) {
         desktopModal.style.display = 'flex';
         renderDesktopCurrentQuestion();
         updateTimerDisplay();
         renderDesktopQuizNav();
+    }
+    
+    // 3. ✅ 強制旋轉 90°（打側顯示）
+    if (desktopModal) {
+        desktopModal.style.transform = 'rotate(90deg)';
+        desktopModal.style.transformOrigin = 'center center';
+        desktopModal.style.width = '100vh';
+        desktopModal.style.height = '100vw';
+        console.log('✅ 已強制旋轉 90°');
     }
     
     // 4. 更新按鈕
@@ -506,7 +521,7 @@ async function toggleFullscreen() {
         btn.classList.add('active');
     }
     
-    // 5. 嘗試 Fullscreen API
+    // 5. 嘗試 Fullscreen API（得就得，唔得就算）
     try {
         const el = document.documentElement;
         if (el.requestFullscreen) {
