@@ -2586,11 +2586,7 @@ function startPracticeWithSettings() {
     
     startTime = Date.now();
     
-    if (isMobile()) {
-        showQuizModal();
-    } else {
-        showDesktopQuizModal();
-    }
+    showQuizModal();
 }
 
 // ==================== showExplainModal ====================
