@@ -498,20 +498,31 @@
                 </div>
             </div>
         </div>
+        <!-- ===== 右側邊欄（優化版 #10 + #11） ===== -->
         <div class="sidebar" id="desktopSidebar">
+            <!-- 第 1 行：難度 + 計時器 -->
             <div class="sidebar-row-1">
                 <span class="difficulty" id="desktopDifficulty">📈 Advanced</span>
                 <span class="timer" id="desktopTimer">⏱️ 00:00</span>
             </div>
+
+            <!-- 第 2 行：計數器 + 上一頁（小）+ 下一頁（大）+ 工具按鈕 -->
             <div class="sidebar-row-2">
-                <button class="table-btn" id="desktopPeriodicBtn">📊 周期表</button>
                 <span class="counter" id="desktopCounter">1 / 10</span>
+                <button class="btn-prev-sm" id="desktopPrevBtn">◀</button>
+                <button class="btn-next-lg" id="desktopNextBtn">下一題 ▶</button>
+                <div class="tools-wrapper">
+                    <button class="tool-btn" id="desktopPeriodicBtn">周期表</button>
+                    <button class="tool-btn" id="desktopCalculatorBtn">計算機</button>
+                </div>
             </div>
+
+            <!-- 第 3 行：題號導航 -->
             <div class="nav-grid" id="desktopNav"></div>
+
+            <!-- 第 4 行：提交按鈕（獨立置中） -->
             <div class="sidebar-actions">
-                <button class="btn btn-prev" id="desktopPrevBtn">◀</button>
-                <button class="btn btn-next" id="desktopNextBtn">▶</button>
-                <button class="btn btn-submit" id="desktopSubmitBtn">提交並離開</button>
+                <button class="btn-submit" id="desktopSubmitBtn">✅ 提交並離開</button>
             </div>
         </div>
     </div>
@@ -17632,7 +17643,7 @@ window.ALL_UNITS = {
               "C. (1) and (3) only",
               "D. (2) and (3) only"
             ],
-            "correct": "C",
+            "correct": "A",
             "explanation": "Iron is extracted from haematite by heating haematite with carbon.",
             "imageUrl": null,
             "difficulty": "📈 Advanced",
