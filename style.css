@@ -2941,3 +2941,152 @@ body {
     .unlock-card .chapter-name { font-size: 1rem; }
     .unlock-card .subtitle { font-size: 1rem; }
 }
+
+
+/* ============================================================
+   🎆 成就解鎖特效（全螢幕置中 + 逐個確認）
+   ============================================================ */
+.achievement-effect-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 99998;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(3px);
+}
+.achievement-effect-overlay.show {
+    display: flex;
+}
+.achievement-effect-overlay .achievement-card {
+    pointer-events: auto;
+    padding: 32px 40px;
+    border-radius: 32px;
+    text-align: center;
+    min-width: 300px;
+    max-width: 440px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+    border: 4px solid #60a5fa;
+    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+}
+.achievement-effect-overlay .achievement-card .icon { font-size: 4rem; }
+.achievement-effect-overlay .achievement-card .title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin: 2px 0 0 0;
+}
+.achievement-effect-overlay .achievement-card .subtitle {
+    font-size: 1rem;
+    color: #334155;
+    font-weight: 500;
+    margin-top: 4px;
+}
+.achievement-effect-overlay .achievement-card .points {
+    font-size: 0.9rem;
+    color: #2563eb;
+    margin-top: 6px;
+    font-weight: 700;
+}
+.achievement-effect-overlay .achievement-card .confirm-btn {
+    margin-top: 18px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 40px;
+    border-radius: 40px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+}
+.achievement-effect-overlay .achievement-card .confirm-btn:hover {
+    background: #1d4ed8;
+    transform: scale(1.03);
+}
+/* 閃電衝擊波特效 */
+.achievement-effect-overlay .ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    border: 3px solid #60a5fa;
+    border-radius: 50%;
+    animation: ringExpand 0.8s ease-out forwards;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+@keyframes ringExpand {
+    0% { width: 20px; height: 20px; opacity: 1; }
+    100% { width: 500px; height: 500px; opacity: 0; }
+}
+.achievement-effect-overlay .sparkle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: sparkleFade 1s ease-out forwards;
+    pointer-events: none;
+    box-shadow: 0 0 24px rgba(255,255,255,0.9);
+}
+@keyframes sparkleFade {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0); opacity: 0; }
+}
+
+/* ============================================================
+   iPhone 橫置引導畫面
+   ============================================================ */
+.iphone-orientation-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #1a1a2e;
+    z-index: 99999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: white;
+    text-align: center;
+    padding: 40px;
+}
+.iphone-orientation-overlay.show {
+    display: flex;
+}
+.iphone-orientation-overlay .rotate-icon-big {
+    font-size: 5rem;
+    animation: rotate 2s ease-in-out infinite;
+    margin-bottom: 20px;
+}
+.iphone-orientation-overlay h2 {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+}
+.iphone-orientation-overlay p {
+    font-size: 1rem;
+    color: #94a3b8;
+    max-width: 400px;
+    line-height: 1.6;
+}
+.iphone-orientation-overlay .btn-continue {
+    margin-top: 30px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 12px 40px;
+    border-radius: 40px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.iphone-orientation-overlay .btn-continue:hover {
+    background: rgba(255,255,255,0.25);
+}
