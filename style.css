@@ -130,7 +130,6 @@ body {
     position: relative;
     display: inline-block;
 }
-
 .user-menu-trigger {
     background: none;
     border: none;
@@ -145,11 +144,9 @@ body {
     align-items: center;
     gap: 4px;
 }
-
 .user-menu-trigger:hover {
     background: #e9e4f5;
 }
-
 .user-menu-dropdown {
     position: absolute;
     top: calc(100% + 4px);
@@ -164,12 +161,10 @@ body {
     border: 1px solid #e9e4f5;
     overflow: hidden;
 }
-
 .user-menu-dropdown.show {
     display: block;
     animation: slideDown 0.2s ease;
 }
-
 .user-menu-item {
     padding: 10px 18px;
     font-size: 0.85rem;
@@ -180,19 +175,15 @@ body {
     gap: 10px;
     color: #2e0f5a;
 }
-
 .user-menu-item:hover {
     background: #f5f0ff;
 }
-
 .user-menu-item.logout {
     color: #dc2626;
 }
-
 .user-menu-item.logout:hover {
     background: #fef2f2;
 }
-
 .user-menu-divider {
     height: 1px;
     background: #e9e4f5;
@@ -210,7 +201,6 @@ body {
     align-items: center;
     justify-content: center;
 }
-
 .status-dot {
     display: block;
     width: 14px;
@@ -221,25 +211,20 @@ body {
     transition: all 0.3s ease;
     flex-shrink: 0;
 }
-
 .status-dot.online {
     background: #10b981;
 }
-
 .status-dot.connecting {
     background: #f59e0b;
     animation: pulse 1s ease-in-out infinite;
 }
-
 .status-dot.offline {
     background: #dc2626;
 }
-
 @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.6; transform: scale(0.85); }
 }
-
 .status-tooltip {
     position: absolute;
     bottom: 28px;
@@ -258,13 +243,11 @@ body {
     pointer-events: none;
     line-height: 1.6;
 }
-
 .status-tooltip.show {
     display: block;
     opacity: 1;
     pointer-events: auto;
 }
-
 .status-tooltip .status-title {
     font-weight: 600;
     font-size: 0.75rem;
@@ -273,7 +256,6 @@ body {
     align-items: center;
     gap: 6px;
 }
-
 .status-tooltip .status-title .dot-preview {
     display: inline-block;
     width: 8px;
@@ -281,16 +263,13 @@ body {
     border-radius: 50%;
     flex-shrink: 0;
 }
-
 .status-tooltip .status-title .dot-preview.online { background: #10b981; }
 .status-tooltip .status-title .dot-preview.connecting { background: #f59e0b; }
 .status-tooltip .status-title .dot-preview.offline { background: #dc2626; }
-
 .status-tooltip .status-detail {
     color: #94a3b8;
     font-size: 0.65rem;
 }
-
 .status-tooltip .status-time {
     color: #64748b;
     font-size: 0.6rem;
@@ -439,8 +418,6 @@ body {
 
 /* ========== 主介面 ========== */
 .unit-group { margin-bottom: 0.5rem; }
-
-/* #7: 單元列底色加深 */
 .unit-header {
     background: #ede9fe;
     border-radius: 20px;
@@ -461,8 +438,6 @@ body {
 .unit-toggle { font-size: 0.9rem; }
 .chapters-container { margin-left: 1rem; margin-top: 0.3rem; display: none; }
 .chapters-container.open { display: block; }
-
-/* 章節列保持白色 */
 .chapter-item {
     background: #ffffff;
     border-radius: 12px;
@@ -478,7 +453,6 @@ body {
 .chapter-name { font-size: clamp(0.65rem, 3.5vw, 0.8rem); font-weight: 500; flex: 2; min-width: 100px; }
 .chapter-actions { display: flex; gap: 0.3rem; align-items: center; }
 
-/* 進度條 */
 .mastery-wrapper {
     display: flex;
     align-items: center;
@@ -542,6 +516,7 @@ body {
     gap: 0.3rem;
 }
 
+/* ===== 成就頁面 ===== */
 .achievement-item {
     background: #fefcff;
     border-radius: 10px;
@@ -696,24 +671,20 @@ body {
     gap: 12px;
     margin-bottom: 12px;
 }
-
 .count-buttons-row .setting-btn {
     width: 100%;
     text-align: center;
 }
-
 .count-row {
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
     gap: 16px;
 }
-
 .count-row .setting-btn {
     width: 100%;
     text-align: center;
 }
-
 .custom-input-wrapper {
     display: flex;
     align-items: center;
@@ -724,13 +695,11 @@ body {
     border: 1px solid #e0d6f5;
     white-space: nowrap;
 }
-
 .custom-input-wrapper span {
     font-size: 0.75rem;
     color: #4a1d8c;
     font-weight: 500;
 }
-
 .custom-input-wrapper input {
     width: 60px;
     padding: 6px 4px;
@@ -742,11 +711,9 @@ body {
     font-weight: 500;
     color: #4a1d8c;
 }
-
 .custom-input-wrapper input:focus {
     outline: 2px solid #7c3aed;
 }
-
 .custom-input-wrapper input:disabled {
     background: #f0f0f0;
     color: #999;
@@ -1019,7 +986,7 @@ body {
     .result-card-actions button { font-size: 0.7rem; padding: 4px 12px; }
     
     /* ============================================================
-       手機版問題頁面（#8 只縮小上下頁按鈕）
+       手機版問題頁面
        ============================================================ */
     #quizModal .modal-content {
         min-height: 60vh;
@@ -1193,7 +1160,6 @@ body {
         font-size: clamp(1rem, 3.8vw, 1.15rem) !important;
     }
     
-    /* ===== #8: 只縮小上下頁按鈕，其他完全不動 ===== */
     .quiz-footer-mobile {
         flex-shrink: 0;
         padding: 0.1rem 0 0.05rem 0;
@@ -1222,7 +1188,6 @@ body {
         line-height: 1;
         font-weight: 600;
     }
-    /* #8: 上一頁/下一頁按鈕縮小 */
     .quiz-footer-mobile .btn-outline {
         background: white;
         border: 1.5px solid var(--deep-purple);
@@ -1238,7 +1203,6 @@ body {
         padding: 0.05rem 0.1rem;
         min-height: 28px;
     }
-    /* 提交按鈕保持原樣，完全不動 */
     .quiz-footer-mobile #submitAllBtn {
         flex: 1;
         background: #10b981;
@@ -1720,7 +1684,6 @@ body {
         cursor: not-allowed;
     }
     
-    /* ===== V4: 桌面版上下頁按鈕大幅縮小 ===== */
     #desktopQuizModal .sidebar-actions .btn-prev,
     #desktopQuizModal .sidebar-actions .btn-next {
         flex: 0.35 !important;
@@ -1733,10 +1696,9 @@ body {
 }
 
 /* ============================================================
-   V4: 手機橫置時自動全屏（撐滿畫面，網址列自動隱藏）
+   V4: 手機橫置時自動全屏
    ============================================================ */
 @media (max-width: 900px) and (orientation: landscape) {
-    /* 整個彈窗容器撐滿全屏 */
     #desktopQuizModal {
         position: fixed !important;
         top: 0 !important;
@@ -1768,12 +1730,10 @@ body {
         margin: 0 !important;
     }
     
-    /* 隱藏手機版元素（確保乾淨切換） */
     #quizModal .quiz-header { display: none !important; }
     #quizModal .question-nav { display: none !important; }
     #quizModal .quiz-footer { display: none !important; }
     
-    /* 側邊欄強制顯示 */
     #desktopQuizModal .sidebar {
         display: flex !important;
         width: 200px !important;
@@ -1782,7 +1742,7 @@ body {
 }
 
 /* ============================================================
-   全屏模式（瀏覽器全屏 API 觸發時）
+   全屏模式
    ============================================================ */
 #desktopQuizModal:-webkit-full-screen .modal-content,
 #desktopQuizModal:fullscreen .modal-content {
@@ -2597,4 +2557,348 @@ body {
 @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
+}
+
+
+/* ============================================================
+   🏆 皇冠頒獎臺（新增）
+   ============================================================ */
+.podium-wrapper {
+    background: linear-gradient(145deg, #141828, #1a1a2e);
+    border-radius: 28px;
+    padding: 24px 20px 28px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+}
+.podium-wrapper .podium-title {
+    color: #94a3b8;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 16px;
+}
+.podium-wrapper .podium-title strong {
+    color: #fbbf24;
+    font-weight: 700;
+}
+
+.podium-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 16px;
+    height: 200px;
+    padding-bottom: 4px;
+}
+
+.podium-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    max-width: 100px;
+}
+
+/* 👑 皇冠 */
+.podium-item .crown {
+    font-size: 1.8rem;
+    line-height: 1;
+    margin-bottom: -2px;
+    filter: drop-shadow(0 4px 12px rgba(251, 191, 36, 0.4));
+    animation: crownFloat 2.5s ease-in-out infinite;
+}
+.podium-item:nth-child(2) .crown { animation-delay: 0.1s; }
+@keyframes crownFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-6px) scale(1.05); }
+}
+
+.podium-item .name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    text-align: center;
+    line-height: 1.2;
+}
+.podium-item .points {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/*  podium 底座 */
+.podium-base {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+.podium-step {
+    width: 100%;
+    border-radius: 8px 8px 0 0;
+    min-height: 20px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+    transition: height 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+/* 斜紋裝飾 */
+.podium-step::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 8px,
+        rgba(255,255,255,0.05) 8px,
+        rgba(255,255,255,0.05) 16px
+    );
+    pointer-events: none;
+}
+.podium-step .step-label {
+    position: relative;
+    z-index: 1;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: rgba(0,0,0,0.5);
+}
+.podium-step.gold .step-label {
+    color: rgba(0,0,0,0.6);
+    font-size: 1.4rem;
+}
+
+/* 金銀銅顏色 */
+.podium-step.gold {
+    background: linear-gradient(180deg, #fbbf24, #d97706);
+    min-height: 90px;
+}
+.podium-step.silver {
+    background: linear-gradient(180deg, #e2e8f0, #94a3b8);
+    min-height: 65px;
+}
+.podium-step.bronze {
+    background: linear-gradient(180deg, #f59e0b, #b45309);
+    min-height: 40px;
+}
+
+/* 從缺 */
+.podium-empty {
+    color: #475569;
+    font-size: 0.6rem;
+    font-weight: 400;
+    text-align: center;
+    padding-top: 10px;
+}
+
+/* 頒獎臺響應式 */
+@media (max-width: 640px) {
+    .podium-wrapper { padding: 16px 12px 20px; }
+    .podium-container { height: 160px; gap: 10px; }
+    .podium-item { max-width: 70px; }
+    .podium-item .crown { font-size: 1.4rem; }
+    .podium-item .name { font-size: 0.7rem; }
+    .podium-item .points { font-size: 0.6rem; }
+    .podium-step.gold { min-height: 70px; }
+    .podium-step.silver { min-height: 50px; }
+    .podium-step.bronze { min-height: 30px; }
+    .podium-step .step-label { font-size: 1rem; }
+    .podium-step.gold .step-label { font-size: 1.2rem; }
+}
+@media (max-width: 400px) {
+    .podium-container { height: 140px; gap: 6px; }
+    .podium-item .crown { font-size: 1.2rem; }
+    .podium-item .name { font-size: 0.6rem; }
+    .podium-item .points { font-size: 0.5rem; }
+    .podium-step.gold { min-height: 55px; }
+    .podium-step.silver { min-height: 40px; }
+    .podium-step.bronze { min-height: 24px; }
+    .podium-step .step-label { font-size: 0.8rem; }
+    .podium-step.gold .step-label { font-size: 1rem; }
+}
+
+
+/* ============================================================
+   🎆 難度解鎖特效（新增）
+   ============================================================ */
+.unlock-effect-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 99999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+}
+.unlock-effect-overlay.show {
+    display: flex;
+}
+.unlock-effect-overlay .unlock-card {
+    pointer-events: auto;
+    padding: 36px 44px;
+    border-radius: 32px;
+    text-align: center;
+    min-width: 320px;
+    max-width: 460px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+    border: 4px solid rgba(255,215,0,0.4);
+    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+}
+@keyframes popIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.unlock-card .icon { font-size: 4.5rem; }
+.unlock-card .title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin: 2px 0 0 0;
+}
+.unlock-card .chapter-name {
+    font-size: 1.2rem;
+    color: #4a1d8c;
+    font-weight: 700;
+    margin: 4px 0 2px 0;
+}
+.unlock-card .subtitle {
+    font-size: 1.2rem;
+    color: #334155;
+    font-weight: 600;
+    margin-top: 2px;
+}
+.unlock-card .points {
+    font-size: 0.95rem;
+    color: #4a1d8c;
+    margin-top: 6px;
+    font-weight: 600;
+}
+.unlock-card .confirm-btn {
+    margin-top: 18px;
+    background: #4a1d8c;
+    color: white;
+    border: none;
+    padding: 10px 40px;
+    border-radius: 40px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+}
+.unlock-card .confirm-btn:hover {
+    background: #7c3aed;
+    transform: scale(1.03);
+}
+
+/* 特效 1：星塵爆炸（金色粒子） */
+.unlock-effect.stardust .unlock-card { border-color: #fbbf24; }
+.unlock-effect.stardust .unlock-card .title { color: #d97706; }
+.unlock-effect.stardust .particles {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: 32px;
+}
+.unlock-effect.stardust .particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: #fbbf24;
+    border-radius: 50%;
+    animation: particleFly 1.2s ease-out forwards;
+    box-shadow: 0 0 16px #fbbf24;
+}
+@keyframes particleFly {
+    0% { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+.unlock-effect.stardust .flash {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 300%;
+    height: 300%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(251,191,36,0.3) 0%, transparent 70%);
+    animation: flashFade 0.6s ease-out forwards;
+    pointer-events: none;
+    border-radius: 50%;
+}
+@keyframes flashFade {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.3); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
+}
+
+/* 特效 2：五彩紙屑 */
+.unlock-effect.confetti .unlock-card { border-color: #f472b6; }
+.unlock-effect.confetti .unlock-card .title { color: #db2777; }
+.unlock-effect.confetti .confetti-piece {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    animation: confettiFall 1.5s ease-out forwards;
+    pointer-events: none;
+}
+@keyframes confettiFall {
+    0% { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translate(var(--cx), var(--cy)) rotate(720deg) scale(0.2); opacity: 0; }
+}
+
+/* 特效 3：鑽石閃耀 */
+.unlock-effect.diamond .unlock-card { border-color: #8b5cf6; }
+.unlock-effect.diamond .unlock-card .title {
+    background: linear-gradient(135deg, #8b5cf6, #fbbf24, #34d399, #3b82f6, #8b5cf6);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 1.8s ease infinite;
+}
+@keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+.unlock-effect.diamond .sparkle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: sparkleFade 1s ease-out forwards;
+    pointer-events: none;
+    box-shadow: 0 0 24px rgba(255,255,255,0.9);
+}
+@keyframes sparkleFade {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0); opacity: 0; }
+}
+
+/* 解鎖特效響應式 */
+@media (max-width: 480px) {
+    .unlock-effect-overlay .unlock-card {
+        padding: 28px 20px;
+        min-width: unset;
+        width: 92%;
+    }
+    .unlock-card .icon { font-size: 3.5rem; }
+    .unlock-card .title { font-size: 1.4rem; }
+    .unlock-card .chapter-name { font-size: 1rem; }
+    .unlock-card .subtitle { font-size: 1rem; }
 }
