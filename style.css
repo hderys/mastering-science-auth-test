@@ -1491,7 +1491,7 @@ body {
         font-size: 20px;
     }
 
-    /* ===== 側邊欄（#10 + #11 優化） ===== */
+    /* ===== 側邊欄 ===== */
     #desktopQuizModal .sidebar {
         width: 210px;
         min-width: 170px;
@@ -1530,7 +1530,7 @@ body {
         color: #fca5a5;
     }
 
-    /* 第 2 行：計數器 + 上一頁 + 下一頁（同一行） */
+    /* 第 2 行：計數器 + 上一頁 + 下一頁 */
     #desktopQuizModal .sidebar-row-2 {
         display: flex;
         justify-content: space-between;
@@ -1594,30 +1594,37 @@ body {
         opacity: 0.3;
         cursor: not-allowed;
     }
-    /* 工具按鈕（第 2 行右側） */
-    #desktopQuizModal .sidebar-row-2 .tools-wrapper {
+
+    /* 第 2.5 行：工具列（獨立一行） */
+    #desktopQuizModal .sidebar-tools {
         display: flex;
-        gap: 4px;
+        justify-content: center;
+        gap: 8px;
+        padding: 6px 0 8px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.12);
         flex-shrink: 0;
     }
-    #desktopQuizModal .sidebar-row-2 .tools-wrapper .tool-btn {
+    #desktopQuizModal .sidebar-tools .tool-btn {
         background: rgba(255,255,255,0.08);
         border: 1px solid rgba(255,255,255,0.1);
         border-radius: 30px;
-        padding: 2px 8px;
-        font-size: 11px;
+        padding: 4px 14px;
+        font-size: 12px;
         font-weight: 500;
         color: #c4b5d4;
         cursor: pointer;
         transition: all 0.2s;
         white-space: nowrap;
         line-height: 1.4;
+        flex: 1;
+        max-width: 90px;
+        text-align: center;
     }
-    #desktopQuizModal .sidebar-row-2 .tools-wrapper .tool-btn:hover {
+    #desktopQuizModal .sidebar-tools .tool-btn:hover {
         background: rgba(255,255,255,0.15);
         color: #ffffff;
     }
-    #desktopQuizModal .sidebar-row-2 .tools-wrapper .tool-btn.hidden {
+    #desktopQuizModal .sidebar-tools .tool-btn.hidden {
         display: none;
     }
 
@@ -2594,7 +2601,7 @@ body {
 
 
 /* ============================================================
-   🏆 皇冠頒獎臺（#7 UI 調整）
+   🏆 皇冠頒獎臺
    ============================================================ */
 .podium-wrapper {
     background: linear-gradient(145deg, #ede9fe, #f5f0ff);
@@ -2894,7 +2901,7 @@ body {
     100% { transform: translate(var(--cx), var(--cy)) rotate(720deg) scale(0.2); opacity: 0; }
 }
 
-/* 特效 5：鑽石閃耀 */
+/* 特效 3：鑽石閃耀 */
 .unlock-effect.diamond .unlock-card { border-color: #8b5cf6; }
 .unlock-effect.diamond .unlock-card .title {
     background: linear-gradient(135deg, #8b5cf6, #fbbf24, #34d399, #3b82f6, #8b5cf6);
