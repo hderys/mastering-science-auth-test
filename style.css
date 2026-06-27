@@ -40,7 +40,7 @@ body {
     cursor: pointer;
 }
 
-/* ========== #25: 垂直橫置提示條（可關閉） ========== */
+/* ========== 垂直橫置提示條 ========== */
 .rotate-banner {
     display: none;
     position: fixed;
@@ -720,7 +720,7 @@ body {
 }
 
 /* ============================================================
-   手機版（完全獨立，不受桌面版影響）
+   手機版
    ============================================================ */
 @media (max-width: 640px) {
     body { 
@@ -985,9 +985,7 @@ body {
     .result-card-details span { font-size: 0.6rem; padding: 3px 8px; }
     .result-card-actions button { font-size: 0.7rem; padding: 4px 12px; }
     
-    /* ============================================================
-       手機版問題頁面
-       ============================================================ */
+    /* ===== 手機版問題頁面 ===== */
     #quizModal .modal-content {
         min-height: 60vh;
         max-height: 95vh;
@@ -1232,9 +1230,7 @@ body {
         display: none !important;
     }
     
-    /* ============================================================
-       手機版老師後台
-       ============================================================ */
+    /* ===== 手機版老師後台 ===== */
     .teacher-settings {
         padding: 0.8rem 0.6rem;
     }
@@ -1495,16 +1491,18 @@ body {
         font-size: 20px;
     }
 
+    /* ===== 側邊欄（#10 + #11 優化） ===== */
     #desktopQuizModal .sidebar {
         width: 210px;
         min-width: 170px;
         background: linear-gradient(145deg, #3b1a6e, #2d0f54);
-        padding: 18px 14px 14px 14px;
+        padding: 16px 14px 14px 14px;
         display: flex;
         flex-direction: column;
         border-left: 1px solid rgba(255,255,255,0.08);
         flex-shrink: 0;
         transition: background 0.4s ease;
+        gap: 4px;
     }
 
     #desktopQuizModal .sidebar.difficulty-translate { background: linear-gradient(145deg, #065f46, #047857); }
@@ -1512,6 +1510,7 @@ body {
     #desktopQuizModal .sidebar.difficulty-advanced { background: linear-gradient(145deg, #4c1d95, #6d28d9); }
     #desktopQuizModal .sidebar.difficulty-challenge { background: linear-gradient(145deg, #78350f, #b45309); }
 
+    /* 第 1 行：難度 + 計時器 */
     #desktopQuizModal .sidebar-row-1 {
         display: flex;
         justify-content: space-between;
@@ -1531,48 +1530,109 @@ body {
         color: #fca5a5;
     }
 
+    /* 第 2 行：計數器 + 上一頁 + 下一頁（同一行） */
     #desktopQuizModal .sidebar-row-2 {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 6px 0 10px 0;
+        padding: 4px 0 6px 0;
         border-bottom: 1px solid rgba(255,255,255,0.12);
         flex-shrink: 0;
+        gap: 4px;
     }
-    #desktopQuizModal .sidebar-row-2 .table-btn {
+    #desktopQuizModal .sidebar-row-2 .counter {
+        font-size: 14px;
+        font-weight: 700;
+        color: #ffffff;
+        flex-shrink: 0;
+    }
+    /* 上一頁按鈕 - 只顯示 ◀，縮小 */
+    #desktopQuizModal .sidebar-row-2 .btn-prev-sm {
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 30px;
+        padding: 2px 10px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #c4b5d4;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 32px;
+        text-align: center;
+        line-height: 1.4;
+        flex-shrink: 0;
+    }
+    #desktopQuizModal .sidebar-row-2 .btn-prev-sm:hover:not(:disabled) {
+        background: rgba(255,255,255,0.2);
+        color: #ffffff;
+    }
+    #desktopQuizModal .sidebar-row-2 .btn-prev-sm:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+    /* 下一頁按鈕 - 放大，含文字 */
+    #desktopQuizModal .sidebar-row-2 .btn-next-lg {
         background: rgba(255,255,255,0.15);
         border: 1px solid rgba(255,255,255,0.2);
         border-radius: 30px;
         padding: 4px 14px;
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 600;
         color: #ffffff;
         cursor: pointer;
-        transition: background 0.2s;
+        transition: all 0.2s;
+        min-width: 60px;
+        text-align: center;
+        line-height: 1.4;
+        flex-shrink: 0;
     }
-    #desktopQuizModal .sidebar-row-2 .table-btn:hover {
+    #desktopQuizModal .sidebar-row-2 .btn-next-lg:hover:not(:disabled) {
         background: rgba(255,255,255,0.25);
+        transform: scale(1.03);
     }
-    #desktopQuizModal .sidebar-row-2 .table-btn.hidden {
-        display: none;
+    #desktopQuizModal .sidebar-row-2 .btn-next-lg:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
     }
-    #desktopQuizModal .sidebar-row-2 .counter {
-        font-size: 15px;
-        font-weight: 700;
+    /* 工具按鈕（第 2 行右側） */
+    #desktopQuizModal .sidebar-row-2 .tools-wrapper {
+        display: flex;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+    #desktopQuizModal .sidebar-row-2 .tools-wrapper .tool-btn {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 30px;
+        padding: 2px 8px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #c4b5d4;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+        line-height: 1.4;
+    }
+    #desktopQuizModal .sidebar-row-2 .tools-wrapper .tool-btn:hover {
+        background: rgba(255,255,255,0.15);
         color: #ffffff;
     }
+    #desktopQuizModal .sidebar-row-2 .tools-wrapper .tool-btn.hidden {
+        display: none;
+    }
 
+    /* 第 3 行：題號導航 */
     #desktopQuizModal .nav-grid {
         display: flex;
         flex-wrap: wrap;
         gap: 3px;
-        padding: 10px 0 8px 0;
+        padding: 8px 0 6px 0;
         flex: 1;
         align-content: flex-start;
         min-height: 0;
         overflow-y: auto;
         border-bottom: 1px solid rgba(255,255,255,0.12);
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
     #desktopQuizModal .nav-grid::-webkit-scrollbar {
         width: 2px;
@@ -1629,74 +1689,47 @@ body {
         transform: scale(1.1);
     }
 
+    /* 第 4 行：提交按鈕（獨立置中放大） */
     #desktopQuizModal .sidebar-actions {
         display: flex;
-        gap: 4px;
-        flex-shrink: 0;
-    }
-    #desktopQuizModal .sidebar-actions .btn {
-        flex: 1;
-        padding: 6px 4px;
-        border: none;
-        border-radius: 30px;
-        font-weight: 600;
-        font-size: 12px;
-        cursor: pointer;
-        transition: all 0.2s;
-        text-align: center;
-        min-height: 28px;
-        display: flex;
-        align-items: center;
         justify-content: center;
+        flex-shrink: 0;
+        padding-top: 2px;
     }
-    #desktopQuizModal .sidebar-actions .btn:disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-    }
-    #desktopQuizModal .btn-prev {
-        background: #ffffff;
-        color: #4a1d8c;
-        border: 1px solid rgba(255,255,255,0.3);
-    }
-    #desktopQuizModal .btn-prev:hover:not(:disabled) {
-        background: #f5f0ff;
-        transform: translateY(-1px);
-    }
-    #desktopQuizModal .btn-next {
-        background: #ffffff;
-        color: #4a1d8c;
-        border: 1px solid rgba(255,255,255,0.3);
-    }
-    #desktopQuizModal .btn-next:hover:not(:disabled) {
-        background: #f5f0ff;
-        transform: translateY(-1px);
-    }
-    #desktopQuizModal .btn-submit {
+    #desktopQuizModal .sidebar-actions .btn-submit {
         background: #10b981;
         color: white;
+        border: none;
+        border-radius: 30px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 100%;
+        max-width: 160px;
+        text-align: center;
+        line-height: 1.4;
+        letter-spacing: 0.5px;
     }
-    #desktopQuizModal .btn-submit:hover:not(:disabled) {
+    #desktopQuizModal .sidebar-actions .btn-submit:hover:not(:disabled) {
         background: #059669;
-        transform: translateY(-1px);
+        transform: scale(1.03);
     }
-    #desktopQuizModal .btn-submit:disabled {
+    #desktopQuizModal .sidebar-actions .btn-submit:disabled {
         opacity: 0.4;
         cursor: not-allowed;
     }
     
+    /* 移除舊的側邊欄按鈕樣式（保留相容） */
     #desktopQuizModal .sidebar-actions .btn-prev,
     #desktopQuizModal .sidebar-actions .btn-next {
-        flex: 0.35 !important;
-        font-size: 10px !important;
-        padding: 4px 0 !important;
-        min-height: 24px !important;
-        max-width: 44px !important;
-        letter-spacing: 0 !important;
+        display: none;
     }
 }
 
 /* ============================================================
-   V4: 手機橫置時自動全屏
+   手機橫置時自動全屏
    ============================================================ */
 @media (max-width: 900px) and (orientation: landscape) {
     #desktopQuizModal {
@@ -2561,27 +2594,26 @@ body {
 
 
 /* ============================================================
-   🏆 皇冠頒獎臺（新增）
+   🏆 皇冠頒獎臺（#7 UI 調整）
    ============================================================ */
 .podium-wrapper {
-    background: linear-gradient(145deg, #141828, #1a1a2e);
+    background: linear-gradient(145deg, #ede9fe, #f5f0ff);
     border-radius: 28px;
     padding: 24px 20px 28px;
     margin-bottom: 20px;
-    border: 1px solid rgba(255,255,255,0.06);
-    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    border: 2px solid #e0d6f5;
+    box-shadow: 0 4px 20px rgba(74, 29, 140, 0.08);
 }
 .podium-wrapper .podium-title {
-    color: #94a3b8;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+    color: #4a1d8c;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
     text-align: center;
     margin-bottom: 16px;
 }
 .podium-wrapper .podium-title strong {
-    color: #fbbf24;
-    font-weight: 700;
+    color: #7c3aed;
 }
 
 .podium-container {
@@ -2589,7 +2621,7 @@ body {
     justify-content: center;
     align-items: flex-end;
     gap: 16px;
-    height: 200px;
+    height: 220px;
     padding-bottom: 4px;
 }
 
@@ -2604,7 +2636,7 @@ body {
 
 /* 👑 皇冠 */
 .podium-item .crown {
-    font-size: 1.8rem;
+    font-size: 2rem;
     line-height: 1;
     margin-bottom: -2px;
     filter: drop-shadow(0 4px 12px rgba(251, 191, 36, 0.4));
@@ -2617,16 +2649,16 @@ body {
 }
 
 .podium-item .name {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-weight: 600;
-    color: #f1f5f9;
+    color: #2e0f5a;
     text-align: center;
     line-height: 1.2;
 }
 .podium-item .points {
-    font-size: 0.7rem;
-    color: #94a3b8;
+    font-size: 0.85rem;
     font-weight: 500;
+    color: #4a1d8c;
 }
 
 /*  podium 底座 */
@@ -2660,8 +2692,8 @@ body {
         45deg,
         transparent,
         transparent 8px,
-        rgba(255,255,255,0.05) 8px,
-        rgba(255,255,255,0.05) 16px
+        rgba(255,255,255,0.15) 8px,
+        rgba(255,255,255,0.15) 16px
     );
     pointer-events: none;
 }
@@ -2669,12 +2701,12 @@ body {
     position: relative;
     z-index: 1;
     font-weight: 700;
-    font-size: 1.2rem;
+    font-size: 1.8rem;
     color: rgba(0,0,0,0.5);
 }
 .podium-step.gold .step-label {
     color: rgba(0,0,0,0.6);
-    font-size: 1.4rem;
+    font-size: 2rem;
 }
 
 /* 金銀銅顏色 */
@@ -2693,8 +2725,8 @@ body {
 
 /* 從缺 */
 .podium-empty {
-    color: #475569;
-    font-size: 0.6rem;
+    color: #94a3b8;
+    font-size: 0.7rem;
     font-weight: 400;
     text-align: center;
     padding-top: 10px;
@@ -2703,32 +2735,32 @@ body {
 /* 頒獎臺響應式 */
 @media (max-width: 640px) {
     .podium-wrapper { padding: 16px 12px 20px; }
-    .podium-container { height: 160px; gap: 10px; }
+    .podium-container { height: 180px; gap: 10px; }
     .podium-item { max-width: 70px; }
-    .podium-item .crown { font-size: 1.4rem; }
-    .podium-item .name { font-size: 0.7rem; }
-    .podium-item .points { font-size: 0.6rem; }
-    .podium-step.gold { min-height: 70px; }
-    .podium-step.silver { min-height: 50px; }
-    .podium-step.bronze { min-height: 30px; }
-    .podium-step .step-label { font-size: 1rem; }
-    .podium-step.gold .step-label { font-size: 1.2rem; }
+    .podium-item .crown { font-size: 1.6rem; }
+    .podium-item .name { font-size: 0.8rem; }
+    .podium-item .points { font-size: 0.7rem; }
+    .podium-step.gold { min-height: 75px; }
+    .podium-step.silver { min-height: 55px; }
+    .podium-step.bronze { min-height: 35px; }
+    .podium-step .step-label { font-size: 1.4rem; }
+    .podium-step.gold .step-label { font-size: 1.6rem; }
 }
 @media (max-width: 400px) {
-    .podium-container { height: 140px; gap: 6px; }
-    .podium-item .crown { font-size: 1.2rem; }
-    .podium-item .name { font-size: 0.6rem; }
-    .podium-item .points { font-size: 0.5rem; }
-    .podium-step.gold { min-height: 55px; }
-    .podium-step.silver { min-height: 40px; }
-    .podium-step.bronze { min-height: 24px; }
-    .podium-step .step-label { font-size: 0.8rem; }
-    .podium-step.gold .step-label { font-size: 1rem; }
+    .podium-container { height: 150px; gap: 6px; }
+    .podium-item .crown { font-size: 1.3rem; }
+    .podium-item .name { font-size: 0.7rem; }
+    .podium-item .points { font-size: 0.6rem; }
+    .podium-step.gold { min-height: 60px; }
+    .podium-step.silver { min-height: 42px; }
+    .podium-step.bronze { min-height: 28px; }
+    .podium-step .step-label { font-size: 1.2rem; }
+    .podium-step.gold .step-label { font-size: 1.4rem; }
 }
 
 
 /* ============================================================
-   🎆 難度解鎖特效（新增）
+   🎆 難度解鎖特效
    ============================================================ */
 .unlock-effect-overlay {
     position: fixed;
@@ -2862,7 +2894,7 @@ body {
     100% { transform: translate(var(--cx), var(--cy)) rotate(720deg) scale(0.2); opacity: 0; }
 }
 
-/* 特效 3：鑽石閃耀 */
+/* 特效 5：鑽石閃耀 */
 .unlock-effect.diamond .unlock-card { border-color: #8b5cf6; }
 .unlock-effect.diamond .unlock-card .title {
     background: linear-gradient(135deg, #8b5cf6, #fbbf24, #34d399, #3b82f6, #8b5cf6);

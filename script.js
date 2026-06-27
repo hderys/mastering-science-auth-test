@@ -708,7 +708,7 @@ function hideStatusTooltip() {
 }
 
 // ============================================================
-// 🧪 核心測試函數：全屏 + 橫置（已整合）
+// 🧪 核心測試函數：全屏 + 橫置
 // ============================================================
 async function forceLandscapeAndFullscreen() {
     console.log('🧪 嘗試全屏橫置...');
@@ -970,9 +970,7 @@ function updateUserLabel() {
     });
 }
 
-function setupLogout() {
-    // 已整合到下拉選單中
-}
+function setupLogout() {}
 
 // ==================== 登出函數 ====================
 function logout() {
@@ -1314,28 +1312,57 @@ document.getElementById('loginUserId')?.addEventListener('keypress', function(e)
 
 // ==================== 成就系統 ====================
 function showUnlockCard(title, message, date, points) {
-    if (points > 0) {
-        const flash = document.createElement('div');
-        flash.className = 'unlock-flash';
-        document.body.appendChild(flash);
-        setTimeout(() => flash.remove(), 800);
+    // #12: 使用閃電衝擊波風格（藍色系）
+    const flash = document.createElement('div');
+    flash.className = 'unlock-flash-lightning';
+    flash.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(circle, rgba(96, 165, 250, 0.5), rgba(139, 92, 246, 0.3), transparent);
+        pointer-events: none; z-index: 10002;
+        animation: lightningFlash 0.8s ease-out forwards;
+    `;
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 800);
+    
+    // 注入閃電動畫
+    if (!document.getElementById('lightningStyle')) {
+        const style = document.createElement('style');
+        style.id = 'lightningStyle';
+        style.textContent = `
+            @keyframes lightningFlash {
+                0% { opacity: 1; transform: scale(0.5); }
+                100% { opacity: 0; transform: scale(1.5); }
+            }
+            .unlock-card-lightning {
+                border-color: #60a5fa !important;
+                box-shadow: 0 0 60px rgba(96, 165, 250, 0.3) !important;
+            }
+            .unlock-card-lightning .title {
+                color: #2563eb !important;
+                text-shadow: 0 0 30px rgba(96, 165, 250, 0.3) !important;
+            }
+        `;
+        document.head.appendChild(style);
     }
     
     let container = document.getElementById('unlockCardsContainer');
     let card = document.createElement('div');
-    card.className = 'unlock-card';
+    card.className = 'unlock-card unlock-card-lightning';
     let pointsText = '';
     if (points > 0) pointsText = `<div style="font-size:0.8rem; margin-top:4px;">🏆 +${points} 積分</div>`;
     else if (points < 0) pointsText = `<div style="font-size:0.8rem; margin-top:4px;">⚠️ ${points} 積分</div>`;
     else if (points === 0) pointsText = `<div style="font-size:0.8rem; margin-top:4px;">✨ 再次達標！繼續保持 ✨</div>`;
     
-    card.innerHTML = `<div style="font-size:1.5rem;">${points > 0 ? '🎉' : '🌟'}</div>
+    card.innerHTML = `<div style="font-size:1.5rem;">${points > 0 ? '⚡' : '🌟'}</div>
                       <div style="font-weight:bold; margin:4px 0;">${title}</div>
                       <div style="font-size:0.85rem;">${message}</div>
                       ${pointsText}
-                      <div style="font-size:0.65rem; margin-top:6px;">${date}</div>`;
+                      <div style="font-size:0.65rem; margin-top:6px;">${date}</div>
+                      <button class="unlock-card-btn" onclick="this.parentElement.remove()" style="
+                          margin-top:8px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3);
+                          color:white; padding:4px 16px; border-radius:20px; font-size:0.7rem; cursor:pointer;
+                      ">✅ 知道了</button>`;
     container.appendChild(card);
-    setTimeout(() => { if (card.parentNode) card.remove(); }, 4200);
 }
 
 function showUnlockCardsSequentially(cards) {
@@ -1591,8 +1618,12 @@ function addPracticeHistory(unit, chapter, difficultyName, questionCount, correc
 
     let newUnlocks = [];
     checkAndUnlockAchievements(unit, chapter, accuracy, questionCount, accuracy === 100 && questionCount >= 10, selectedCount === 36, isSpeed, totalQuestions, newUnlocks, consecutiveCorrectCount, isBlankPaper, previousAccuracy);
+    
+    // #12: 延遲 1.5 秒顯示成就（讓解鎖特效先出現）
     if (newUnlocks.length > 0) {
-        showUnlockCardsSequentially(newUnlocks);
+        setTimeout(() => {
+            showUnlockCardsSequentially(newUnlocks);
+        }, 1500);
     }
 }
 
@@ -1929,9 +1960,7 @@ function handleUnitHoverEnter(e) {
     }
 }
 
-function handleUnitHoverLeave(e) {
-    // 懸浮離開時不自動收起，保持展開狀態
-}
+function handleUnitHoverLeave(e) {}
 
 function showUnitTestConfirm(unit) {
     const unitObj = window.ALL_UNITS[unit];
@@ -2151,7 +2180,6 @@ function startSingleQuestion(qid, source) {
 
 // ==================== 🎆 難度解鎖特效 ====================
 function showUnlockEffect(type, chapterName, level) {
-    // 移除舊的 overlay（避免重複）
     const oldOverlay = document.querySelector('.unlock-effect-overlay');
     if (oldOverlay) oldOverlay.remove();
     
@@ -2299,7 +2327,6 @@ function updateSettingsUnlockStatus() {
     let star5Unlocked = star3Unlocked && advancedPercent >= 80;
     let trialUnlocked = star5Unlocked && challengePercent >= 80;
     
-    // ===== 解鎖特效觸發邏輯（含「再次達標」） =====
     if (!userData.chapterAccuracy) userData.chapterAccuracy = {};
     const key = `${pendingUnit}_${pendingChapter}`;
     if (!userData.chapterAccuracy[key]) {
@@ -2312,7 +2339,6 @@ function updateSettingsUnlockStatus() {
     
     const chapterName = window.ALL_UNITS[pendingUnit]?.chapters[pendingChapter]?.name || '此章節';
     
-    // 一星→三星（五彩紙屑）
     if (star3Unlocked && !userData.chapterAccuracy[key].star3Unlocked) {
         showUnlockEffect('confetti', chapterName, '⭐⭐⭐ 三星');
         userData.chapterAccuracy[key].star3Unlocked = true;
@@ -2321,7 +2347,6 @@ function updateSettingsUnlockStatus() {
         userData.chapterAccuracy[key].star3Unlocked = false;
     }
     
-    // 三星→五星（星塵爆炸）
     if (star5Unlocked && !userData.chapterAccuracy[key].star5Unlocked) {
         showUnlockEffect('stardust', chapterName, '⭐⭐⭐⭐⭐ 五星');
         userData.chapterAccuracy[key].star5Unlocked = true;
@@ -2330,7 +2355,6 @@ function updateSettingsUnlockStatus() {
         userData.chapterAccuracy[key].star5Unlocked = false;
     }
     
-    // 五星→5**（鑽石閃耀）
     if (trialUnlocked && !userData.chapterAccuracy[key].trialUnlocked) {
         showUnlockEffect('diamond', chapterName, '🔥 5** 試煉');
         userData.chapterAccuracy[key].trialUnlocked = true;
@@ -2339,7 +2363,6 @@ function updateSettingsUnlockStatus() {
         userData.chapterAccuracy[key].trialUnlocked = false;
     }
     
-    // ===== 原有 UI 更新邏輯 =====
     let targetPercent = 0;
     let targetCorrect = 0;
     let targetTotal = 0;
@@ -2656,7 +2679,7 @@ function renderHistory() {
     });
 }
 
-// ==================== 🏆 學生成就頁面（含皇冠頒獎臺） ====================
+// ==================== 🏆 學生成就頁面（含皇冠頒獎臺 #7 #8 #9） ====================
 async function renderAchievements() {
     let container = document.getElementById('achievementsPanel');
     
@@ -2675,14 +2698,20 @@ async function renderAchievements() {
             return bPoints - aPoints;
         });
         
-        // ===== 生成皇冠頒獎臺（前 3 名） =====
-        const top3 = rankedStudents.slice(0, 3);
-        
-        if (top3.length > 0) {
+        // ===== #7 + #8: 皇冠頒獎臺（UI 調整 + 同分處理） =====
+        if (rankedStudents.length > 0) {
+            const topScore = rankedStudents[0] ? calculateTotalPoints(rankedStudents[0].achievements || {}) : 0;
+            const topTiers = rankedStudents.filter(s => calculateTotalPoints(s.achievements || {}) === topScore);
+            const topCount = topTiers.length;
+            
+            const displayCount = Math.min(Math.max(topCount, 3), 3);
+            const displayStudents = rankedStudents.slice(0, displayCount);
+            
             const medals = ['🥇', '🥈', '🥉'];
             const stepClasses = ['gold', 'silver', 'bronze'];
             const stepHeights = ['90px', '65px', '40px'];
-            const positions = [1, 0, 2];
+            
+            const hasTie = topCount > 1;
             
             podiumHtml = `
                 <div class="podium-wrapper">
@@ -2690,19 +2719,33 @@ async function renderAchievements() {
                     <div class="podium-container">
             `;
             
+            let positions = [];
+            if (hasTie && topCount === 2) {
+                positions = [0, 1];
+            } else if (hasTie && topCount >= 3) {
+                positions = [0, 1, 2];
+            } else {
+                positions = [1, 0, 2];
+            }
+            
             for (let i = 0; i < 3; i++) {
                 const idx = positions[i];
-                if (idx < top3.length) {
-                    const s = top3[idx];
+                if (idx < displayStudents.length) {
+                    const s = displayStudents[idx];
                     const points = calculateTotalPoints(s.achievements || {});
-                    const isFirst = idx === 0;
+                    const isChampion = (idx === 0) || (hasTie && idx < topCount);
+                    const showCrown = (idx === 0) || (hasTie && idx === 0);
+                    
+                    const crownHtml = showCrown ? '<div class="crown">👑</div>' : '<div class="crown" style="opacity:0;">&nbsp;</div>';
+                    const tieBadge = (hasTie && isChampion && topCount > 1) ? ` x${topCount}` : '';
+                    
                     podiumHtml += `
-                        <div class="podium-item">
-                            ${isFirst ? '<div class="crown">👑</div>' : '<div class="crown" style="opacity:0;">&nbsp;</div>'}
+                        <div class="podium-item ${isChampion ? 'champion' : ''}">
+                            ${crownHtml}
                             <div class="name">${s.name}</div>
-                            <div class="points">${points} 分</div>
+                            <div class="points">${points} 分${tieBadge}</div>
                             <div class="podium-base">
-                                <div class="podium-step ${stepClasses[idx]}"><span class="step-label">${medals[idx]}</span></div>
+                                <div class="podium-step ${stepClasses[idx]}"><span class="step-label">${medals[idx]}${tieBadge}</span></div>
                             </div>
                         </div>
                     `;
@@ -2710,11 +2753,11 @@ async function renderAchievements() {
                     podiumHtml += `
                         <div class="podium-item">
                             <div class="crown" style="opacity:0;">&nbsp;</div>
-                            <div class="name" style="color:#475569;">從缺</div>
+                            <div class="name" style="color:#94a3b8;">從缺</div>
                             <div class="points">&nbsp;</div>
                             <div class="podium-base">
                                 <div class="podium-step ${stepClasses[idx]}" style="opacity:0.3; min-height:${stepHeights[idx]};">
-                                    <span class="step-label" style="color:#475569;">${medals[idx]}</span>
+                                    <span class="step-label" style="color:#94a3b8;">${medals[idx]}</span>
                                 </div>
                             </div>
                         </div>
@@ -2722,26 +2765,46 @@ async function renderAchievements() {
                 }
             }
             
+            const tieMessage = (hasTie && topCount > 1) ? 
+                `<div style="text-align:center; margin-top:8px; font-size:0.7rem; color:#7c3aed; font-weight:500;">
+                    👑 ${topCount} 人並列冠軍！
+                </div>` : 
+                `<div style="text-align:center; margin-top:8px; font-size:0.6rem; color:#94a3b8;">
+                    👑 冠軍頭頂皇冠 · 班級前 3 名榮譽榜
+                </div>`;
+            
             podiumHtml += `
                     </div>
-                    <div style="text-align:center; margin-top:12px; font-size:0.6rem; color:#64748b;">
-                        👑 冠軍頭頂皇冠 · 班級前 3 名榮譽榜
-                    </div>
+                    ${tieMessage}
                 </div>
             `;
         }
         
-        // ===== 積分榜（第 4 名以後 + 全班排名） =====
+        // ===== #9: 積分榜（同分同名次，按學號排序） =====
         if (rankedStudents.length > 0) {
+            const sortedForRank = [...rankedStudents].sort((a, b) => {
+                const aPoints = calculateTotalPoints(a.achievements || {});
+                const bPoints = calculateTotalPoints(b.achievements || {});
+                if (bPoints !== aPoints) return bPoints - aPoints;
+                return (a.userId || '').localeCompare(b.userId || '');
+            });
+            
             rankListHtml = `<div class="rank-list-container">
                 <h3 style="margin-bottom:0.5rem;">🏆 班級積分榜</h3>
                 <div style="font-size:0.7rem; color:#666; margin-bottom:0.5rem;">👥 ${className} 班級</div>
                 <div style="overflow-x:auto;">`;
             
-            const medals = ['🥇', '🥈', '🥉'];
-            rankedStudents.forEach((s, index) => {
+            let currentRank = 1;
+            let previousPoints = null;
+            
+            sortedForRank.forEach((s, index) => {
                 const points = calculateTotalPoints(s.achievements || {});
-                const medal = index < 3 ? medals[index] : `${index + 1}`;
+                if (previousPoints !== null && points < previousPoints) {
+                    currentRank = index + 1;
+                }
+                previousPoints = points;
+                
+                const medal = currentRank <= 3 ? ['🥇', '🥈', '🥉'][currentRank - 1] : `${currentRank}`;
                 const isCurrentUser = s.userId === currentUser.id;
                 const rowStyle = isCurrentUser ? 'background:#ede9fe; font-weight:bold; border-radius:8px;' : '';
                 rankListHtml += `
@@ -2832,7 +2895,6 @@ async function renderAchievements() {
         { id: 'weekChallenge', name: '一週挑戰', icon: '📅', unlocked: userData.achievements.weekChallenge?.unlocked || false, date: userData.achievements.weekChallenge?.date || null, desc: '連續7天完成至少一次練習', points: ACHIEVEMENT_POINTS.weekChallenge, isPenalty: false },
         { id: 'blankPaper', name: '交白卷', icon: '📄', unlocked: userData.achievements.blankPaper?.unlocked || false, date: userData.achievements.blankPaper?.date || null, desc: '提交空白答案卷', points: ACHIEVEMENT_POINTS.blankPaper, isPenalty: true },
         { id: 'downwardTrend', name: '下滑趨勢', icon: '📉', unlocked: userData.achievements.downwardTrend?.unlocked || false, date: userData.achievements.downwardTrend?.date || null, desc: '連續兩次正確率下降超過20%', points: ACHIEVEMENT_POINTS.downwardTrend, isPenalty: true },
-        // ===== 新增：翻譯題成就 =====
         { id: 'firstTranslation', name: '初試譯聲', icon: '🗣️', unlocked: userData.achievements.firstTranslation?.unlocked || false, date: userData.achievements.firstTranslation?.date || null, desc: '完成第 1 題翻譯題', points: ACHIEVEMENT_POINTS.firstTranslation, isPenalty: false },
         { id: 'livingDictionary', name: '活字典', icon: '📖', unlocked: userData.achievements.livingDictionary?.unlocked || false, date: userData.achievements.livingDictionary?.date || null, desc: '累積完成 100 題翻譯題', points: ACHIEVEMENT_POINTS.livingDictionary, isPenalty: false },
         { id: 'translationMaster', name: '翻譯大師', icon: '📚', unlocked: userData.achievements.translationMaster?.unlocked || false, date: userData.achievements.translationMaster?.date || null, desc: '累積完成 300 題翻譯題', points: ACHIEVEMENT_POINTS.translationMaster, isPenalty: false },
@@ -2840,7 +2902,6 @@ async function renderAchievements() {
         { id: 'translationKing', name: '譯之王者', icon: '🎯', unlocked: userData.achievements.translationKing?.unlocked || false, date: userData.achievements.translationKing?.date || null, desc: '翻譯題正確率 ≥ 90%（≥50 題）', points: ACHIEVEMENT_POINTS.translationKing, isPenalty: false },
         { id: 'swiftTranslator', name: '閃譯手', icon: '⚡', unlocked: userData.achievements.swiftTranslator?.unlocked || false, date: userData.achievements.swiftTranslator?.date || null, desc: '30 秒內連續答對 10 題翻譯題', points: ACHIEVEMENT_POINTS.swiftTranslator, isPenalty: false },
         { id: 'perfectTranslation', name: '譯筆生花', icon: '📝', unlocked: userData.achievements.perfectTranslation?.unlocked || false, date: userData.achievements.perfectTranslation?.date || null, desc: '單次練習 10 題翻譯題全對', points: ACHIEVEMENT_POINTS.perfectTranslation, isPenalty: false },
-        // ===== 新增：錯題相關 =====
         { id: 'mistakeAvenger', name: '錯題復仇者', icon: '🧠', unlocked: userData.achievements.mistakeAvenger?.unlocked || false, date: userData.achievements.mistakeAvenger?.date || null, desc: '同一道錯題，第 2 次做對', points: ACHIEVEMENT_POINTS.mistakeAvenger, isPenalty: false },
         { id: 'sameMistake', name: '同一個位置跌倒', icon: '🕳️', unlocked: userData.achievements.sameMistake?.unlocked || false, date: userData.achievements.sameMistake?.date || null, desc: '同一道錯題，連續錯 3 次', points: ACHIEVEMENT_POINTS.sameMistake, isPenalty: true },
     ];
@@ -2879,13 +2940,9 @@ async function renderAchievements() {
             </div>
         </div>`;
     
-    // 頒獎臺（放在積分榜之前）
     if (podiumHtml) { html += podiumHtml; }
-    
-    // 積分榜
     if (rankListHtml) { html += rankListHtml; }
     
-    // ===== 特殊成就 =====
     if (unlockedSpecials.length > 0 || unlockedPenalties.length > 0 || lockedSpecials.length > 0) {
         html += `<h3 style="margin-top:0.5rem;">🎯 特殊成就</h3>`;
         
@@ -2914,7 +2971,6 @@ async function renderAchievements() {
         }
     }
     
-    // ===== 章節成就 =====
     if (unlockedChapters.length > 0) {
         html += `<h3 style="margin-top:0.8rem;">📖 已獲得章節成就</h3>`;
         let currentUnit = '';
@@ -3319,9 +3375,17 @@ function renderDesktopCurrentQuestion() {
 }
 
 function updateDesktopNavButtons() {
-    let prev = document.getElementById('desktopPrevBtn'), next = document.getElementById('desktopNextBtn');
-    if (prev) prev.disabled = (currentQIndex === 0);
-    if (next) next.disabled = (currentQIndex === currentQuestions.length - 1);
+    const prevBtn = document.getElementById('desktopPrevBtn');
+    const nextBtn = document.getElementById('desktopNextBtn');
+    
+    if (prevBtn) {
+        prevBtn.disabled = (currentQIndex === 0);
+        prevBtn.style.opacity = (currentQIndex === 0) ? '0.3' : '1';
+    }
+    if (nextBtn) {
+        nextBtn.disabled = (currentQIndex === currentQuestions.length - 1);
+        nextBtn.style.opacity = (currentQIndex === currentQuestions.length - 1) ? '0.3' : '1';
+    }
 }
 
 function updateDesktopTimerDisplay() {
@@ -3355,6 +3419,7 @@ function checkDesktopAllQuestionsAnswered() {
     }
 }
 
+// #11: 周期表按鈕動態顯示（第 6 章後才顯示）
 function updateDesktopPeriodicButton() {
     const periodicBtn = document.getElementById('desktopPeriodicBtn');
     if (!periodicBtn) return;
@@ -3364,7 +3429,6 @@ function updateDesktopPeriodicButton() {
     if (shouldShow) {
         periodicBtn.style.display = 'inline-block';
         periodicBtn.classList.remove('hidden');
-        periodicBtn.textContent = '📊 打開元素周期表';
     } else {
         periodicBtn.style.display = 'none';
         periodicBtn.classList.add('hidden');
@@ -3375,7 +3439,6 @@ function updateDesktopPeriodicButton() {
 // 🔧 提交函數 - 包含自訂「未作答」確認彈窗 + 翻譯題數據累積
 // ============================================================
 function submitDesktopAll() {
-    // 檢查是否有未作答的題目
     let answeredCount = currentAnswers.filter(a => a !== null && a !== undefined).length;
     let unansweredCount = currentQuestions.length - answeredCount;
     
@@ -3489,7 +3552,6 @@ function continueSubmitDesktopAll() {
     let isBlankPaper = (answeredCount2 === 0);
     const isUnitTestMode = (currentChapter === null && currentQuestions.length > 1);
     
-    // 翻譯題統計
     let translationCorrectInRun = 0;
     let translationTotalInRun = 0;
 
@@ -3497,7 +3559,6 @@ function continueSubmitDesktopAll() {
         let q = currentQuestions[i], map = currentOptionsMapping[i], userLetter = currentAnswers[i];
         let isCorrect = (userLetter === map.correctLetter);
         
-        // 累積翻譯題數據
         if (q.difficulty === '🌐 Translate') {
             translationTotalInRun++;
             if (isCorrect) translationCorrectInRun++;
@@ -3517,7 +3578,7 @@ function continueSubmitDesktopAll() {
                 if (ts.lastAttemptTime === 0 || (now - ts.lastAttemptTime) <= 30000) {
                     ts.quickCorrectCount++;
                     if (ts.quickCorrectCount >= 10) {
-                        // 觸發閃譯手（由 checkAndUnlockAchievements 處理）
+                        // 觸發閃譯手
                     }
                 } else {
                     ts.quickCorrectCount = 1;
@@ -3526,7 +3587,6 @@ function continueSubmitDesktopAll() {
             } else {
                 ts.consecutiveCorrect = 0;
                 ts.quickCorrectCount = 0;
-                // 記錄連續錯誤（用於「同一個位置跌倒」）
                 if (!userData.mistakeTracker) userData.mistakeTracker = {};
                 if (!userData.mistakeTracker[q.id]) userData.mistakeTracker[q.id] = 0;
                 userData.mistakeTracker[q.id]++;
@@ -3547,19 +3607,17 @@ function continueSubmitDesktopAll() {
         batch.push({ qid: q.id, isCorrect: isCorrect });
     }
     
-    // 檢查「譯筆生花」（單次練習10題翻譯題全對）
     if (translationTotalInRun >= 10 && translationCorrectInRun === translationTotalInRun) {
         if (!userData.translationStats) userData.translationStats = { totalAttempted: 0, totalCorrect: 0, consecutiveCorrect: 0, maxConsecutive: 0, perfectRuns: 0, lastAttemptTime: 0, quickCorrectCount: 0 };
         userData.translationStats.perfectRuns = (userData.translationStats.perfectRuns || 0) + 1;
     }
     
-    // 檢查「錯題復仇者」（同一道錯題，第2次做對）
     for (let r of results) {
         if (r.isCorrect) {
             const hasWrongBefore = userData.allAttempts.some(a => a.qid === r.qid && !a.isCorrect);
             const hasCorrectBefore = userData.allAttempts.some(a => a.qid === r.qid && a.isCorrect);
             if (hasWrongBefore && !hasCorrectBefore && !userData.achievements.mistakeAvenger) {
-                // 觸發「錯題復仇者」（由 checkAndUnlockAchievements 處理）
+                // 觸發「錯題復仇者」
             }
         }
     }
@@ -3639,7 +3697,7 @@ function continueSubmitDesktopAll() {
 }
 
 // ============================================================
-// 以下函數保留但不再使用（手機版已棄用），保留以防萬一
+// 以下函數保留但不再使用（手機版已棄用）
 // ============================================================
 
 function showQuizModal() {
@@ -3658,7 +3716,7 @@ function submitAll() {
 }
 
 // ============================================================
-// 桌面版按鈕事件綁定
+// 桌面版按鈕事件綁定（#10 + #11 優化）
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     const desktopSubmitBtn = document.getElementById('desktopSubmitBtn');
@@ -3693,10 +3751,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (desktopPeriodicBtn) {
         desktopPeriodicBtn.addEventListener('click', showPeriodicTable);
     }
+    
+    // #11: 計算機按鈕（待開發）
+    const desktopCalculatorBtn = document.getElementById('desktopCalculatorBtn');
+    if (desktopCalculatorBtn) {
+        desktopCalculatorBtn.addEventListener('click', function() {
+            alert('🧮 計算機功能開發中，敬請期待！');
+        });
+    }
 });
 
 // ============================================================
-// 原本的 displayResults 和相關函數保留不變
+// 原本的 displayResults 和相關函數
 // ============================================================
 
 function displayResults(results) {
@@ -3800,7 +3866,7 @@ function displayResults(results) {
 }
 
 // ============================================================
-// 老師後台相關函數（保持原有功能）
+// 老師後台相關函數
 // ============================================================
 
 async function loadClassSettings(className) {
@@ -5073,3 +5139,4 @@ function handleScreenRotation() {}
 console.log('✅ Mastering Science 已載入（全屏橫置 + 桌面版統一）');
 console.log('🔧 計時器、元素表、提交確認、分頁已修正');
 console.log('🏆 皇冠頒獎臺、難度解鎖特效、9個新成就已整合');
+console.log('📐 側邊欄優化（上一頁縮小、下一頁放大、工具列獨立）');
