@@ -1336,6 +1336,7 @@ function addPenaltyAchievement(name, icon, points, desc) {
 let achievementQueue = [];
 let isAchievementShowing = false;
 
+// ===== 修改處 #2：成就解鎖彈窗分類 =====
 function showAchievementEffect(name, icon, desc, points) {
     // 加入佇列
     achievementQueue.push({ name, icon, desc, points });
@@ -1362,7 +1363,22 @@ function processAchievementQueue() {
     const overlay = document.createElement('div');
     overlay.className = 'achievement-effect-overlay show';
     
-    // 成就名稱對應的標題
+    // ===== 判斷成就類型：章節成就 key 格式為 `${unit}_${chapter}` =====
+    const isChapterAchievement = /^\d+_\d+$/.test(item.name);
+    
+    let titleText = '';
+    let borderColor = '';
+    let iconEmoji = item.icon || '🌟';
+    
+    if (isChapterAchievement) {
+        titleText = '📖 章節成就解鎖！';
+        borderColor = '#8b5cf6';  // 紫色
+    } else {
+        titleText = '🏆 特殊成就解鎖！';
+        borderColor = '#fbbf24';  // 金色
+    }
+    
+    // 成就名稱對應的標題（特殊成就專用）
     const titleMap = {
         'firstTranslation': '🗣️ 初試譯聲',
         'livingDictionary': '📖 活字典',
@@ -1373,16 +1389,32 @@ function processAchievementQueue() {
         'perfectTranslation': '📝 譯筆生花',
         'mistakeAvenger': '🧠 錯題復仇者',
         'sameMistake': '🕳️ 同一個位置跌倒',
+        'firstPractice': '🎯 初試啼聲',
+        'tenQuestions': '📝 十題達人',
+        'fiveHundred': '⚔️ 百題斬',
+        'thousand': '👑 千題之王',
+        'perfectLesson': '🌟 完美一課',
+        'dseComplete': '📝 DSE模擬完成',
+        'speedStar': '⚡ 速度之星',
+        'consecutive20': '🔥 連續答對王',
+        'allChaptersMaster': '🏆 全科目制霸',
+        'fiveStarStreak': '⭐ 五星連珠',
+        'mistakeEraser': '🗑️ 錯題剋星',
+        'collector': '📚 收藏家',
+        'weekChallenge': '📅 一週挑戰',
+        'blankPaper': '📄 交白卷',
+        'downwardTrend': '📉 下滑趨勢'
     };
     
-    const title = titleMap[item.name] || item.name;
+    const achievementName = titleMap[item.name] || item.name;
     const pointsText = item.points > 0 ? `🏆 +${item.points} 積分` : (item.points < 0 ? `⚠️ ${item.points} 積分` : '');
     
     overlay.innerHTML = `
-        <div class="achievement-card">
-            <div class="icon">${item.icon || '🌟'}</div>
-            <div class="title">${title}</div>
-            <div class="subtitle">${item.desc || ''}</div>
+        <div class="achievement-card" style="border-color: ${borderColor};">
+            <div class="icon">${iconEmoji}</div>
+            <div class="title" style="color: ${borderColor};">${titleText}</div>
+            <div class="subtitle">${achievementName}</div>
+            <div class="desc" style="font-size:0.95rem; color:#334155; margin-top:4px;">${item.desc || ''}</div>
             <div class="points">${pointsText}</div>
             <button class="confirm-btn">✅ 知道了</button>
         </div>
@@ -2817,7 +2849,9 @@ function renderHistory() {
     });
 }
 
-// ==================== 🏆 學生成就頁面（含皇冠頒獎臺） ====================
+// ============================================================
+// 🏆 學生成就頁面（含皇冠頒獎臺）- 修改處 #3
+// ============================================================
 async function renderAchievements() {
     let container = document.getElementById('achievementsPanel');
     
@@ -2836,170 +2870,136 @@ async function renderAchievements() {
             return bPoints - aPoints;
         });
         
-        // ===== 皇冠頒獎臺 =====
+        // ===== 皇冠頒獎臺（規則 B：遞補） =====
         if (rankedStudents.length > 0) {
-            // 找出最高分
-            const topScore = rankedStudents[0] ? calculateTotalPoints(rankedStudents[0].achievements || {}) : 0;
-            const topTiers = rankedStudents.filter(s => calculateTotalPoints(s.achievements || {}) === topScore);
-            const topCount = topTiers.length;
+            // 計算每個人的積分
+            const rankedWithPoints = rankedStudents.map(s => ({
+                ...s,
+                points: calculateTotalPoints(s.achievements || {})
+            }));
             
-            // #20 + #21: 並列冠軍邏輯 + 只有第 1 名有皇冠
-            // 先分配名次，處理同分
-            let rankedWithTies = [];
+            // 按積分排序（已排序）
+            // 分配名次（同分同名次，下一個跳過）
+            let rankedWithRank = [];
             let currentRank = 1;
             let currentPoints = null;
             let skipCount = 0;
             
-            for (let i = 0; i < rankedStudents.length; i++) {
-                const s = rankedStudents[i];
-                const points = calculateTotalPoints(s.achievements || {});
-                if (currentPoints !== null && points < currentPoints) {
+            for (let i = 0; i < rankedWithPoints.length; i++) {
+                const s = rankedWithPoints[i];
+                if (currentPoints !== null && s.points < currentPoints) {
                     currentRank = i + 1;
                 }
-                currentPoints = points;
-                rankedWithTies.push({
+                currentPoints = s.points;
+                rankedWithRank.push({
                     ...s,
-                    rank: currentRank,
-                    points: points
+                    rank: currentRank
                 });
             }
             
-            // 取前 3 名（按名次，包含並列）
-            const topRanked = rankedWithTies.filter(s => s.rank <= 3);
+            // === 規則 B：遞補 ===
+            // 第 1 名：rank === 1 的所有人（同分並列）
+            // 第 2 名：rank === 2 的所有人（如果沒有人 rank === 2，則從 rank > 1 中取分數最高的人遞補）
+            // 第 3 名：rank === 3 的所有人（如果沒有人 rank === 3，則從 rank > 2 中取分數最高的人遞補）
             
-            // 決定獎牌分配
-            const medals = ['🥇', '🥈', '🥉'];
-            const stepClasses = ['gold', 'silver', 'bronze'];
-            const stepHeights = ['90px', '65px', '40px'];
+            const rank1Students = rankedWithRank.filter(s => s.rank === 1);
             
-            // 計算每個名次的人數，用於顯示
-            const rankCounts = {};
-            for (const s of topRanked) {
-                rankCounts[s.rank] = (rankCounts[s.rank] || 0) + 1;
+            // 找出第 2 名：優先找 rank === 2，否則取下一個最高分
+            let rank2Students = rankedWithRank.filter(s => s.rank === 2);
+            if (rank2Students.length === 0) {
+                // 沒有 rank 2，取 rank > 1 中分數最高的人（即下一個最高分群組）
+                const nextRank = rankedWithRank.find(s => s.rank > 1);
+                if (nextRank) {
+                    const nextPoints = nextRank.points;
+                    rank2Students = rankedWithRank.filter(s => s.points === nextPoints && s.rank > 1);
+                }
             }
             
-            // 構建頒獎臺
+            // 找出第 3 名：優先找 rank === 3，否則取下一個最高分
+            let rank3Students = rankedWithRank.filter(s => s.rank === 3);
+            if (rank3Students.length === 0) {
+                // 沒有 rank 3，取 rank > 2（或 rank > 1 如果沒有 rank 2）中分數最高的人
+                const usedRanks = new Set();
+                rank1Students.forEach(s => usedRanks.add(s.rank));
+                rank2Students.forEach(s => usedRanks.add(s.rank));
+                
+                const nextRank = rankedWithRank.find(s => s.rank > 1 && !usedRanks.has(s.rank));
+                if (nextRank) {
+                    const nextPoints = nextRank.points;
+                    rank3Students = rankedWithRank.filter(s => s.points === nextPoints && s.rank > 1 && !usedRanks.has(s.rank));
+                    // 如果還是沒有，取任何 rank > 2 的最高分
+                    if (rank3Students.length === 0) {
+                        const anyNext = rankedWithRank.find(s => s.rank > 2);
+                        if (anyNext) {
+                            rank3Students = rankedWithRank.filter(s => s.points === anyNext.points);
+                        }
+                    }
+                }
+            }
+            
+            // 獎牌配置
+            const medalConfigs = [
+                { rank: 1, students: rank1Students, emoji: '🥇', cls: 'gold', height: '90px', crown: true },
+                { rank: 2, students: rank2Students, emoji: '🥈', cls: 'silver', height: '65px', crown: false },
+                { rank: 3, students: rank3Students, emoji: '🥉', cls: 'bronze', height: '40px', crown: false }
+            ];
+            
+            // 渲染順序：第 2 名（左）→ 第 1 名（中）→ 第 3 名（右）
+            const displayOrder = [1, 0, 2]; // index 1 (亞軍) → index 0 (冠軍) → index 2 (季軍)
+            
             podiumHtml = `
                 <div class="podium-wrapper">
                     <div class="podium-title"><strong>🏆</strong> · 班級榮譽榜</div>
                     <div class="podium-container">
             `;
             
-            // 第 1 名：置中
-            const firstPlace = topRanked.find(s => s.rank === 1);
-            if (firstPlace) {
-                const count = rankCounts[1] || 1;
-                const tieBadge = count > 1 ? ` x${count}` : '';
-                // 只有第 1 名有皇冠
-                podiumHtml += `
-                    <div class="podium-item champion">
-                        <div class="crown">👑</div>
-                        <div class="name">${firstPlace.name}</div>
-                        <div class="points">${firstPlace.points} 分${tieBadge}</div>
-                        <div class="podium-base">
-                            <div class="podium-step gold"><span class="step-label">🥇${tieBadge}</span></div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                // 從缺
-                podiumHtml += `
-                    <div class="podium-item">
-                        <div class="crown" style="opacity:0;">&nbsp;</div>
-                        <div class="name" style="color:#94a3b8;">從缺</div>
-                        <div class="points">&nbsp;</div>
-                        <div class="podium-base">
-                            <div class="podium-step gold" style="opacity:0.3; min-height:90px;">
-                                <span class="step-label" style="color:#94a3b8;">🥇</span>
+            for (const idx of displayOrder) {
+                const config = medalConfigs[idx];
+                const students = config.students;
+                const hasStudents = students && students.length > 0;
+                
+                if (hasStudents) {
+                    const names = students.map(s => s.name).join('、');
+                    const count = students.length;
+                    const tieBadge = count > 1 ? ` x${count}` : '';
+                    const points = students[0].points;
+                    const crownHtml = config.crown ? `<div class="crown">👑</div>` : `<div class="crown" style="opacity:0;">&nbsp;</div>`;
+                    
+                    podiumHtml += `
+                        <div class="podium-item">
+                            ${crownHtml}
+                            <div class="name">${names}</div>
+                            <div class="points">${points} 分${tieBadge}</div>
+                            <div class="podium-base">
+                                <div class="podium-step ${config.cls}" style="min-height:${config.height};">
+                                    <span class="step-label">${config.emoji}${tieBadge}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
-            }
-            
-            // 第 2 名：左邊（有皇冠）
-            const secondPlace = topRanked.find(s => s.rank === 2);
-            if (secondPlace) {
-                const count = rankCounts[2] || 1;
-                const tieBadge = count > 1 ? ` x${count}` : '';
-                podiumHtml += `
-                    <div class="podium-item">
-                        <div class="crown" style="opacity:0;">&nbsp;</div>
-                        <div class="name">${secondPlace.name}</div>
-                        <div class="points">${secondPlace.points} 分${tieBadge}</div>
-                        <div class="podium-base">
-                            <div class="podium-step silver"><span class="step-label">🥈${tieBadge}</span></div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                podiumHtml += `
-                    <div class="podium-item">
-                        <div class="crown" style="opacity:0;">&nbsp;</div>
-                        <div class="name" style="color:#94a3b8;">從缺</div>
-                        <div class="points">&nbsp;</div>
-                        <div class="podium-base">
-                            <div class="podium-step silver" style="opacity:0.3; min-height:65px;">
-                                <span class="step-label" style="color:#94a3b8;">🥈</span>
+                    `;
+                } else {
+                    // 從缺
+                    const crownHtml = config.crown ? `<div class="crown" style="opacity:0;">&nbsp;</div>` : `<div class="crown" style="opacity:0;">&nbsp;</div>`;
+                    podiumHtml += `
+                        <div class="podium-item">
+                            ${crownHtml}
+                            <div class="name" style="color:#94a3b8;">從缺</div>
+                            <div class="points">&nbsp;</div>
+                            <div class="podium-base">
+                                <div class="podium-step ${config.cls}" style="opacity:0.3; min-height:${config.height};">
+                                    <span class="step-label" style="color:#94a3b8;">${config.emoji}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
-            }
-            
-            // 第 3 名：右邊（有皇冠）
-            const thirdPlace = topRanked.find(s => s.rank === 3);
-            if (thirdPlace) {
-                const count = rankCounts[3] || 1;
-                const tieBadge = count > 1 ? ` x${count}` : '';
-                podiumHtml += `
-                    <div class="podium-item">
-                        <div class="crown" style="opacity:0;">&nbsp;</div>
-                        <div class="name">${thirdPlace.name}</div>
-                        <div class="points">${thirdPlace.points} 分${tieBadge}</div>
-                        <div class="podium-base">
-                            <div class="podium-step bronze"><span class="step-label">🥉${tieBadge}</span></div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                podiumHtml += `
-                    <div class="podium-item">
-                        <div class="crown" style="opacity:0;">&nbsp;</div>
-                        <div class="name" style="color:#94a3b8;">從缺</div>
-                        <div class="points">&nbsp;</div>
-                        <div class="podium-base">
-                            <div class="podium-step bronze" style="opacity:0.3; min-height:40px;">
-                                <span class="step-label" style="color:#94a3b8;">🥉</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            // 顯示並列提示
-            let tieMessage = '';
-            if (rankCounts[1] > 1) {
-                tieMessage = `<div style="text-align:center; margin-top:8px; font-size:0.7rem; color:#7c3aed; font-weight:500;">
-                    👑 ${rankCounts[1]} 人並列冠軍！
-                </div>`;
-            } else if (rankCounts[2] > 1) {
-                tieMessage = `<div style="text-align:center; margin-top:8px; font-size:0.7rem; color:#7c3aed; font-weight:500;">
-                    🥈 ${rankCounts[2]} 人並列亞軍！
-                </div>`;
-            } else if (rankCounts[3] > 1) {
-                tieMessage = `<div style="text-align:center; margin-top:8px; font-size:0.7rem; color:#7c3aed; font-weight:500;">
-                    🥉 ${rankCounts[3]} 人並列季軍！
-                </div>`;
-            } else {
-                tieMessage = `<div style="text-align:center; margin-top:8px; font-size:0.6rem; color:#94a3b8;">
-                    👑 冠軍頭頂皇冠 · 班級前 3 名榮譽榜
-                </div>`;
+                    `;
+                }
             }
             
             podiumHtml += `
                     </div>
-                    ${tieMessage}
+                    <div style="text-align:center; margin-top:8px; font-size:0.6rem; color:#94a3b8;">
+                        👑 冠軍頭頂皇冠 · 班級前 3 名榮譽榜
+                    </div>
                 </div>
             `;
         }
@@ -3095,7 +3095,9 @@ async function renderAchievements() {
                 date: t.date,
                 needHint: t.needHint,
                 points: t.points,
-                order: t.order
+                order: t.order,
+                // 儲存 key 以便判斷是否為章節成就
+                achievementKey: t.id
             };
             if (t.unlocked) {
                 unlockedChapters.push(entry);
@@ -3139,7 +3141,6 @@ async function renderAchievements() {
         { id: 'translationKing', name: '譯之王者', icon: '🎯', unlocked: userData.achievements.translationKing?.unlocked || false, date: userData.achievements.translationKing?.date || null, desc: '翻譯題正確率 ≥ 90%（≥50 題）', points: ACHIEVEMENT_POINTS.translationKing, isPenalty: false },
         { id: 'swiftTranslator', name: '閃譯手', icon: '⚡', unlocked: userData.achievements.swiftTranslator?.unlocked || false, date: userData.achievements.swiftTranslator?.date || null, desc: '30 秒內連續答對 10 題翻譯題', points: ACHIEVEMENT_POINTS.swiftTranslator, isPenalty: false },
         { id: 'perfectTranslation', name: '譯筆生花', icon: '📝', unlocked: userData.achievements.perfectTranslation?.unlocked || false, date: userData.achievements.perfectTranslation?.date || null, desc: '單次練習 10 題翻譯題全對', points: ACHIEVEMENT_POINTS.perfectTranslation, isPenalty: false },
-        // 新增錯題相關成就
         { id: 'mistakeAvenger', name: '錯題復仇者', icon: '🧠', unlocked: userData.achievements.mistakeAvenger?.unlocked || false, date: userData.achievements.mistakeAvenger?.date || null, desc: '同一道錯題，第 2 次做對', points: ACHIEVEMENT_POINTS.mistakeAvenger, isPenalty: false },
         { id: 'sameMistake', name: '同一個位置跌倒', icon: '🕳️', unlocked: userData.achievements.sameMistake?.unlocked || false, date: userData.achievements.sameMistake?.date || null, desc: '同一道錯題，連續錯 3 次', points: ACHIEVEMENT_POINTS.sameMistake, isPenalty: true },
     ];

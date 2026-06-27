@@ -1595,7 +1595,7 @@ body {
         cursor: not-allowed;
     }
 
-    /* 第 2.5 行：工具列（獨立一行） */
+    /* ===== 第 2.5 行：工具列（獨立一行）- 修改處 #1 ===== */
     #desktopQuizModal .sidebar-tools {
         display: flex;
         justify-content: center;
@@ -1605,24 +1605,32 @@ body {
         flex-shrink: 0;
     }
     #desktopQuizModal .sidebar-tools .tool-btn {
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.2);
+        border: 2px solid rgba(255,255,255,0.45);
         border-radius: 30px;
-        padding: 4px 14px;
-        font-size: 12px;
-        font-weight: 500;
-        color: #c4b5d4;
+        padding: 6px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #ffffff;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.25s ease;
         white-space: nowrap;
         line-height: 1.4;
         flex: 1;
         max-width: 90px;
         text-align: center;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        letter-spacing: 0.3px;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.2);
     }
     #desktopQuizModal .sidebar-tools .tool-btn:hover {
-        background: rgba(255,255,255,0.15);
-        color: #ffffff;
+        background: rgba(255,255,255,0.32);
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        border-color: rgba(255,255,255,0.7);
+    }
+    #desktopQuizModal .sidebar-tools .tool-btn:active {
+        transform: scale(0.95);
     }
     #desktopQuizModal .sidebar-tools .tool-btn.hidden {
         display: none;
