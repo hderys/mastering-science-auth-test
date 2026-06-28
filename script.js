@@ -1336,12 +1336,8 @@ function addPenaltyAchievement(name, icon, points, desc) {
 let achievementQueue = [];
 let isAchievementShowing = false;
 
-// ===== 修改處 #2：成就解鎖彈窗分類 =====
 function showAchievementEffect(name, icon, desc, points) {
-    // 加入佇列
     achievementQueue.push({ name, icon, desc, points });
-    
-    // 如果沒有正在顯示，開始顯示
     if (!isAchievementShowing) {
         processAchievementQueue();
     }
@@ -1356,14 +1352,13 @@ function processAchievementQueue() {
     isAchievementShowing = true;
     const item = achievementQueue.shift();
     
-    // 移除舊的 overlay
     const oldOverlay = document.querySelector('.achievement-effect-overlay');
     if (oldOverlay) oldOverlay.remove();
     
     const overlay = document.createElement('div');
     overlay.className = 'achievement-effect-overlay show';
     
-    // ===== 判斷成就類型：章節成就 key 格式為 `${unit}_${chapter}` =====
+    // 判斷成就類型：章節成就 key 格式為 `${unit}_${chapter}`
     const isChapterAchievement = /^\d+_\d+$/.test(item.name);
     
     let titleText = '';
@@ -1372,13 +1367,12 @@ function processAchievementQueue() {
     
     if (isChapterAchievement) {
         titleText = '📖 章節成就解鎖！';
-        borderColor = '#8b5cf6';  // 紫色
+        borderColor = '#8b5cf6';
     } else {
         titleText = '🏆 特殊成就解鎖！';
-        borderColor = '#fbbf24';  // 金色
+        borderColor = '#fbbf24';
     }
     
-    // 成就名稱對應的標題（特殊成就專用）
     const titleMap = {
         'firstTranslation': '🗣️ 初試譯聲',
         'livingDictionary': '📖 活字典',
@@ -1422,7 +1416,6 @@ function processAchievementQueue() {
     
     document.body.appendChild(overlay);
     
-    // 加入閃電衝擊波特效
     const card = overlay.querySelector('.achievement-card');
     for (let i = 0; i < 4; i++) {
         const ring = document.createElement('div');
@@ -1435,7 +1428,6 @@ function processAchievementQueue() {
         setTimeout(() => ring.remove(), 1200);
     }
     
-    // 加入星光
     const sparkleColors = ['#fbbf24', '#a78bfa', '#34d399', '#60a5fa', '#f472b6', '#facc15'];
     const rect = card.getBoundingClientRect();
     const cx = rect.width / 2;
@@ -1455,16 +1447,13 @@ function processAchievementQueue() {
         setTimeout(() => s.remove(), 1400);
     }
     
-    // 確認按鈕
     overlay.querySelector('.confirm-btn').addEventListener('click', function(e) {
         e.stopPropagation();
         overlay.classList.remove('show');
         setTimeout(() => overlay.remove(), 400);
-        // 處理下一個
         processAchievementQueue();
     });
     
-    // 點擊背景關閉
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) {
             overlay.classList.remove('show');
@@ -1711,12 +1700,9 @@ function addPracticeHistory(unit, chapter, difficultyName, questionCount, correc
     let newUnlocks = [];
     checkAndUnlockAchievements(unit, chapter, accuracy, questionCount, accuracy === 100 && questionCount >= 10, selectedCount === 36, isSpeed, totalQuestions, newUnlocks, consecutiveCorrectCount, isBlankPaper, previousAccuracy);
     
-    // 處理成就解鎖特效
     if (newUnlocks.length > 0) {
-        // 延遲 1.5 秒後顯示成就（讓解鎖特效先出現）
         setTimeout(() => {
             for (let i = 0; i < newUnlocks.length; i++) {
-                // 逐個顯示，每個間隔 0.5 秒
                 setTimeout(() => {
                     showAchievementEffect(
                         newUnlocks[i].id || 'achievement',
@@ -1764,7 +1750,7 @@ async function calculateClassRank(userId, userPoints) {
     return { rank: rank, total: classmates.length };
 }
 
-// ==================== 挑題邏輯 ====================
+// ==================== 挑題邏輯（已修復） ====================
 function selectQuestionsByDifficultyAndCount(questions, count, preference, isTrial, isUnitTest = false) {
     let filteredQuestions = excludeTranslate ? questions.filter(q => q.difficulty !== "🌐 Translate") : [...questions];
     
@@ -1818,11 +1804,12 @@ function selectQuestionsByDifficultyAndCount(questions, count, preference, isTri
     if (preference === 0) {
         allowedLevels = [0, 1];
     } else if (preference === 1) {
-        allowedLevels = [2];
+        allowedLevels = [2, 3];
     } else if (preference === 2) {
         allowedLevels = [2, 3];
     }
 
+    // ===== 修復：正確分類題目 =====
     let wrongQuestions = [];
     let notAttemptedQuestions = [];
     let otherQuestions = [];
@@ -1831,16 +1818,21 @@ function selectQuestionsByDifficultyAndCount(questions, count, preference, isTri
         const level = q.difficulty_level;
         const isAllowed = allowedLevels.includes(level);
         
+        // 先不管難度，先把錯題和未做過的分出來
         if (userData.latestStatus[q.id] === false) {
             wrongQuestions.push(q);
             continue;
         }
         
-        if (isNotAttempted(q.id) && isAllowed) {
-            notAttemptedQuestions.push(q);
+        if (isNotAttempted(q.id)) {
+            // 只有當難度符合時才放入「未做過」
+            if (isAllowed) {
+                notAttemptedQuestions.push(q);
+            }
             continue;
         }
         
+        // 已做過且答對的題目（不管難度是否符合，先存起來）
         if (isAllowed) {
             otherQuestions.push(q);
         }
@@ -1848,13 +1840,16 @@ function selectQuestionsByDifficultyAndCount(questions, count, preference, isTri
 
     let candidates = [...wrongQuestions];
     
+    // 先補未做過的
     if (candidates.length < count) {
         let shuffledNotAttempted = shuffleArray([...notAttemptedQuestions]);
         candidates = [...candidates, ...shuffledNotAttempted];
     }
     
+    // ===== 修復：如果還是不夠，從所有已做過答對的題目中補（不管難度） =====
     if (candidates.length < count) {
         let remaining = count - candidates.length;
+        // 從「其他題目」中挑選（已做過答對且難度符合）
         let otherShuffled = shuffleArray([...otherQuestions]);
         
         let selected = [];
@@ -1884,6 +1879,15 @@ function selectQuestionsByDifficultyAndCount(questions, count, preference, isTri
             ];
         }
         candidates = [...candidates, ...selected];
+    }
+    
+    // ===== 修復：最後一道防線 — 如果還是不夠，從所有題目隨機補充（包含已做過答對但難度不符的） =====
+    if (candidates.length < count) {
+        let remaining = count - candidates.length;
+        // 從所有題目中排除已選的
+        let allRemaining = filteredQuestions.filter(q => !candidates.includes(q));
+        let extra = shuffleArray(allRemaining).slice(0, remaining);
+        candidates = [...candidates, ...extra];
     }
     
     candidates = [...new Map(candidates.map(q => [q.id, q])).values()];
@@ -2202,7 +2206,6 @@ function startUnitTest(unit) {
     
     startTime = Date.now();
     
-    // ===== iPhone 橫置檢查 =====
     if (isIPhone() && !isLandscape()) {
         showIPhoneOrientationPrompt();
         return;
@@ -2224,7 +2227,6 @@ function isLandscape() {
 }
 
 function showIPhoneOrientationPrompt() {
-    // 移除舊的 overlay
     const oldOverlay = document.getElementById('iphoneOrientationOverlay');
     if (oldOverlay) oldOverlay.remove();
     
@@ -2241,13 +2243,10 @@ function showIPhoneOrientationPrompt() {
     
     document.body.appendChild(overlay);
     
-    // 監聽方向變化
     const orientationHandler = () => {
         if (isLandscape()) {
-            // 已轉橫，關閉提示
             overlay.classList.remove('show');
             setTimeout(() => overlay.remove(), 400);
-            // 繼續進入做題
             forceLandscapeAndFullscreen().then(() => {
                 showDesktopQuizModal();
             });
@@ -2256,12 +2255,10 @@ function showIPhoneOrientationPrompt() {
     };
     window.addEventListener('resize', orientationHandler);
     
-    // 「繼續」按鈕
     document.getElementById('iphoneContinueBtn').addEventListener('click', function() {
         overlay.classList.remove('show');
         setTimeout(() => overlay.remove(), 400);
         window.removeEventListener('resize', orientationHandler);
-        // 強制進入（可能畫面不好看但能用）
         forceLandscapeAndFullscreen().then(() => {
             showDesktopQuizModal();
         });
@@ -2337,7 +2334,6 @@ function startSingleQuestion(qid, source) {
     document.getElementById('settingsModal').style.display = 'none';
     startTime = Date.now();
     
-    // ===== iPhone 橫置檢查 =====
     if (isIPhone() && !isLandscape()) {
         showIPhoneOrientationPrompt();
         return;
@@ -2850,7 +2846,7 @@ function renderHistory() {
 }
 
 // ============================================================
-// 🏆 學生成就頁面（含皇冠頒獎臺）- 修改處 #3
+// 🏆 學生成就頁面（含皇冠頒獎臺）
 // ============================================================
 async function renderAchievements() {
     let container = document.getElementById('achievementsPanel');
@@ -2870,20 +2866,15 @@ async function renderAchievements() {
             return bPoints - aPoints;
         });
         
-        // ===== 皇冠頒獎臺（規則 B：遞補） =====
         if (rankedStudents.length > 0) {
-            // 計算每個人的積分
             const rankedWithPoints = rankedStudents.map(s => ({
                 ...s,
                 points: calculateTotalPoints(s.achievements || {})
             }));
             
-            // 按積分排序（已排序）
-            // 分配名次（同分同名次，下一個跳過）
             let rankedWithRank = [];
             let currentRank = 1;
             let currentPoints = null;
-            let skipCount = 0;
             
             for (let i = 0; i < rankedWithPoints.length; i++) {
                 const s = rankedWithPoints[i];
@@ -2897,17 +2888,11 @@ async function renderAchievements() {
                 });
             }
             
-            // === 規則 B：遞補 ===
-            // 第 1 名：rank === 1 的所有人（同分並列）
-            // 第 2 名：rank === 2 的所有人（如果沒有人 rank === 2，則從 rank > 1 中取分數最高的人遞補）
-            // 第 3 名：rank === 3 的所有人（如果沒有人 rank === 3，則從 rank > 2 中取分數最高的人遞補）
-            
+            // 規則 B：遞補
             const rank1Students = rankedWithRank.filter(s => s.rank === 1);
             
-            // 找出第 2 名：優先找 rank === 2，否則取下一個最高分
             let rank2Students = rankedWithRank.filter(s => s.rank === 2);
             if (rank2Students.length === 0) {
-                // 沒有 rank 2，取 rank > 1 中分數最高的人（即下一個最高分群組）
                 const nextRank = rankedWithRank.find(s => s.rank > 1);
                 if (nextRank) {
                     const nextPoints = nextRank.points;
@@ -2915,10 +2900,8 @@ async function renderAchievements() {
                 }
             }
             
-            // 找出第 3 名：優先找 rank === 3，否則取下一個最高分
             let rank3Students = rankedWithRank.filter(s => s.rank === 3);
             if (rank3Students.length === 0) {
-                // 沒有 rank 3，取 rank > 2（或 rank > 1 如果沒有 rank 2）中分數最高的人
                 const usedRanks = new Set();
                 rank1Students.forEach(s => usedRanks.add(s.rank));
                 rank2Students.forEach(s => usedRanks.add(s.rank));
@@ -2927,7 +2910,6 @@ async function renderAchievements() {
                 if (nextRank) {
                     const nextPoints = nextRank.points;
                     rank3Students = rankedWithRank.filter(s => s.points === nextPoints && s.rank > 1 && !usedRanks.has(s.rank));
-                    // 如果還是沒有，取任何 rank > 2 的最高分
                     if (rank3Students.length === 0) {
                         const anyNext = rankedWithRank.find(s => s.rank > 2);
                         if (anyNext) {
@@ -2937,15 +2919,13 @@ async function renderAchievements() {
                 }
             }
             
-            // 獎牌配置
             const medalConfigs = [
                 { rank: 1, students: rank1Students, emoji: '🥇', cls: 'gold', height: '90px', crown: true },
                 { rank: 2, students: rank2Students, emoji: '🥈', cls: 'silver', height: '65px', crown: false },
                 { rank: 3, students: rank3Students, emoji: '🥉', cls: 'bronze', height: '40px', crown: false }
             ];
             
-            // 渲染順序：第 2 名（左）→ 第 1 名（中）→ 第 3 名（右）
-            const displayOrder = [1, 0, 2]; // index 1 (亞軍) → index 0 (冠軍) → index 2 (季軍)
+            const displayOrder = [1, 0, 2];
             
             podiumHtml = `
                 <div class="podium-wrapper">
@@ -2978,7 +2958,6 @@ async function renderAchievements() {
                         </div>
                     `;
                 } else {
-                    // 從缺
                     const crownHtml = config.crown ? `<div class="crown" style="opacity:0;">&nbsp;</div>` : `<div class="crown" style="opacity:0;">&nbsp;</div>`;
                     podiumHtml += `
                         <div class="podium-item">
@@ -3007,7 +2986,6 @@ async function renderAchievements() {
         console.warn('⚠️ 生成頒獎臺失敗:', e);
     }
     
-    // ===== 積分榜 =====
     try {
         const className = currentUser.className;
         const allStudents = await loadAllStudentsFromFirebase(className);
@@ -3057,7 +3035,6 @@ async function renderAchievements() {
         console.warn('⚠️ 載入積分榜失敗:', e);
     }
     
-    // ===== 章節成就 =====
     let chapterList = [];
     for (let u in window.ALL_UNITS) {
         for (let ch in window.ALL_UNITS[u].chapters) {
@@ -3095,9 +3072,7 @@ async function renderAchievements() {
                 date: t.date,
                 needHint: t.needHint,
                 points: t.points,
-                order: t.order,
-                // 儲存 key 以便判斷是否為章節成就
-                achievementKey: t.id
+                order: t.order
             };
             if (t.unlocked) {
                 unlockedChapters.push(entry);
@@ -3133,7 +3108,6 @@ async function renderAchievements() {
         { id: 'weekChallenge', name: '一週挑戰', icon: '📅', unlocked: userData.achievements.weekChallenge?.unlocked || false, date: userData.achievements.weekChallenge?.date || null, desc: '連續7天完成至少一次練習', points: ACHIEVEMENT_POINTS.weekChallenge, isPenalty: false },
         { id: 'blankPaper', name: '交白卷', icon: '📄', unlocked: userData.achievements.blankPaper?.unlocked || false, date: userData.achievements.blankPaper?.date || null, desc: '提交空白答案卷', points: ACHIEVEMENT_POINTS.blankPaper, isPenalty: true },
         { id: 'downwardTrend', name: '下滑趨勢', icon: '📉', unlocked: userData.achievements.downwardTrend?.unlocked || false, date: userData.achievements.downwardTrend?.date || null, desc: '連續兩次正確率下降超過20%', points: ACHIEVEMENT_POINTS.downwardTrend, isPenalty: true },
-        // 新增翻譯題成就
         { id: 'firstTranslation', name: '初試譯聲', icon: '🗣️', unlocked: userData.achievements.firstTranslation?.unlocked || false, date: userData.achievements.firstTranslation?.date || null, desc: '完成第 1 題翻譯題', points: ACHIEVEMENT_POINTS.firstTranslation, isPenalty: false },
         { id: 'livingDictionary', name: '活字典', icon: '📖', unlocked: userData.achievements.livingDictionary?.unlocked || false, date: userData.achievements.livingDictionary?.date || null, desc: '累積完成 100 題翻譯題', points: ACHIEVEMENT_POINTS.livingDictionary, isPenalty: false },
         { id: 'translationMaster', name: '翻譯大師', icon: '📚', unlocked: userData.achievements.translationMaster?.unlocked || false, date: userData.achievements.translationMaster?.date || null, desc: '累積完成 300 題翻譯題', points: ACHIEVEMENT_POINTS.translationMaster, isPenalty: false },
@@ -3179,13 +3153,9 @@ async function renderAchievements() {
             </div>
         </div>`;
     
-    // 頒獎臺（放在積分榜上方）
     if (podiumHtml) { html += podiumHtml; }
-    
-    // 積分榜
     if (rankListHtml) { html += rankListHtml; }
     
-    // 特殊成就
     if (unlockedSpecials.length > 0 || unlockedPenalties.length > 0 || lockedSpecials.length > 0) {
         html += `<h3 style="margin-top:0.5rem;">🎯 特殊成就</h3>`;
         
@@ -3301,7 +3271,6 @@ function startPracticeWithSettings() {
     
     startTime = Date.now();
     
-    // ===== iPhone 橫置檢查 =====
     if (isIPhone() && !isLandscape()) {
         showIPhoneOrientationPrompt();
         return;
@@ -3381,18 +3350,52 @@ function toggleFavorite(qid) {
     renderPastMistakes();
 }
 
-// ==================== 元素周期表功能 ====================
+// ==================== 元素周期表功能（已改用工具視窗） ====================
 function showPeriodicTable() {
-    const imgUrl = 'https://raw.githubusercontent.com/hderys/mastering-science-images/main/webp_image/periodic_table.png';
-    document.getElementById('zoomImage').src = imgUrl;
-    document.getElementById('imageZoomModal').style.display = 'flex';
+    // 已改用工具視窗，此函數保留以防相容性問題
+    openToolWindow('periodic');
 }
 
 function closeImageZoom() {
     document.getElementById('imageZoomModal').style.display = 'none';
 }
 
-// ==================== 顯示 DSE 等級預測彈窗 ====================
+// ============================================================
+// 工具視窗功能（已內嵌於 index.html，此處保留相容）
+// ============================================================
+function openToolWindow(tab) {
+    const overlay = document.getElementById('toolOverlay');
+    if (overlay) {
+        overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        if (tab) {
+            switchToolTab(tab);
+        }
+    }
+}
+
+function closeToolWindow() {
+    const overlay = document.getElementById('toolOverlay');
+    if (overlay) {
+        overlay.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+}
+
+function switchToolTab(tabId) {
+    const tabs = document.querySelectorAll('.tool-tab');
+    tabs.forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === tabId);
+    });
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach(content => {
+        content.classList.toggle('active', content.id === 'tab-' + tabId);
+    });
+}
+
+// ============================================================
+// 顯示 DSE 等級預測彈窗
+// ============================================================
 function showDSEResult(accuracy, correctCount, totalCount) {
     let level = '';
     let levelClass = '';
@@ -3684,7 +3687,7 @@ function updateDesktopPeriodicButton() {
 }
 
 // ============================================================
-// 🔧 提交函數 - 包含自訂「未作答」確認彈窗 + 翻譯題數據累積
+// 提交函數
 // ============================================================
 function submitDesktopAll() {
     let answeredCount = currentAnswers.filter(a => a !== null && a !== undefined).length;
@@ -3997,13 +4000,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const desktopPeriodicBtn = document.getElementById('desktopPeriodicBtn');
     if (desktopPeriodicBtn) {
-        desktopPeriodicBtn.addEventListener('click', showPeriodicTable);
+        desktopPeriodicBtn.addEventListener('click', function() {
+            openToolWindow('periodic');
+        });
     }
     
     const desktopCalculatorBtn = document.getElementById('desktopCalculatorBtn');
     if (desktopCalculatorBtn) {
         desktopCalculatorBtn.addEventListener('click', function() {
-            alert('🧮 計算機功能開發中，敬請期待！');
+            openToolWindow('calculator');
         });
     }
 });
@@ -5393,3 +5398,5 @@ console.log('🏆 皇冠頒獎臺、難度解鎖特效、9個新成就已整合'
 console.log('🎆 成就解鎖特效（全螢幕置中 + 逐個確認）已整合');
 console.log('📱 iPhone 橫置引導提示已整合');
 console.log('🏅 頒獎臺並列邏輯已修正');
+console.log('🧮 工具視窗（計算機 + 周期表）已整合');
+console.log('🔧 挑題邏輯已修復（不夠 10 題時回頭撈已做過答對的題目）');
