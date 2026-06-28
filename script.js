@@ -878,19 +878,51 @@ function enterMainApp(user) {
     });
 }
 
-// ==================== 分頁切換 ====================
+// ==================== 分頁切換（修改：合併為 4/5 個分頁） ====================
 function setupTabs() {
     const tabs = document.querySelectorAll('.tab');
     const panels = {
         practice: document.getElementById('practicePanel'),
-        myMistakes: document.getElementById('myMistakesPanel'),
-        pastMistakes: document.getElementById('pastMistakesPanel'),
+        learning: document.getElementById('learningPanel'),
         pinned: document.getElementById('pinnedPanel'),
-        history: document.getElementById('historyPanel'),
         achievements: document.getElementById('achievementsPanel'),
         teacher: document.getElementById('teacherPanel')
     };
     
+    // 子分頁按鈕
+    const subTabs = document.querySelectorAll('.learning-subtabs .sub-tab');
+    const subContents = {
+        myMistakes: document.getElementById('learning-myMistakes'),
+        pastMistakes: document.getElementById('learning-pastMistakes'),
+        history: document.getElementById('learning-history')
+    };
+    
+    // 設定子分頁點擊事件
+    subTabs.forEach(tab => {
+        tab.removeEventListener('click', tab._subClickHandler);
+        tab._subClickHandler = function() {
+            const target = this.dataset.subtab;
+            
+            // 更新子分頁標籤狀態
+            subTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // 更新子分頁內容
+            Object.keys(subContents).forEach(key => {
+                if (subContents[key]) {
+                    subContents[key].style.display = (key === target) ? 'block' : 'none';
+                }
+            });
+            
+            // 渲染對應內容
+            if (target === 'myMistakes') renderMyMistakes('learning');
+            if (target === 'pastMistakes') renderPastMistakes('learning');
+            if (target === 'history') renderHistory('learning');
+        };
+        tab.addEventListener('click', tab._subClickHandler);
+    });
+    
+    // 主分頁切換
     tabs.forEach(tab => {
         tab.removeEventListener('click', tab._clickHandler);
         
@@ -906,10 +938,14 @@ function setupTabs() {
             tabs.forEach(t => t.classList.remove('active'));
             this.classList.add('active');
             
-            if (target === 'myMistakes') renderMyMistakes();
-            if (target === 'pastMistakes') renderPastMistakes();
+            if (target === 'learning') {
+                // 預設顯示「我的錯題」子分頁
+                const firstSubTab = document.querySelector('.learning-subtabs .sub-tab');
+                if (firstSubTab) {
+                    firstSubTab.click();
+                }
+            }
             if (target === 'pinned') renderPinned();
-            if (target === 'history') renderHistory();
             if (target === 'achievements') renderAchievements();
             if (target === 'teacher') renderTeacherPanel();
         };
@@ -917,7 +953,7 @@ function setupTabs() {
         tab.addEventListener('click', tab._clickHandler);
     });
     
-    console.log('✅ 分頁已初始化');
+    console.log('✅ 分頁已初始化（含學習紀錄子分頁）');
 }
 
 // ==================== 用戶下拉選單 ====================
@@ -2721,10 +2757,20 @@ function updateSettingsUnlockStatus() {
     }
 }
 
-function renderMyMistakes() {
+// ==================== renderMyMistakes（支援 learning 面板） ====================
+function renderMyMistakes(targetPanel) {
     let wrongByChapter = {};
     for (let u in window.ALL_UNITS) for (let c in window.ALL_UNITS[u].chapters) for (let q of window.ALL_UNITS[u].chapters[c].questions) if (userData.latestStatus[q.id] === false) { if (!wrongByChapter[c]) wrongByChapter[c] = []; wrongByChapter[c].push({ ...q, chapterName: window.ALL_UNITS[u].chapters[c].name }); }
-    let container = document.getElementById('myMistakesPanel');
+    
+    let container;
+    if (targetPanel === 'learning') {
+        container = document.getElementById('learning-myMistakes');
+    } else {
+        container = document.getElementById('myMistakesPanel');
+    }
+    
+    if (!container) return;
+    
     if (Object.keys(wrongByChapter).length === 0) { container.innerHTML = '<div class="card">✨ 目前沒有錯題</div>'; return; }
     let html = '<div class="card"><h3>我的錯題</h3>';
     for (let ch in wrongByChapter) {
@@ -2743,12 +2789,22 @@ function renderMyMistakes() {
     attachMistakeEvents();
 }
 
-function renderPastMistakes() {
+// ==================== renderPastMistakes（支援 learning 面板） ====================
+function renderPastMistakes(targetPanel) {
     let wrongQids = new Set();
     for (let att of userData.allAttempts) if (!att.isCorrect) wrongQids.add(att.qid);
     let pastByChapter = {};
     for (let u in window.ALL_UNITS) for (let c in window.ALL_UNITS[u].chapters) for (let q of window.ALL_UNITS[u].chapters[c].questions) if (wrongQids.has(q.id)) { if (!pastByChapter[c]) pastByChapter[c] = []; pastByChapter[c].push({ ...q, chapterName: window.ALL_UNITS[u].chapters[c].name }); }
-    let container = document.getElementById('pastMistakesPanel');
+    
+    let container;
+    if (targetPanel === 'learning') {
+        container = document.getElementById('learning-pastMistakes');
+    } else {
+        container = document.getElementById('pastMistakesPanel');
+    }
+    
+    if (!container) return;
+    
     if (Object.keys(pastByChapter).length === 0) { container.innerHTML = '<div class="card">📭 尚無錯題歷程</div>'; return; }
     let html = '<div class="card"><h3>錯題歷程</h3>';
     for (let ch in pastByChapter) {
@@ -2769,6 +2825,7 @@ function renderPastMistakes() {
     attachRemoveEvents();
 }
 
+// ==================== renderPinned ====================
 function renderPinned() {
     let container = document.getElementById('pinnedPanel');
     if (userData.favorites.length === 0) { container.innerHTML = '<div class="card">⭐ 尚無收藏題目</div>'; return; }
@@ -2789,6 +2846,36 @@ function renderPinned() {
         startSingleQuestion(qid, source);
     }));
     attachRemoveEvents();
+}
+
+// ==================== renderHistory（支援 learning 面板） ====================
+function renderHistory(targetPanel) {
+    let container;
+    if (targetPanel === 'learning') {
+        container = document.getElementById('learning-history');
+    } else {
+        container = document.getElementById('historyPanel');
+    }
+    
+    if (!container) return;
+    
+    if (!userData.practiceHistory || userData.practiceHistory.length === 0) { container.innerHTML = '<div class="card">📋 暫無做題紀錄</div>'; return; }
+    let html = `<div class="card"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;"><h3>📋 做題紀錄</h3><button id="exportHistoryBtn" class="btn export-btn">📥 匯出 CSV</button></div><div style="overflow-x:auto;"><table class="history-table"><thead><tr><th>日期</th><th>時間</th><th>單元</th><th>章節</th><th>題數</th><th>正確率</th><th>模式</th><th>花費時間</th></tr></thead><tbody>`;
+    for (let h of userData.practiceHistory) {
+        let timeStr = h.timeSpent ? formatTime(h.timeSpent) : '-';
+        html += `<tr><td>${format(new Date(h.date), 'yyyy-MM-dd')}</td><td>${h.time}</td><td>${h.unitName}</td><td>${h.chapterName}</td><td>${h.questionCount}</td><td>${h.accuracy}%</td><td>${h.mode === 'trial' ? '試煉' : '一般'}</td><td>${timeStr}</td></tr>`;
+    }
+    html += `</tbody></table></div></div>`;
+    container.innerHTML = html;
+    document.getElementById('exportHistoryBtn')?.addEventListener('click', () => {
+        let csv = [["日期", "時間", "單元", "章節", "題數", "正確數", "正確率", "模式", "花費時間"]];
+        for (let h of userData.practiceHistory) {
+            let timeStr = h.timeSpent ? formatTime(h.timeSpent) : '-';
+            csv.push([h.date, h.time, h.unitName, h.chapterName, h.questionCount, h.correctCount, `${h.accuracy}%`, h.mode === 'trial' ? '試煉' : '一般', timeStr]);
+        }
+        let blob = new Blob(["\uFEFF" + csv.map(r => r.join(",")).join("\n")], { type: "text/csv;charset=utf-8;" });
+        let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `mastering_science_history_${currentUser.name}.csv`; link.click(); URL.revokeObjectURL(link.href);
+    });
 }
 
 function attachMistakeEvents() {
@@ -2817,30 +2904,8 @@ function attachRemoveEvents() {
     }));
 }
 
-// ==================== renderHistory ====================
-function renderHistory() {
-    let container = document.getElementById('historyPanel');
-    if (!userData.practiceHistory || userData.practiceHistory.length === 0) { container.innerHTML = '<div class="card">📋 暫無做題紀錄</div>'; return; }
-    let html = `<div class="card"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;"><h3>📋 做題紀錄</h3><button id="exportHistoryBtn" class="btn export-btn">📥 匯出 CSV</button></div><div style="overflow-x:auto;"><table class="history-table"><thead><tr><th>日期</th><th>時間</th><th>單元</th><th>章節</th><th>題數</th><th>正確率</th><th>模式</th><th>花費時間</th></tr></thead><tbody>`;
-    for (let h of userData.practiceHistory) {
-        let timeStr = h.timeSpent ? formatTime(h.timeSpent) : '-';
-        html += `<tr><td>${format(new Date(h.date), 'yyyy-MM-dd')}</td><td>${h.time}</td><td>${h.unitName}</td><td>${h.chapterName}</td><td>${h.questionCount}</td><td>${h.accuracy}%</td><td>${h.mode === 'trial' ? '試煉' : '一般'}</td><td>${timeStr}</td></tr>`;
-    }
-    html += `</tbody></table></div></div>`;
-    container.innerHTML = html;
-    document.getElementById('exportHistoryBtn')?.addEventListener('click', () => {
-        let csv = [["日期", "時間", "單元", "章節", "題數", "正確數", "正確率", "模式", "花費時間"]];
-        for (let h of userData.practiceHistory) {
-            let timeStr = h.timeSpent ? formatTime(h.timeSpent) : '-';
-            csv.push([h.date, h.time, h.unitName, h.chapterName, h.questionCount, h.correctCount, `${h.accuracy}%`, h.mode === 'trial' ? '試煉' : '一般', timeStr]);
-        }
-        let blob = new Blob(["\uFEFF" + csv.map(r => r.join(",")).join("\n")], { type: "text/csv;charset=utf-8;" });
-        let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `mastering_science_history_${currentUser.name}.csv`; link.click(); URL.revokeObjectURL(link.href);
-    });
-}
-
 // ============================================================
-// 🏆 學生成就頁面（含皇冠頒獎臺）
+// 🏆 學生成就頁面（含皇冠頒獎臺 - 已移除斜紋）
 // ============================================================
 async function renderAchievements() {
     let container = document.getElementById('achievementsPanel');
@@ -5393,3 +5458,4 @@ console.log('📱 iPhone 橫置引導提示已整合');
 console.log('🏅 頒獎臺並列邏輯已修正');
 console.log('🧮 工具視窗（計算機 + 周期表）已整合');
 console.log('🔧 挑題邏輯已修復（不夠 10 題時回頭撈已做過答對的題目）');
+console.log('📊 學習紀錄子分頁（我的錯題 / 錯題歷程 / 做題紀錄）已整合');

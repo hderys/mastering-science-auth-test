@@ -368,7 +368,7 @@
         /* ===== 主內容區 ===== */
         .tool-main {
             flex: 1;
-            padding: clamp(10px, 1.5vh, 16px) clamp(12px, 1.5vw, 18px);
+            padding: clamp(8px, 1.2vh, 12px) clamp(10px, 1.2vw, 14px);
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -390,7 +390,7 @@
         /* ===== 計算機 ===== */
         .calculator-layout {
             display: flex;
-            gap: clamp(8px, 1.5vw, 18px);
+            gap: clamp(6px, 1vw, 14px);
             flex: 1;
             min-height: 0;
         }
@@ -402,14 +402,14 @@
         }
         .calculator-display {
             background: #f5f0ff;
-            border-radius: clamp(10px, 1.2vh, 14px);
-            padding: clamp(8px, 1.2vh, 14px) clamp(12px, 1.5vw, 18px);
+            border-radius: clamp(8px, 1vh, 12px);
+            padding: clamp(6px, 0.8vh, 10px) clamp(10px, 1.2vw, 14px);
             text-align: right;
-            font-size: clamp(1.2rem, 2.8vw, 1.8rem);
+            font-size: clamp(1rem, 2.4vw, 1.6rem);
             font-weight: 700;
             color: #1a1a2e;
-            margin-bottom: clamp(6px, 0.8vh, 10px);
-            min-height: clamp(40px, 6vh, 56px);
+            margin-bottom: clamp(4px, 0.5vh, 8px);
+            min-height: clamp(32px, 4.5vh, 48px);
             font-family: 'Courier New', monospace;
             border: 2px solid #e9e4f5;
             overflow: hidden;
@@ -421,16 +421,16 @@
         .calculator-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: clamp(4px, 0.6vw, 8px);
+            gap: clamp(3px, 0.4vw, 6px);
             flex: 1;
             min-height: 0;
         }
         .calc-btn {
             padding: 0;
-            font-size: clamp(0.8rem, 1.4vw, 1.1rem);
+            font-size: clamp(0.7rem, 1.2vw, 1rem);
             font-weight: 600;
             border: none;
-            border-radius: clamp(6px, 0.8vh, 10px);
+            border-radius: clamp(5px, 0.6vh, 8px);
             cursor: pointer;
             transition: all 0.12s;
             background: #f5f0ff;
@@ -460,7 +460,7 @@
         .calc-btn.equals {
             background: #fbbf24;
             color: #1a1a2e;
-            font-size: clamp(1rem, 1.8vw, 1.4rem);
+            font-size: clamp(0.9rem, 1.6vw, 1.3rem);
             font-weight: 800;
             box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
         }
@@ -478,7 +478,7 @@
         .calc-btn.science {
             background: #dbeafe;
             color: #1d4ed8;
-            font-size: clamp(0.6rem, 1vw, 0.8rem);
+            font-size: clamp(0.5rem, 0.8vw, 0.7rem);
         }
         .calc-btn.science:hover {
             background: #bfdbfe;
@@ -486,40 +486,40 @@
         .calc-btn.func {
             background: #e9e4f5;
             color: #4a1d8c;
-            font-size: clamp(0.65rem, 1.1vw, 0.85rem);
+            font-size: clamp(0.55rem, 0.9vw, 0.75rem);
         }
         .calc-btn.func:hover {
             background: #d5cce8;
         }
 
-        /* ===== 草稿格（低調版） ===== */
+        /* ===== 草稿格（按鈕有顏色） ===== */
         .calculator-right {
             flex: 3;
-            min-width: clamp(90px, 12vw, 150px);
+            min-width: clamp(80px, 10vw, 140px);
             background: #faf8ff;
-            border-radius: clamp(10px, 1.2vh, 14px);
-            padding: clamp(8px, 1.2vh, 12px) clamp(10px, 1.2vw, 14px);
+            border-radius: clamp(8px, 1vh, 12px);
+            padding: clamp(6px, 0.8vh, 10px) clamp(8px, 1vw, 12px);
             border: 2px solid #e9e4f5;
             display: flex;
             flex-direction: column;
         }
         .calculator-right .draft-title {
-            font-size: clamp(0.65rem, 0.9vw, 0.8rem);
+            font-size: clamp(0.6rem, 0.8vw, 0.75rem);
             font-weight: 700;
             color: #999;
             letter-spacing: 1px;
-            margin-bottom: clamp(6px, 0.8vh, 10px);
+            margin-bottom: clamp(4px, 0.5vh, 8px);
             text-align: center;
             border-bottom: 1px solid #e9e4f5;
-            padding-bottom: clamp(4px, 0.5vh, 6px);
+            padding-bottom: clamp(3px, 0.4vh, 5px);
             flex-shrink: 0;
         }
         .draft-slot {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: clamp(2px, 0.3vh, 4px);
-            margin-bottom: clamp(4px, 0.5vh, 8px);
+            gap: clamp(1px, 0.2vh, 3px);
+            margin-bottom: clamp(3px, 0.4vh, 6px);
             min-height: 0;
         }
         .draft-slot:last-child {
@@ -527,19 +527,19 @@
         }
         .draft-slot .slot-label {
             font-weight: 700;
-            font-size: clamp(0.65rem, 0.9vw, 0.8rem);
+            font-size: clamp(0.55rem, 0.7vw, 0.7rem);
             color: #4a1d8c;
             flex-shrink: 0;
         }
         .draft-slot .slot-value {
             background: white;
             border: 2px solid #e9e4f5;
-            border-radius: clamp(4px, 0.6vh, 8px);
-            padding: clamp(3px, 0.5vh, 6px) clamp(6px, 0.8vw, 10px);
-            font-size: clamp(0.65rem, 0.9vw, 0.85rem);
+            border-radius: clamp(4px, 0.5vh, 6px);
+            padding: clamp(2px, 0.3vh, 4px) clamp(4px, 0.5vw, 8px);
+            font-size: clamp(0.55rem, 0.7vw, 0.75rem);
             font-family: 'Courier New', monospace;
             color: #2e0f5a;
-            min-height: clamp(24px, 3.5vh, 32px);
+            min-height: clamp(20px, 2.8vh, 28px);
             display: flex;
             align-items: center;
             word-break: break-all;
@@ -548,39 +548,51 @@
         .draft-slot .slot-value.empty {
             color: #ccc;
             font-style: italic;
-            font-size: clamp(0.5rem, 0.7vw, 0.65rem);
+            font-size: clamp(0.45rem, 0.6vw, 0.6rem);
         }
         .draft-slot .slot-buttons {
             display: flex;
-            gap: clamp(4px, 0.5vw, 8px);
+            gap: clamp(3px, 0.4vw, 6px);
             flex-wrap: wrap;
             flex-shrink: 0;
         }
-        /* 草稿格按鈕 - 低調純文字 */
+        /* 草稿格按鈕 - 恢復顏色 */
         .draft-slot .slot-btn {
-            background: none;
             border: none;
-            padding: clamp(2px, 0.3vh, 4px) clamp(6px, 0.8vw, 10px);
-            font-size: clamp(0.55rem, 0.7vw, 0.7rem);
-            font-weight: 500;
+            border-radius: clamp(3px, 0.4vh, 5px);
+            padding: clamp(3px, 0.4vh, 5px) clamp(6px, 0.8vw, 10px);
+            font-size: clamp(0.5rem, 0.6vw, 0.65rem);
+            font-weight: 600;
             cursor: pointer;
-            color: #888;
-            transition: color 0.2s, background 0.2s;
-            border-radius: 4px;
+            transition: background 0.15s, transform 0.1s;
             flex: 1;
             text-align: center;
             min-height: clamp(20px, 2.5vh, 26px);
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
         }
-        .draft-slot .slot-btn:hover {
-            color: #4a1d8c;
-            background: #f0edf8;
+        .draft-slot .slot-btn.store {
+            background: #22c55e;
+        }
+        .draft-slot .slot-btn.store:hover {
+            background: #16a34a;
+            transform: scale(1.02);
+        }
+        .draft-slot .slot-btn.recall {
+            background: #3b82f6;
+        }
+        .draft-slot .slot-btn.recall:hover {
+            background: #2563eb;
+            transform: scale(1.02);
+        }
+        .draft-slot .slot-btn.danger {
+            background: #ef4444;
         }
         .draft-slot .slot-btn.danger:hover {
-            color: #dc2626;
-            background: #fef2f2;
+            background: #dc2626;
+            transform: scale(1.02);
         }
 
         /* ===== 周期表（全高度） ===== */
@@ -608,7 +620,6 @@
         .periodic-container img:hover {
             transform: scale(1.01);
         }
-        /* 無放大提示文字 */
 
         /* ============================================================
            手機版 (寬度 < 700px)
@@ -626,7 +637,7 @@
                 width: 100%;
                 min-width: unset;
                 flex-direction: row;
-                padding: 8px 12px;
+                padding: 6px 10px;
                 border-right: none;
                 border-bottom: 2px solid #e9e4f5;
                 gap: 4px;
@@ -635,22 +646,22 @@
                 flex-shrink: 0;
             }
             .tool-sidebar .back-btn {
-                padding: 6px 10px;
-                font-size: 0.8rem;
+                padding: 4px 8px;
+                font-size: 0.7rem;
                 border-bottom: none;
                 margin-bottom: 0;
                 width: auto;
             }
             .tool-sidebar .sidebar-tab {
-                padding: 6px 10px;
-                font-size: 0.7rem;
+                padding: 4px 8px;
+                font-size: 0.6rem;
                 width: auto;
             }
             .tool-sidebar .sidebar-spacer {
                 display: none;
             }
             .tool-main {
-                padding: 8px 10px;
+                padding: 6px 8px;
             }
             .calculator-layout {
                 flex-direction: column;
@@ -659,67 +670,42 @@
             .calculator-right {
                 flex-direction: row;
                 flex-wrap: wrap;
-                padding: 6px 8px;
+                padding: 4px 6px;
                 min-height: auto;
                 flex: 0 0 auto;
             }
             .calculator-right .draft-title {
                 width: 100%;
-                margin-bottom: 4px;
-                padding-bottom: 4px;
-                font-size: 0.55rem;
+                margin-bottom: 3px;
+                padding-bottom: 3px;
+                font-size: 0.5rem;
             }
             .draft-slot {
                 flex: 1;
-                min-width: 70px;
+                min-width: 60px;
                 margin-bottom: 2px;
                 gap: 2px;
             }
             .draft-slot .slot-value {
-                font-size: 0.55rem;
-                min-height: 20px;
+                font-size: 0.5rem;
+                min-height: 18px;
                 padding: 2px 4px;
             }
             .draft-slot .slot-btn {
-                font-size: 0.45rem;
+                font-size: 0.4rem;
                 padding: 2px 4px;
-                min-height: 18px;
+                min-height: 16px;
             }
             .draft-slot .slot-label {
-                font-size: 0.55rem;
+                font-size: 0.5rem;
             }
             .calculator-display {
-                font-size: 1rem;
-                padding: 6px 10px;
-                min-height: 32px;
+                font-size: 0.9rem;
+                padding: 4px 8px;
+                min-height: 28px;
             }
             .calculator-grid {
                 gap: 3px;
-            }
-            .calc-btn {
-                font-size: 0.7rem;
-                border-radius: 5px;
-            }
-            .calc-btn.equals {
-                font-size: 0.85rem;
-            }
-            .calc-btn.science {
-                font-size: 0.5rem;
-            }
-            .calc-btn.func {
-                font-size: 0.5rem;
-            }
-            .periodic-container {
-                padding: 2px 0;
-            }
-            .periodic-container img {
-                max-height: 55vh;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .calculator-grid {
-                gap: 2px;
             }
             .calc-btn {
                 font-size: 0.6rem;
@@ -734,33 +720,58 @@
             .calc-btn.func {
                 font-size: 0.45rem;
             }
+            .periodic-container {
+                padding: 2px 0;
+            }
+            .periodic-container img {
+                max-height: 50vh;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .calculator-grid {
+                gap: 2px;
+            }
+            .calc-btn {
+                font-size: 0.5rem;
+                border-radius: 3px;
+            }
+            .calc-btn.equals {
+                font-size: 0.65rem;
+            }
+            .calc-btn.science {
+                font-size: 0.4rem;
+            }
+            .calc-btn.func {
+                font-size: 0.4rem;
+            }
             .calculator-display {
-                font-size: 0.85rem;
-                padding: 4px 8px;
-                min-height: 28px;
+                font-size: 0.75rem;
+                padding: 3px 6px;
+                min-height: 24px;
             }
             .draft-slot .slot-value {
-                font-size: 0.5rem;
-                min-height: 18px;
-            }
-            .draft-slot .slot-btn {
-                font-size: 0.4rem;
-                padding: 1px 3px;
+                font-size: 0.45rem;
                 min-height: 16px;
             }
+            .draft-slot .slot-btn {
+                font-size: 0.35rem;
+                padding: 1px 3px;
+                min-height: 14px;
+            }
             .draft-slot .slot-label {
-                font-size: 0.5rem;
+                font-size: 0.45rem;
             }
             .calculator-right .draft-title {
-                font-size: 0.5rem;
+                font-size: 0.45rem;
             }
             .tool-sidebar .back-btn {
-                font-size: 0.7rem;
-                padding: 4px 8px;
+                font-size: 0.6rem;
+                padding: 3px 6px;
             }
             .tool-sidebar .sidebar-tab {
-                font-size: 0.6rem;
-                padding: 4px 8px;
+                font-size: 0.5rem;
+                padding: 3px 6px;
             }
         }
     </style>
@@ -800,7 +811,7 @@
     <button id="dismissOrientationBtn" class="dismiss-btn">我知道了 / Got it</button>
 </div>
 
-<!-- ===== iPhone 橫置引導畫面（新增） ===== -->
+<!-- ===== iPhone 橫置引導畫面 ===== -->
 <div id="iphoneOrientationOverlay" class="iphone-orientation-overlay" style="display:none;">
     <div class="rotate-icon-big">🔄</div>
     <h2>請將手機橫置</h2>
@@ -905,20 +916,29 @@
         <h1 style="color: var(--deep-purple); font-size: clamp(1.1rem, 6vw, 1.4rem);">📘 Mastering Science</h1>
         <span id="userLabel" style="font-size: clamp(0.7rem, 4vw, 0.85rem);"></span>
     </div>
+    <!-- ===== 分頁列（修改：合併為 4/5 個分頁） ===== -->
     <div class="nav-tabs">
         <button class="tab active" data-tab="practice">📖 練習</button>
-        <button class="tab" data-tab="myMistakes">❌ 我的錯題</button>
-        <button class="tab" data-tab="pastMistakes">🕒 錯題歷程</button>
+        <button class="tab" data-tab="learning">📊 學習紀錄</button>
         <button class="tab" data-tab="pinned">⭐ 收藏</button>
-        <button class="tab" data-tab="history">📋 做題紀錄</button>
         <button class="tab" data-tab="achievements">🏆 我的成就</button>
         <button class="tab" data-tab="teacher" id="teacherTab" style="display:none;">🧑‍🏫 老師後台</button>
     </div>
     <div id="practicePanel"></div>
-    <div id="myMistakesPanel" style="display:none;"></div>
-    <div id="pastMistakesPanel" style="display:none;"></div>
+    <!-- ===== 學習紀錄面板（含三個子分頁） ===== -->
+    <div id="learningPanel" style="display:none;">
+        <div class="learning-subtabs">
+            <button class="sub-tab active" data-subtab="myMistakes">❌ 我的錯題</button>
+            <button class="sub-tab" data-subtab="pastMistakes">🕒 錯題歷程</button>
+            <button class="sub-tab" data-subtab="history">📋 做題紀錄</button>
+        </div>
+        <div id="learningContent">
+            <div id="learning-myMistakes" class="learning-subcontent"></div>
+            <div id="learning-pastMistakes" class="learning-subcontent" style="display:none;"></div>
+            <div id="learning-history" class="learning-subcontent" style="display:none;"></div>
+        </div>
+    </div>
     <div id="pinnedPanel" style="display:none;"></div>
-    <div id="historyPanel" style="display:none;"></div>
     <div id="achievementsPanel" style="display:none;"></div>
     <div id="teacherPanel" style="display:none;"></div>
 </div>
@@ -1003,7 +1023,7 @@
                 <span class="timer" id="desktopTimer">⏱️ 00:00</span>
             </div>
 
-            <!-- 第 2 行：提交按鈕（移到上方） -->
+            <!-- 第 2 行：提交按鈕（完美，不動） -->
             <div class="sidebar-row-submit">
                 <button class="btn-submit" id="desktopSubmitBtn">✅ 提交並離開</button>
             </div>
@@ -1017,7 +1037,7 @@
             <!-- 第 3 行：題號導航 -->
             <div class="nav-grid" id="desktopNav"></div>
 
-            <!-- 第 4 行：計數器 + 上一頁（小）+ 下一頁（大）移到最下方 -->
+            <!-- 第 4 行：計數器 + 上一頁 + 下一頁（固定在底部） -->
             <div class="sidebar-row-bottom">
                 <span class="counter" id="desktopCounter">1 / 10</span>
                 <button class="btn-prev-sm" id="desktopPrevBtn">◀</button>
@@ -1096,33 +1116,34 @@
                             <button class="calc-btn equals" onclick="calcInput('=')">=</button>
                         </div>
                     </div>
+                    <!-- ===== 草稿格（按鈕有顏色） ===== -->
                     <div class="calculator-right">
                         <div class="draft-title">📝 草稿格</div>
                         <div class="draft-slot">
                             <span class="slot-label">A</span>
                             <div class="slot-value empty" id="draftA">(空)</div>
                             <div class="slot-buttons">
-                                <button class="slot-btn" onclick="draftStore('A')">儲存</button>
-                                <button class="slot-btn" onclick="draftRecall('A')">叫出</button>
-                                <button class="slot-btn danger" onclick="draftClear('A')">清除</button>
+                                <button class="slot-btn store" onclick="draftStore('A')">💾 儲存</button>
+                                <button class="slot-btn recall" onclick="draftRecall('A')">📤 叫出</button>
+                                <button class="slot-btn danger" onclick="draftClear('A')">✕ 清除</button>
                             </div>
                         </div>
                         <div class="draft-slot">
                             <span class="slot-label">B</span>
                             <div class="slot-value empty" id="draftB">(空)</div>
                             <div class="slot-buttons">
-                                <button class="slot-btn" onclick="draftStore('B')">儲存</button>
-                                <button class="slot-btn" onclick="draftRecall('B')">叫出</button>
-                                <button class="slot-btn danger" onclick="draftClear('B')">清除</button>
+                                <button class="slot-btn store" onclick="draftStore('B')">💾 儲存</button>
+                                <button class="slot-btn recall" onclick="draftRecall('B')">📤 叫出</button>
+                                <button class="slot-btn danger" onclick="draftClear('B')">✕ 清除</button>
                             </div>
                         </div>
                         <div class="draft-slot">
                             <span class="slot-label">C</span>
                             <div class="slot-value empty" id="draftC">(空)</div>
                             <div class="slot-buttons">
-                                <button class="slot-btn" onclick="draftStore('C')">儲存</button>
-                                <button class="slot-btn" onclick="draftRecall('C')">叫出</button>
-                                <button class="slot-btn danger" onclick="draftClear('C')">清除</button>
+                                <button class="slot-btn store" onclick="draftStore('C')">💾 儲存</button>
+                                <button class="slot-btn recall" onclick="draftRecall('C')">📤 叫出</button>
+                                <button class="slot-btn danger" onclick="draftClear('C')">✕ 清除</button>
                             </div>
                         </div>
                     </div>
@@ -20660,11 +20681,9 @@ function openToolWindow(defaultTab) {
     overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
     
-    // 如果指定了分頁，切換過去
     if (defaultTab) {
         switchToolTab(defaultTab);
     } else {
-        // 預設顯示計算機
         switchToolTab('calculator');
     }
 }
@@ -20683,7 +20702,6 @@ function closeToolWindowOutside(e) {
 }
 
 function switchToolTab(tabId) {
-    // 更新側欄按鈕狀態
     document.querySelectorAll('.sidebar-tab').forEach(function(tab) {
         if (tab.dataset.tab === tabId) {
             tab.classList.add('active');
@@ -20691,7 +20709,6 @@ function switchToolTab(tabId) {
             tab.classList.remove('active');
         }
     });
-    // 更新內容
     document.querySelectorAll('.tab-content').forEach(function(content) {
         if (content.id === 'tab-' + tabId) {
             content.classList.add('active');
@@ -20700,7 +20717,6 @@ function switchToolTab(tabId) {
         }
     });
     
-    // 如果切換到周期表，確保圖片是放大狀態（如果之前已放大）
     if (tabId === 'periodic') {
         applyPeriodicZoom(periodicZoomed);
     }
@@ -20718,7 +20734,6 @@ function applyPeriodicZoom(zoomed) {
     if (!container || !img) return;
     
     if (zoomed) {
-        // 放大狀態：圖片撐滿容器
         img.style.maxWidth = '100%';
         img.style.maxHeight = '100%';
         img.style.width = 'auto';
@@ -20726,7 +20741,6 @@ function applyPeriodicZoom(zoomed) {
         img.style.objectFit = 'contain';
         container.style.cursor = 'zoom-out';
     } else {
-        // 適中狀態：圖片縮小到適中大小
         img.style.maxWidth = '70%';
         img.style.maxHeight = '70%';
         img.style.width = 'auto';
@@ -20800,7 +20814,6 @@ function calcInput(value) {
         return;
     }
 
-    // 函數處理
     if (value === 'x²') {
         var num = parseFloat(calcExpression);
         if (!isNaN(num) && isFinite(num) && calcExpression !== '') {
@@ -20837,7 +20850,6 @@ function calcInput(value) {
         return;
     }
 
-    // 一般輸入
     calcExpression += value;
     updateCalcDisplay(calcExpression);
 }
