@@ -1530,72 +1530,40 @@ body {
         color: #fca5a5;
     }
 
-    /* 第 2 行：計數器 + 上一頁 + 下一頁 */
-    #desktopQuizModal .sidebar-row-2 {
+    /* 第 2 行：提交按鈕（移到上方） */
+    #desktopQuizModal .sidebar-row-submit {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        justify-content: center;
         padding: 4px 0 6px 0;
         border-bottom: 1px solid rgba(255,255,255,0.12);
         flex-shrink: 0;
-        gap: 4px;
     }
-    #desktopQuizModal .sidebar-row-2 .counter {
-        font-size: 14px;
-        font-weight: 700;
-        color: #ffffff;
-        flex-shrink: 0;
-    }
-    /* 上一頁按鈕 - 只顯示 ◀，縮小 */
-    #desktopQuizModal .sidebar-row-2 .btn-prev-sm {
-        background: rgba(255,255,255,0.12);
-        border: 1px solid rgba(255,255,255,0.15);
+    #desktopQuizModal .sidebar-row-submit .btn-submit {
+        background: #10b981;
+        color: white;
+        border: none;
         border-radius: 30px;
-        padding: 2px 10px;
-        font-size: 14px;
-        font-weight: 600;
-        color: #c4b5d4;
-        cursor: pointer;
-        transition: all 0.2s;
-        min-width: 32px;
-        text-align: center;
-        line-height: 1.4;
-        flex-shrink: 0;
-    }
-    #desktopQuizModal .sidebar-row-2 .btn-prev-sm:hover:not(:disabled) {
-        background: rgba(255,255,255,0.2);
-        color: #ffffff;
-    }
-    #desktopQuizModal .sidebar-row-2 .btn-prev-sm:disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-    }
-    /* 下一頁按鈕 - 放大，含文字 */
-    #desktopQuizModal .sidebar-row-2 .btn-next-lg {
-        background: rgba(255,255,255,0.15);
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 30px;
-        padding: 4px 14px;
+        padding: 6px 16px;
         font-size: 13px;
-        font-weight: 600;
-        color: #ffffff;
+        font-weight: 700;
         cursor: pointer;
         transition: all 0.2s;
-        min-width: 60px;
+        width: 100%;
+        max-width: 140px;
         text-align: center;
         line-height: 1.4;
-        flex-shrink: 0;
+        letter-spacing: 0.5px;
     }
-    #desktopQuizModal .sidebar-row-2 .btn-next-lg:hover:not(:disabled) {
-        background: rgba(255,255,255,0.25);
+    #desktopQuizModal .sidebar-row-submit .btn-submit:hover:not(:disabled) {
+        background: #059669;
         transform: scale(1.03);
     }
-    #desktopQuizModal .sidebar-row-2 .btn-next-lg:disabled {
-        opacity: 0.3;
+    #desktopQuizModal .sidebar-row-submit .btn-submit:disabled {
+        opacity: 0.4;
         cursor: not-allowed;
     }
 
-    /* ===== 第 2.5 行：工具列（獨立一行）- 修改處 #1 ===== */
+    /* 第 2.5 行：工具列（獨立一行） */
     #desktopQuizModal .sidebar-tools {
         display: flex;
         justify-content: center;
@@ -1647,7 +1615,7 @@ body {
         min-height: 0;
         overflow-y: auto;
         border-bottom: 1px solid rgba(255,255,255,0.12);
-        margin-bottom: 6px;
+        margin-bottom: 4px;
     }
     #desktopQuizModal .nav-grid::-webkit-scrollbar {
         width: 2px;
@@ -1704,42 +1672,67 @@ body {
         transform: scale(1.1);
     }
 
-    /* 第 4 行：提交按鈕（獨立置中放大） */
-    #desktopQuizModal .sidebar-actions {
+    /* 第 4 行：計數器 + 上一頁 + 下一頁（移到最下方） */
+    #desktopQuizModal .sidebar-row-bottom {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0 2px 0;
         flex-shrink: 0;
-        padding-top: 2px;
+        gap: 4px;
     }
-    #desktopQuizModal .sidebar-actions .btn-submit {
-        background: #10b981;
-        color: white;
-        border: none;
-        border-radius: 30px;
-        padding: 8px 16px;
-        font-size: 14px;
+    #desktopQuizModal .sidebar-row-bottom .counter {
+        font-size: 13px;
         font-weight: 700;
+        color: #ffffff;
+        flex-shrink: 0;
+        min-width: 50px;
+    }
+    #desktopQuizModal .sidebar-row-bottom .btn-prev-sm {
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 30px;
+        padding: 2px 10px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #c4b5d4;
         cursor: pointer;
         transition: all 0.2s;
-        width: 100%;
-        max-width: 160px;
+        min-width: 32px;
         text-align: center;
         line-height: 1.4;
-        letter-spacing: 0.5px;
+        flex-shrink: 0;
     }
-    #desktopQuizModal .sidebar-actions .btn-submit:hover:not(:disabled) {
-        background: #059669;
-        transform: scale(1.03);
+    #desktopQuizModal .sidebar-row-bottom .btn-prev-sm:hover:not(:disabled) {
+        background: rgba(255,255,255,0.2);
+        color: #ffffff;
     }
-    #desktopQuizModal .sidebar-actions .btn-submit:disabled {
-        opacity: 0.4;
+    #desktopQuizModal .sidebar-row-bottom .btn-prev-sm:disabled {
+        opacity: 0.3;
         cursor: not-allowed;
     }
-    
-    /* 移除舊的側邊欄按鈕樣式（保留相容） */
-    #desktopQuizModal .sidebar-actions .btn-prev,
-    #desktopQuizModal .sidebar-actions .btn-next {
-        display: none;
+    #desktopQuizModal .sidebar-row-bottom .btn-next-lg {
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 30px;
+        padding: 4px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #ffffff;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 60px;
+        text-align: center;
+        line-height: 1.4;
+        flex-shrink: 0;
+    }
+    #desktopQuizModal .sidebar-row-bottom .btn-next-lg:hover:not(:disabled) {
+        background: rgba(255,255,255,0.25);
+        transform: scale(1.03);
+    }
+    #desktopQuizModal .sidebar-row-bottom .btn-next-lg:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
     }
 }
 

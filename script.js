@@ -1818,21 +1818,18 @@ function selectQuestionsByDifficultyAndCount(questions, count, preference, isTri
         const level = q.difficulty_level;
         const isAllowed = allowedLevels.includes(level);
         
-        // 先不管難度，先把錯題和未做過的分出來
         if (userData.latestStatus[q.id] === false) {
             wrongQuestions.push(q);
             continue;
         }
         
         if (isNotAttempted(q.id)) {
-            // 只有當難度符合時才放入「未做過」
             if (isAllowed) {
                 notAttemptedQuestions.push(q);
             }
             continue;
         }
         
-        // 已做過且答對的題目（不管難度是否符合，先存起來）
         if (isAllowed) {
             otherQuestions.push(q);
         }
@@ -1840,7 +1837,6 @@ function selectQuestionsByDifficultyAndCount(questions, count, preference, isTri
 
     let candidates = [...wrongQuestions];
     
-    // 先補未做過的
     if (candidates.length < count) {
         let shuffledNotAttempted = shuffleArray([...notAttemptedQuestions]);
         candidates = [...candidates, ...shuffledNotAttempted];
@@ -1849,7 +1845,6 @@ function selectQuestionsByDifficultyAndCount(questions, count, preference, isTri
     // ===== 修復：如果還是不夠，從所有已做過答對的題目中補（不管難度） =====
     if (candidates.length < count) {
         let remaining = count - candidates.length;
-        // 從「其他題目」中挑選（已做過答對且難度符合）
         let otherShuffled = shuffleArray([...otherQuestions]);
         
         let selected = [];
@@ -1881,10 +1876,9 @@ function selectQuestionsByDifficultyAndCount(questions, count, preference, isTri
         candidates = [...candidates, ...selected];
     }
     
-    // ===== 修復：最後一道防線 — 如果還是不夠，從所有題目隨機補充（包含已做過答對但難度不符的） =====
+    // ===== 修復：最後一道防線 — 如果還是不夠，從所有題目隨機補充 =====
     if (candidates.length < count) {
         let remaining = count - candidates.length;
-        // 從所有題目中排除已選的
         let allRemaining = filteredQuestions.filter(q => !candidates.includes(q));
         let extra = shuffleArray(allRemaining).slice(0, remaining);
         candidates = [...candidates, ...extra];
@@ -3352,7 +3346,6 @@ function toggleFavorite(qid) {
 
 // ==================== 元素周期表功能（已改用工具視窗） ====================
 function showPeriodicTable() {
-    // 已改用工具視窗，此函數保留以防相容性問題
     openToolWindow('periodic');
 }
 
@@ -3383,7 +3376,7 @@ function closeToolWindow() {
 }
 
 function switchToolTab(tabId) {
-    const tabs = document.querySelectorAll('.tool-tab');
+    const tabs = document.querySelectorAll('.sidebar-tab');
     tabs.forEach(tab => {
         tab.classList.toggle('active', tab.dataset.tab === tabId);
     });
