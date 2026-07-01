@@ -217,6 +217,8 @@
             align-items: center;
             flex-shrink: 0;
             margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .modal-header h2 {
             font-size: 1.2rem;
@@ -242,8 +244,66 @@
             overflow-y: auto;
             min-height: 0;
         }
-        .modal-body .ref-sort-group {
+        .modal-body .ref-top-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 12px;
             margin-bottom: 10px;
+        }
+        .modal-body .ref-sort-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .modal-body .ref-sort-group label {
+            font-size: 0.55rem;
+            font-weight: 600;
+            color: #7a5a9a;
+        }
+        .modal-body .ref-sort-group select {
+            padding: 3px 10px;
+            border: 1px solid #d0c0e0;
+            border-radius: 30px;
+            background: #f5f0fa;
+            font-size: 0.55rem;
+            font-weight: 600;
+            color: #4a2a6a;
+            outline: none;
+            cursor: pointer;
+        }
+        .modal-body .ref-db-toggle {
+            display: flex;
+            gap: 4px;
+            background: #f0e8f8;
+            padding: 3px;
+            border-radius: 30px;
+            flex-shrink: 0;
+        }
+        .modal-body .ref-db-btn {
+            padding: 3px 14px;
+            border: none;
+            border-radius: 30px;
+            font-size: 0.55rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.15s;
+            background: transparent;
+            color: #7a5a9a;
+        }
+        .modal-body .ref-db-btn.active {
+            background: #7a4a9a;
+            color: white;
+            box-shadow: 0 2px 8px rgba(120, 60, 160, 0.3);
+        }
+        .modal-body .ref-db-btn:hover:not(.active) {
+            background: #e0d0f0;
+        }
+        .modal-body .ref-count {
+            font-size: 0.6rem;
+            color: #8a6aaa;
+            font-weight: 500;
+            margin-left: auto;
         }
         .modal-body .reference-table-wrap {
             border: 1px solid #e8e0f0;
@@ -306,28 +366,6 @@
             padding: 30px 0;
             font-size: 0.8rem;
         }
-        .modal-body .ref-count {
-            font-size: 0.6rem;
-            color: #8a6aaa;
-            font-weight: 500;
-        }
-        .modal-body .ref-sort-group label {
-            font-size: 0.55rem;
-            font-weight: 600;
-            color: #7a5a9a;
-            margin-right: 4px;
-        }
-        .modal-body .ref-sort-group select {
-            padding: 3px 10px;
-            border: 1px solid #d0c0e0;
-            border-radius: 30px;
-            background: #f5f0fa;
-            font-size: 0.55rem;
-            font-weight: 600;
-            color: #4a2a6a;
-            outline: none;
-            cursor: pointer;
-        }
 
         .main-content {
             display: flex;
@@ -341,7 +379,7 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
-            flex: 0 0 130px;
+            flex: 0 0 260px;
             padding: 0 10px 0 0;
             border-right: 2px solid #e8e0f0;
             overflow-y: auto;
@@ -356,9 +394,9 @@
         }
 
         .tab-btn {
-            padding: 5px 8px;
+            padding: 6px 12px;
             border-radius: 12px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 700;
             cursor: pointer;
             transition: 0.2s;
@@ -366,15 +404,15 @@
             color: #7a5a9a;
             border: 2px solid #d0c0e0;
             text-align: center;
-            min-height: 38px;
+            min-height: 42px;
             width: 100%;
             white-space: nowrap;
         }
         .tab-btn[data-tab="0"].active { background: #ff6b6b; color: white; border-color: #ff6b6b; }
         .tab-btn[data-tab="1"].active { background: #ffd93d; color: #4a2a6a; border-color: #ffd93d; }
-        .tab-btn[data-tab="2"].active { background: #6bcb77; color: white; border-color: #6bcb77; }
-        .tab-btn[data-tab="3"].active { background: #4d96ff; color: white; border-color: #4d96ff; }
-        .tab-btn[data-tab="4"].active { background: #9b59b6; color: white; border-color: #9b59b6; }
+        .tab-btn[data-tab="2"].active { background: #4d96ff; color: white; border-color: #4d96ff; }
+        .tab-btn[data-tab="3"].active { background: #9b59b6; color: white; border-color: #9b59b6; }
+        .tab-btn[data-tab="4"].active { background: #ff6b6b; color: white; border-color: #ff6b6b; }
         .tab-btn:hover:not(.active) {
             background: #f0e8f8;
         }
@@ -1010,35 +1048,42 @@
                 padding: 2px 10px;
             }
 
+            /* 手機版左欄維持窄版 */
             .left-sidebar {
                 flex: 0 0 95px;
                 padding-right: 4px;
             }
             .tab-btn {
-                font-size: 0.65rem;
+                font-size: 0.6rem;
                 padding: 4px 4px;
                 min-height: 30px;
                 border-radius: 8px;
                 white-space: nowrap;
             }
 
+            /* 手機版：split-panel 改為上下排列，按鈕移到最下方 */
+            .split-panel {
+                flex-direction: column;
+                gap: 6px;
+            }
             .split-right {
                 flex: 0 0 auto;
                 width: 100%;
                 flex-direction: column;
                 align-items: stretch;
-                padding-top: 4px;
+                padding-top: 2px;
             }
             .right-buttons {
-                flex-direction: column;
+                flex-direction: row;
                 max-width: 100%;
-                gap: 4px;
+                gap: 6px;
             }
             .right-buttons .btn {
                 font-size: 1rem;
                 padding: 8px 12px;
                 min-height: 38px;
                 border-radius: 40px;
+                flex: 1;
             }
 
             .toggle-btn {
@@ -1188,6 +1233,13 @@
             .modal-body .ref-sort-group select {
                 font-size: 0.5rem;
                 padding: 2px 8px;
+            }
+            .modal-body .ref-db-btn {
+                font-size: 0.5rem;
+                padding: 2px 10px;
+            }
+            .modal-body .ref-count {
+                font-size: 0.5rem;
             }
         }
 
@@ -1382,18 +1434,24 @@
                 <button class="modal-close" id="refModalClose">✕</button>
             </div>
             <div class="modal-body">
-                <div class="ref-sort-group">
-                    <label for="modalChargeFilter">電荷：</label>
-                    <select id="modalChargeFilter">
-                        <option value="all">全部</option>
-                        <option value="+">+</option>
-                        <option value="2+">2+</option>
-                        <option value="3+">3+</option>
-                        <option value="-">-</option>
-                        <option value="2-">2-</option>
-                        <option value="3-">3-</option>
-                    </select>
-                    <span class="ref-count" id="modalRefCount" style="margin-left:10px;">共 0 個離子</span>
+                <div class="ref-top-row">
+                    <div class="ref-sort-group">
+                        <label for="modalChargeFilter">電荷：</label>
+                        <select id="modalChargeFilter">
+                            <option value="all">全部</option>
+                            <option value="+">+</option>
+                            <option value="2+">2+</option>
+                            <option value="3+">3+</option>
+                            <option value="-">-</option>
+                            <option value="2-">2-</option>
+                            <option value="3-">3-</option>
+                        </select>
+                    </div>
+                    <div class="ref-db-toggle" id="modalDbToggle">
+                        <button class="ref-db-btn active" data-db="core" id="modalCoreBtn">基礎</button>
+                        <button class="ref-db-btn" data-db="extra" id="modalExtraBtn">進階</button>
+                    </div>
+                    <span class="ref-count" id="modalRefCount">共 0 個離子</span>
                 </div>
                 <div class="reference-table-wrap" id="modalRefTableWrap">
                     <div id="modalRefTableContent"></div>
@@ -1405,7 +1463,7 @@
     <!-- ===== 主卡片 ===== -->
     <div class="card" id="mainCard">
         <div class="header">
-            <h1>🧪 離子與化合物</h1>
+            <h1 id="mainTitle">🧪 離子與化合物</h1>
             <div class="header-right">
                 <button class="btn-ref" id="btnOpenRef">📖 對照表</button>
                 <div class="lang-toggle">
@@ -1867,6 +1925,10 @@
             let ION_DB = [...CORE_ION_DB];
             let currentFilter = 'all';
 
+            // 對照表獨立離子庫
+            let modalIonDb = 'core';
+            let modalFilter = 'all';
+
             let pairPool2 = [...COMPOUNDS_FULL];
             let pairPool3 = [...COMPOUNDS_FULL];
             let solPool = [...COMPOUNDS_SOL];
@@ -1886,6 +1948,7 @@
             const mainCard = document.getElementById('mainCard');
             const welcomeZh = document.getElementById('welcomeZh');
             const welcomeEn = document.getElementById('welcomeEn');
+            const mainTitle = document.getElementById('mainTitle');
 
             const feedbacks = {
                 0: document.getElementById('feedback0'),
@@ -1933,6 +1996,8 @@
             const modalRefContent = document.getElementById('modalRefTableContent');
             const modalRefCount = document.getElementById('modalRefCount');
             const modalChargeFilter = document.getElementById('modalChargeFilter');
+            const modalCoreBtn = document.getElementById('modalCoreBtn');
+            const modalExtraBtn = document.getElementById('modalExtraBtn');
             const coreToggle = document.getElementById('coreToggle');
             const extraToggle = document.getElementById('extraToggle');
             const toggleRowIon = document.getElementById('toggleRowIon');
@@ -1970,6 +2035,14 @@
             function getCoreLabel() { return currentLang === 'zh' ? '基礎 (Ch.7)' : 'Basic (Ch.7)'; }
 
             function getExtraLabel() { return currentLang === 'zh' ? '進階 (公開試)' : 'Advanced (Public Exam)'; }
+
+            function getModalCoreLabel() { return currentLang === 'zh' ? '基礎' : 'Basic'; }
+
+            function getModalExtraLabel() { return currentLang === 'zh' ? '進階' : 'Advanced'; }
+
+            function getMainTitle() {
+                return currentLang === 'zh' ? '🧪 離子與化合物' : '🧪 Ions & Compounds';
+            }
 
             function getColorDisplay(colorKey) {
                 if (!colorKey) return currentLang === 'zh' ? '無色' : 'colourless';
@@ -2054,6 +2127,9 @@
                 btnColourless.textContent = '⬜ ' + getColorlessText();
                 coreToggle.textContent = getCoreLabel();
                 extraToggle.textContent = getExtraLabel();
+                modalCoreBtn.textContent = getModalCoreLabel();
+                modalExtraBtn.textContent = getModalExtraLabel();
+                mainTitle.textContent = getMainTitle();
             }
 
             function getFeedback(tab) { return feedbacks[tab] || feedbacks[0]; }
@@ -2087,17 +2163,21 @@
                 return '';
             }
 
-            function getFilteredDB() {
-                let db = [...ION_DB];
-                if (currentFilter !== 'all') {
-                    db = db.filter(ion => ion.charge === currentFilter);
+            function getModalDB() {
+                return modalIonDb === 'core' ? [...CORE_ION_DB] : [...EXTRA_ION_DB];
+            }
+
+            function getFilteredModalDB() {
+                let db = getModalDB();
+                if (modalFilter !== 'all') {
+                    db = db.filter(ion => ion.charge === modalFilter);
                 }
                 db.sort((a, b) => a.name.localeCompare(b.name));
                 return db;
             }
 
             function renderModalTable() {
-                const db = getFilteredDB();
+                const db = getFilteredModalDB();
                 if (db.length === 0) {
                     modalRefContent.innerHTML = '<div class="ref-empty">📭 沒有符合條件的離子</div>';
                     modalRefCount.textContent = '共 0 個離子';
@@ -2620,24 +2700,15 @@
                 coreToggle.classList.toggle('active', dbType === 'core');
                 extraToggle.classList.toggle('active', dbType === 'extra');
 
-                let options = dbType === 'core' ? ['all', '+', '2+', '3+', '-', '2-', '3-'] : ['all', '+', '2+', '3+',
-                    '4+', '-', '2-', '3-'
-                ];
-                let currentVal = modalChargeFilter.value;
-                modalChargeFilter.innerHTML = '';
-                let labels = { 'all': '全部', '+': '+', '2+': '2+', '3+': '3+', '4+': '4+', '-': '-', '2-': '2-',
-                    '3-': '3-' };
-                for (let i = 0; i < options.length; i++) {
-                    let opt = document.createElement('option');
-                    opt.value = options[i];
-                    opt.textContent = labels[options[i]] || options[i];
-                    modalChargeFilter.appendChild(opt);
-                }
-                if (options.indexOf(currentVal) === -1) modalChargeFilter.value = 'all';
-                else modalChargeFilter.value = currentVal;
+                // 不影響對照表的獨立切換
+                if (currentTab === 0 || currentTab === 1) loadIonQuestion();
+            }
 
-                if (refModal.classList.contains('active')) renderModalTable();
-                else if (currentTab === 0 || currentTab === 1) loadIonQuestion();
+            function switchModalDb(dbType) {
+                modalIonDb = dbType;
+                modalCoreBtn.classList.toggle('active', dbType === 'core');
+                modalExtraBtn.classList.toggle('active', dbType === 'extra');
+                renderModalTable();
             }
 
             // ---- 歡迎畫面 ----
@@ -2659,7 +2730,7 @@
                 })(i);
             }
 
-            // ---- 離子庫切換 ----
+            // ---- 離子庫切換 (主畫面) ----
             coreToggle.addEventListener('click', function() { if (currentIonDb !== 'core') switchDb('core'); });
             extraToggle.addEventListener('click', function() { if (currentIonDb !== 'extra') switchDb('extra'); });
 
@@ -2675,9 +2746,11 @@
                 if (e.target === refModal) refModal.classList.remove('active');
             });
             modalChargeFilter.addEventListener('change', function() {
-                currentFilter = this.value;
+                modalFilter = this.value;
                 renderModalTable();
             });
+            modalCoreBtn.addEventListener('click', function() { if (modalIonDb !== 'core') switchModalDb('core'); });
+            modalExtraBtn.addEventListener('click', function() { if (modalIonDb !== 'extra') switchModalDb('extra'); });
 
             // ---- 檢查 / 下一題 ----
             document.addEventListener('click', function(e) {
