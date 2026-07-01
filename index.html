@@ -747,16 +747,19 @@
             flex-shrink: 0;
             text-align: center;
             padding: 0;
+            line-height: 1.5;
         }
         .hint-row .highlight {
             color: #ff6b6b;
             font-weight: 700;
             font-size: 0.85rem;
+            display: block;
         }
         .hint-row .subscript-hint {
             color: #7a5a9a;
             font-weight: 500;
             font-size: 0.85rem;
+            display: block;
         }
 
         .feedback-area {
@@ -1238,166 +1241,6 @@
                 font-size: 0.5rem;
             }
         }
-
-        @media (max-height: 650px) {
-            .left-sidebar {
-                flex: 0 0 55px;
-            }
-            .tab-btn {
-                font-size: 0.5rem;
-                padding: 3px 4px;
-                min-height: 20px;
-                border-radius: 6px;
-            }
-            .toggle-btn {
-                font-size: 0.45rem !important;
-                padding: 2px 4px !important;
-                min-height: 16px !important;
-            }
-            .header h1 {
-                font-size: 0.75rem;
-            }
-            .btn-ref {
-                font-size: 0.5rem;
-                padding: 2px 8px;
-            }
-            .lang-btn {
-                font-size: 0.45rem;
-                padding: 2px 8px;
-            }
-            .right-buttons .btn {
-                font-size: 0.85rem;
-                padding: 6px 10px;
-                min-height: 32px;
-            }
-            .mode0-display {
-                font-size: 0.95rem;
-            }
-            .mode0-display .chinese {
-                font-size: 0.8rem;
-            }
-            .symbol-input-wrap input {
-                width: 100px;
-                height: 36px;
-                font-size: 1.1rem;
-            }
-            .charge-input-wrap input {
-                width: 34px;
-                height: 28px;
-                font-size: 0.85rem;
-            }
-            .charge-input-wrap {
-                transform: translateY(-12px);
-            }
-            .feedback-area {
-                min-height: 30px;
-                padding: 4px 10px;
-                font-size: 0.75rem;
-                margin-top: 4px;
-            }
-            .feedback-area .fb-icon {
-                font-size: 0.95rem;
-            }
-            .feedback-area .fb-text {
-                font-size: 0.75rem;
-            }
-            .hint-row {
-                font-size: 0.5rem;
-                margin: 1px 0;
-            }
-            .hint-row .highlight {
-                font-size: 0.5rem;
-            }
-            .hint-row .subscript-hint {
-                font-size: 0.5rem;
-            }
-            .pair-input-area input {
-                width: 130px;
-                font-size: 1rem;
-                height: 36px;
-            }
-            .mode1-input-wrapper input {
-                width: 120px;
-                font-size: 1rem;
-                height: 36px;
-            }
-            .mode1-input-suffix {
-                font-size: 1rem;
-                height: 36px;
-                padding: 0 10px;
-            }
-            .pair-display {
-                font-size: 0.95rem;
-            }
-            .pair-display small {
-                font-size: 0.8rem;
-            }
-            .pair-display-mode4 {
-                font-size: 1.2rem;
-            }
-            .sol-display {
-                font-size: 0.95rem;
-            }
-            .sol-display small {
-                font-size: 0.8rem;
-            }
-            .sol-question-sub {
-                font-size: 0.85rem;
-            }
-            .sol-options button {
-                font-size: 0.85rem;
-                padding: 4px 14px;
-                min-height: 34px;
-            }
-            .colour-input-row input {
-                width: 110px;
-                font-size: 0.85rem;
-                height: 32px;
-            }
-            .colour-input-row .btn-colourless {
-                font-size: 0.75rem;
-                height: 32px;
-                padding: 0 10px;
-            }
-            .mode1-display {
-                font-size: 1.2rem;
-            }
-            .color-toggle {
-                font-size: 0.65rem;
-            }
-            .color-input-wrap input {
-                width: 65px;
-                height: 26px;
-                font-size: 0.65rem;
-            }
-            .btn-small {
-                font-size: 0.55rem;
-                padding: 2px 8px;
-                min-height: 24px;
-            }
-            .split-right {
-                padding-top: 2px;
-            }
-            .modal-box {
-                padding: 12px 14px;
-            }
-            .modal-header h2 {
-                font-size: 0.9rem;
-            }
-            .modal-body .reference-table {
-                font-size: 0.5rem;
-            }
-            .modal-body .reference-table th {
-                font-size: 0.45rem;
-                padding: 3px 5px;
-            }
-            .modal-body .reference-table td {
-                padding: 3px 5px;
-            }
-            .modal-body .reference-table .ion-symbol {
-                font-size: 0.6rem;
-            }
-        }
     </style>
 </head>
 <body>
@@ -1634,7 +1477,7 @@
                             <div class="sol-question-sub" id="solQ2" style="display:none;">2. 水溶液顏色？</div>
                             <div class="colour-input-row" id="colourInputRow" style="display:none;">
                                 <input type="text" id="colourInput" placeholder="請輸入顏色..." autocomplete="off" spellcheck="false" inputmode="text">
-                                <button class="btn-colourless" id="btnColourless">⬜ 無色</button>
+                                <button class="btn-colourless" id="btnColourless">無色</button>
                             </div>
                             <div class="feedback-area" id="feedback4">
                                 <span class="fb-icon">✏️</span>
@@ -2036,6 +1879,10 @@
                 return currentLang === 'zh' ? '🧪 離子與化合物' : '🧪 Ions & Compounds';
             }
 
+            function getColorToggleLabel() {
+                return currentLang === 'zh' ? '🎨 填寫顏色' : '🎨 Fill in colour';
+            }
+
             function getColorDisplay(colorKey) {
                 if (!colorKey) return currentLang === 'zh' ? '無色' : 'colourless';
                 const map = { 'colourless': { zh: '無色', en: 'colourless' }, 'pale green': { zh: '淺綠', en: 'pale green' },
@@ -2115,8 +1962,30 @@
                 const nextLabel = getNextLabel();
                 document.querySelectorAll('.check-btn').forEach(b => b.textContent = checkLabel);
                 document.querySelectorAll('.next-btn').forEach(b => b.textContent = nextLabel);
+                // 更新「填寫顏色」文字（保留圖示，只改文字）
+                const colorToggleLabel = document.querySelector('.color-toggle');
+                if (colorToggleLabel) {
+                    // 保留 checkbox 和圖示，只更新文字節點
+                    const checkbox = colorToggleLabel.querySelector('input[type="checkbox"]');
+                    const iconSpan = colorToggleLabel.querySelector('.color-icon');
+                    // 清除文字節點，重新加入
+                    const textNodes = [];
+                    const children = colorToggleLabel.childNodes;
+                    for (let i = children.length - 1; i >= 0; i--) {
+                        if (children[i].nodeType === 3) {
+                            colorToggleLabel.removeChild(children[i]);
+                        }
+                    }
+                    // 在 checkbox 後面插入文字
+                    const textNode = document.createTextNode(' ' + getColorToggleLabel());
+                    if (checkbox) {
+                        checkbox.parentNode.insertBefore(textNode, checkbox.nextSibling);
+                    } else {
+                        colorToggleLabel.appendChild(textNode);
+                    }
+                }
                 colorlessBtnIon.textContent = '填上 ' + getColorlessText();
-                btnColourless.textContent = '⬜ ' + getColorlessText();
+                btnColourless.textContent = getColorlessText();
                 coreToggle.textContent = getCoreLabel();
                 extraToggle.textContent = getExtraLabel();
                 modalCoreBtn.textContent = getModalCoreLabel();
@@ -2493,7 +2362,7 @@
                 solQ2.textContent = currentLang === 'zh' ? '2. 水溶液顏色？' : '2. Colour of aqueous solution?';
                 document.querySelector('#solSoluble').textContent = currentLang === 'zh' ? '✅ 溶' : '✅ Soluble';
                 document.querySelector('#solInsoluble').textContent = currentLang === 'zh' ? '❌ 不溶' : '❌ Insoluble';
-                btnColourless.textContent = '⬜ ' + getColorlessText();
+                btnColourless.textContent = getColorlessText();
                 setFeedback(4, '✏️', '先選溶解度，再輸入顏色', '', null);
                 getAnswerReveal(4).innerHTML = '';
                 isAnsweredCorrectly = false;
