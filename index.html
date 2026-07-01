@@ -379,8 +379,9 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
-            flex: 0 0 260px;
-            padding: 0 10px 0 0;
+            flex: 0 0 auto;
+            min-width: 200px;
+            padding: 0 12px 0 0;
             border-right: 2px solid #e8e0f0;
             overflow-y: auto;
             flex-shrink: 0;
@@ -403,7 +404,7 @@
             background: white;
             color: #7a5a9a;
             border: 2px solid #d0c0e0;
-            text-align: center;
+            text-align: left;
             min-height: 42px;
             width: 100%;
             white-space: nowrap;
@@ -1018,10 +1019,6 @@
             display: flex;
             align-items: center;
         }
-        .colour-hint {
-            font-size: 0.95rem;
-            color: #7a5a9a;
-        }
 
         .footer-note {
             display: none;
@@ -1051,6 +1048,7 @@
             /* 手機版左欄維持窄版 */
             .left-sidebar {
                 flex: 0 0 95px;
+                min-width: unset;
                 padding-right: 4px;
             }
             .tab-btn {
@@ -1059,6 +1057,7 @@
                 min-height: 30px;
                 border-radius: 8px;
                 white-space: nowrap;
+                text-align: center;
             }
 
             /* 手機版：split-panel 改為上下排列，按鈕移到最下方 */
@@ -1202,9 +1201,6 @@
             }
             .mode1-display {
                 font-size: 1.5rem;
-            }
-            .colour-hint {
-                font-size: 0.75rem;
             }
 
             .modal-box {
@@ -1378,9 +1374,6 @@
                 font-size: 0.55rem;
                 padding: 2px 8px;
                 min-height: 24px;
-            }
-            .colour-hint {
-                font-size: 0.65rem;
             }
             .split-right {
                 padding-top: 2px;
@@ -1642,7 +1635,6 @@
                             <div class="colour-input-row" id="colourInputRow" style="display:none;">
                                 <input type="text" id="colourInput" placeholder="請輸入顏色..." autocomplete="off" spellcheck="false" inputmode="text">
                                 <button class="btn-colourless" id="btnColourless">⬜ 無色</button>
-                                <span class="colour-hint">💡 無色, 藍色, 綠色, 黃色, 棕色, 粉紅色, 紫色, 橙色</span>
                             </div>
                             <div class="feedback-area" id="feedback4">
                                 <span class="fb-icon">✏️</span>
