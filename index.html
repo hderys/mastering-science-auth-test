@@ -2868,46 +2868,50 @@
         }
 
         function elecLoadQuestion() {
-            if (elecQuestionPool.length === 0) elecQuestionPool = elecGenerateQuestionPool();
-            const idx = Math.floor(Math.random() * elecQuestionPool.length);
-            elecCurrentQuestion = elecQuestionPool[idx];
-            elecQuestionPool.splice(idx, 1);
-            if (elecQuestionPool.length === 0) elecQuestionPool = elecGenerateQuestionPool();
+    if (elecQuestionPool.length === 0) elecQuestionPool = elecGenerateQuestionPool();
+    const idx = Math.floor(Math.random() * elecQuestionPool.length);
+    elecCurrentQuestion = elecQuestionPool[idx];
+    elecQuestionPool.splice(idx, 1);
+    if (elecQuestionPool.length === 0) elecQuestionPool = elecGenerateQuestionPool();
 
-            elecUpdateNameDisplay();
+    elecUpdateNameDisplay();
 
-            elecSelectedCation = null;
-            elecSelectedAnion = null;
-            elecSelectedCationCount = 0;
-            elecSelectedAnionCount = 0;
-            elecIsAnsweredCorrectly = false;
+    elecSelectedCation = null;
+    elecSelectedAnion = null;
+    elecSelectedCationCount = 0;
+    elecSelectedAnionCount = 0;
+    elecIsAnsweredCorrectly = false;
 
-            cationImgBox.innerHTML = `<span class="placeholder" id="cationPlaceholder">${currentLang === 'zh' ? '選\n正離子' : 'Choose the\ncation'}</span>`;
-            cationImgBox.className = 'elec-selector-box color-red';
-            anionImgBox.innerHTML = `<span class="placeholder" id="anionPlaceholder">${currentLang === 'zh' ? '選\n負離子' : 'Choose the\nanion'}</span>`;
-            anionImgBox.className = 'elec-selector-box color-blue';
+    cationImgBox.innerHTML = `<span class="placeholder" id="cationPlaceholder">${
+        currentLang === 'zh' ? '選\n正離子' : 'Choose the\ncation'
+    }</span>`;
+    cationImgBox.className = 'elec-selector-box color-red';
+    anionImgBox.innerHTML = `<span class="placeholder" id="anionPlaceholder">${
+        currentLang === 'zh' ? '選\n負離子' : 'Choose the\nanion'
+    }</span>`;
+    anionImgBox.className = 'elec-selector-box color-blue';
 
-            // 預設：紫色背景，冇數字
-            cationCountDisplay.textContent = '';
-            cationCountDisplay.className = 'count-number';
-            cationCountWrapper.style.background = '#e8dff0';
-            cationCountWrapper.style.border = '2px solid #c8b8d8';
-            cationCountWrapper.style.borderRadius = '10px';
+    // ===== 重點：預設紫色，吉嘅 =====
+    cationCountDisplay.textContent = '';
+    cationCountDisplay.className = 'count-number';
+    cationCountWrapper.style.background = '#e8dff0';
+    cationCountWrapper.style.border = '2px solid #c8b8d8';
+    cationCountWrapper.style.borderRadius = '10px';
 
-            anionCountDisplay.textContent = '';
-            anionCountDisplay.className = 'count-number';
-            anionCountWrapper.style.background = '#e8dff0';
-            anionCountWrapper.style.border = '2px solid #c8b8d8';
-            anionCountWrapper.style.borderRadius = '10px';
+    anionCountDisplay.textContent = '';
+    anionCountDisplay.className = 'count-number';
+    anionCountWrapper.style.background = '#e8dff0';
+    anionCountWrapper.style.border = '2px solid #c8b8d8';
+    anionCountWrapper.style.borderRadius = '10px';
 
-            const nextBtn = document.querySelector('.next-btn[data-tab="5"]');
-            if (nextBtn) nextBtn.disabled = true;
+    const nextBtn = document.querySelector('.next-btn[data-tab="5"]');
+    if (nextBtn) nextBtn.disabled = true;
 
-            setElecFeedback('✏️', currentLang === 'zh' ? '選擇離子開始練習' : 'Select ions to start', '', null);
-            elecUpdateChargeAndFormula();
-            updateButtonLabels();
-            elecUpdateUI();
-        }
+    setElecFeedback('✏️', currentLang === 'zh' ? '選擇離子開始練習' : 'Select ions to start', '', null);
+    elecUpdateChargeAndFormula();
+    updateButtonLabels();
+    elecUpdateUI();
+}
 
         function elecUpdateNameDisplay() {
             if (!elecCurrentQuestion) return;
@@ -2931,72 +2935,75 @@
             elecUpdateChargeAndFormula();
         }
 
-        function elecUpdateChargeAndFormula() {
-            // ===== 正離子 =====
-            if (elecSelectedCationCount === 0) {
-                cationCountDisplay.textContent = '';
-                cationCountDisplay.classList.remove('hidden');
-                cationCountWrapper.style.background = '#e8dff0';
-                cationCountWrapper.style.border = '2px solid #c8b8d8';
-                cationCountWrapper.style.borderRadius = '10px';
-            } else if (elecSelectedCationCount === 1) {
-                cationCountDisplay.textContent = '';
-                cationCountDisplay.classList.add('hidden');
-                cationCountWrapper.style.background = 'transparent';
-                cationCountWrapper.style.border = 'none';
-                cationCountWrapper.style.borderRadius = '0';
-            } else {
-                cationCountDisplay.textContent = elecSelectedCationCount;
-                cationCountDisplay.classList.remove('hidden');
-                cationCountWrapper.style.background = 'white';
-                cationCountWrapper.style.border = 'none';
-                cationCountWrapper.style.borderRadius = '0';
-            }
+function elecUpdateChargeAndFormula() {
+    // ===== 正離子 =====
+    if (elecSelectedCationCount === 0) {
+        // 未揀過：紫色，吉嘅
+        cationCountDisplay.textContent = '';
+        cationCountDisplay.classList.remove('hidden');
+        cationCountWrapper.style.background = '#e8dff0';
+        cationCountWrapper.style.border = '2px solid #c8b8d8';
+        cationCountWrapper.style.borderRadius = '10px';
+    } else if (elecSelectedCationCount === 1) {
+        // 揀咗 1：透明，成個消失
+        cationCountDisplay.textContent = '';
+        cationCountDisplay.classList.add('hidden');
+        cationCountWrapper.style.background = 'transparent';
+        cationCountWrapper.style.border = 'none';
+        cationCountWrapper.style.borderRadius = '0';
+    } else {
+        // 揀咗 2/3：白色，顯示數字
+        cationCountDisplay.textContent = elecSelectedCationCount;
+        cationCountDisplay.classList.remove('hidden');
+        cationCountWrapper.style.background = 'white';
+        cationCountWrapper.style.border = 'none';
+        cationCountWrapper.style.borderRadius = '0';
+    }
 
-            // ===== 負離子 =====
-            if (elecSelectedAnionCount === 0) {
-                anionCountDisplay.textContent = '';
-                anionCountDisplay.classList.remove('hidden');
-                anionCountWrapper.style.background = '#e8dff0';
-                anionCountWrapper.style.border = '2px solid #c8b8d8';
-                anionCountWrapper.style.borderRadius = '10px';
-            } else if (elecSelectedAnionCount === 1) {
-                anionCountDisplay.textContent = '';
-                anionCountDisplay.classList.add('hidden');
-                anionCountWrapper.style.background = 'transparent';
-                anionCountWrapper.style.border = 'none';
-                anionCountWrapper.style.borderRadius = '0';
-            } else {
-                anionCountDisplay.textContent = elecSelectedAnionCount;
-                anionCountDisplay.classList.remove('hidden');
-                anionCountWrapper.style.background = 'white';
-                anionCountWrapper.style.border = 'none';
-                anionCountWrapper.style.borderRadius = '0';
-            }
+    // ===== 負離子 =====
+    if (elecSelectedAnionCount === 0) {
+        anionCountDisplay.textContent = '';
+        anionCountDisplay.classList.remove('hidden');
+        anionCountWrapper.style.background = '#e8dff0';
+        anionCountWrapper.style.border = '2px solid #c8b8d8';
+        anionCountWrapper.style.borderRadius = '10px';
+    } else if (elecSelectedAnionCount === 1) {
+        anionCountDisplay.textContent = '';
+        anionCountDisplay.classList.add('hidden');
+        anionCountWrapper.style.background = 'transparent';
+        anionCountWrapper.style.border = 'none';
+        anionCountWrapper.style.borderRadius = '0';
+    } else {
+        anionCountDisplay.textContent = elecSelectedAnionCount;
+        anionCountDisplay.classList.remove('hidden');
+        anionCountWrapper.style.background = 'white';
+        anionCountWrapper.style.border = 'none';
+        anionCountWrapper.style.borderRadius = '0';
+    }
 
-            // ===== 電荷計算 =====
-            if (!elecSelectedCation || !elecSelectedAnion) {
-                elecChargeDisplay.className = 'elec-charge-display';
-                elecChargeDisplay.innerHTML = currentLang === 'zh' ? '⚡ 請選擇完整的離子組合' : '⚡ Please select a complete ion combination';
-                return;
-            }
+    // ===== 電荷計算（不變） =====
+    if (!elecSelectedCation || !elecSelectedAnion) {
+        elecChargeDisplay.className = 'elec-charge-display';
+        elecChargeDisplay.innerHTML = currentLang === 'zh' ? '⚡ 請選擇完整的離子組合' : '⚡ Please select a complete ion combination';
+        return;
+    }
 
-            const total = (elecSelectedCationCount * elecSelectedCation.charge) + (elecSelectedAnionCount * elecSelectedAnion.charge);
-            let cationStr = elecSelectedCationCount > 1 ? elecSelectedCationCount + ' × ' : '';
-            cationStr += elecSelectedCation.charge > 0 ? '+' + elecSelectedCation.charge : elecSelectedCation.charge;
-            let anionStr = elecSelectedAnionCount > 1 ? elecSelectedAnionCount + ' × ' : '';
-            anionStr += elecSelectedAnion.charge;
+    const total = (elecSelectedCationCount * elecSelectedCation.charge) + (elecSelectedAnionCount * elecSelectedAnion.charge);
+    let cationStr = elecSelectedCationCount > 1 ? elecSelectedCationCount + ' × ' : '';
+    cationStr += elecSelectedCation.charge > 0 ? '+' + elecSelectedCation.charge : elecSelectedCation.charge;
+    let anionStr = elecSelectedAnionCount > 1 ? elecSelectedAnionCount + ' × ' : '';
+    anionStr += elecSelectedAnion.charge;
 
-            let html = `${cationStr} + ${anionStr} = `;
-            if (total === 0) {
-                html += `<span class="green">0</span> ${currentLang === 'zh' ? '✅ 電荷守恆' : '✅ Charge balanced'}`;
-                elecChargeDisplay.className = 'elec-charge-display balanced';
-            } else {
-                html += `<span class="red">${total >= 0 ? '+' : ''}${total}</span> ${currentLang === 'zh' ? '⚠️ 不平衡' : '⚠️ Unbalanced'}`;
-                elecChargeDisplay.className = 'elec-charge-display unbalanced';
-            }
-            elecChargeDisplay.innerHTML = '⚡ ' + html;
-        }
+    let html = `${cationStr} + ${anionStr} = `;
+    if (total === 0) {
+        html += `<span class="green">0</span> ${currentLang === 'zh' ? '✅ 電荷守恆' : '✅ Charge balanced'}`;
+        elecChargeDisplay.className = 'elec-charge-display balanced';
+    } else {
+        html += `<span class="red">${total >= 0 ? '+' : ''}${total}</span> ${currentLang === 'zh' ? '⚠️ 不平衡' : '⚠️ Unbalanced'}`;
+        elecChargeDisplay.className = 'elec-charge-display unbalanced';
+    }
+    elecChargeDisplay.innerHTML = '⚡ ' + html;
+}
 
         function elecShowIonSelector(type) {
             const ions = type === 'cation' ? ELEC_CATIONS : ELEC_ANIONS;
