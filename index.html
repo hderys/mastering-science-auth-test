@@ -1174,6 +1174,7 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
+            display: block;
         }
 
         .elec-count-hint {
@@ -1386,220 +1387,98 @@
                 font-size: 0.5rem;
                 padding: 2px 10px;
             }
+
+            /* ===== 修正 1: 善用空間 ===== */
+            .main-content {
+                gap: 4px !important;
+            }
             .left-sidebar {
-                flex: 0 0 95px;
-                min-width: unset;
-                padding-right: 4px;
+                flex: 0 0 95px !important;
+                min-width: 95px !important;
+                padding-right: 4px !important;
+                padding-left: 0px !important;
+            }
+            .question-area {
+                padding: 0px 3px !important;
             }
             .tab-btn {
-                font-size: 0.6rem;
-                padding: 4px 4px;
-                min-height: 30px;
-                border-radius: 8px;
-                white-space: nowrap;
-                text-align: center;
-            }
-            .split-panel {
-                flex-direction: column;
-                gap: 6px;
-            }
-            .split-right {
-                flex: 0 0 auto;
-                width: 100%;
-                flex-direction: column;
-                align-items: stretch;
-                padding-top: 2px;
-            }
-            .right-buttons {
-                flex-direction: row;
-                max-width: 100%;
-                gap: 6px;
-            }
-            .right-buttons .btn {
-                font-size: 1rem;
-                padding: 8px 12px;
-                min-height: 38px;
-                border-radius: 40px;
-                flex: 1;
-            }
-            .toggle-btn {
                 font-size: 0.55rem !important;
-                padding: 3px 6px !important;
-                min-height: 22px !important;
-            }
-            .toggle-group .toggle-label {
-                font-size: 0.55rem !important;
-            }
-            .mode0-display {
-                font-size: 1.1rem;
-            }
-            .mode0-display .chinese {
-                font-size: 0.95rem;
-            }
-            .symbol-input-wrap input {
-                width: 120px;
-                height: 46px;
-                font-size: 1.3rem;
-            }
-            .charge-input-wrap input {
-                width: 40px;
-                height: 34px;
-                font-size: 1rem;
-            }
-            .charge-input-wrap {
-                transform: translateY(-16px);
-            }
-            .charge-group {
-                margin-left: -8px;
-            }
-            .feedback-area {
-                font-size: 0.85rem;
-                padding: 5px 12px;
-                min-height: 36px;
-                border-radius: 20px;
-                margin-top: 6px;
-            }
-            .feedback-area .fb-icon {
-                font-size: 1.1rem;
-            }
-            .feedback-area .fb-text {
-                font-size: 0.85rem;
-            }
-            .feedback-area .formula-big {
-                font-size: 1.3em;
-            }
-            .hint-row {
-                font-size: 0.6rem;
-            }
-            .hint-row .highlight {
-                font-size: 0.6rem;
-            }
-            .hint-row .subscript-hint {
-                font-size: 0.6rem;
-            }
-            .pair-input-area input {
-                width: 160px;
-                font-size: 1.2rem;
-                height: 44px;
-            }
-            .mode1-input-wrapper input {
-                width: 150px;
-                font-size: 1.2rem;
-                height: 44px;
-            }
-            .mode1-input-suffix {
-                font-size: 1.2rem;
-                height: 44px;
-                padding: 0 12px;
-            }
-            .color-toggle {
-                font-size: 0.75rem;
-            }
-            .color-input-wrap input {
-                width: 85px;
-                height: 32px;
-                font-size: 0.75rem;
-            }
-            .btn-small {
-                font-size: 0.65rem;
-                padding: 2px 10px;
-                min-height: 28px;
-            }
-            .sol-options button {
-                font-size: 1rem;
-                padding: 5px 16px;
-                min-height: 40px;
-            }
-            .colour-input-row input {
-                width: 130px;
-                font-size: 0.95rem;
-                height: 38px;
-            }
-            .colour-input-row .btn-colourless {
-                font-size: 0.85rem;
-                height: 38px;
-                padding: 0 12px;
-            }
-            .pair-display {
-                font-size: 1.1rem;
-            }
-            .pair-display small {
-                font-size: 0.95rem;
-            }
-            .pair-display-mode4 {
-                font-size: 1.5rem;
-            }
-            .sol-display {
-                font-size: 1.1rem;
-            }
-            .sol-display small {
-                font-size: 0.95rem;
-            }
-            .sol-question-sub {
-                font-size: 1rem;
-            }
-            .mode1-display {
-                font-size: 1.5rem;
-            }
-            .modal-box {
-                padding: 16px 18px;
-                max-height: 90vh;
-            }
-            .modal-header h2 {
-                font-size: 1rem;
-            }
-            .modal-body .reference-table {
-                font-size: 0.55rem;
-            }
-            .modal-body .reference-table th {
-                font-size: 0.5rem;
-                padding: 4px 6px;
-            }
-            .modal-body .reference-table td {
-                padding: 4px 6px;
-            }
-            .modal-body .reference-table .ion-symbol {
-                font-size: 0.65rem;
-            }
-            .modal-body .ref-sort-group label {
-                font-size: 0.5rem;
-            }
-            .modal-body .ref-sort-group select {
-                font-size: 0.5rem;
-                padding: 2px 8px;
-            }
-            .modal-body .ref-db-btn {
-                font-size: 0.5rem;
-                padding: 2px 10px;
-            }
-            .modal-body .ref-count {
-                font-size: 0.5rem;
+                padding: 3px 4px !important;
+                min-height: 28px !important;
+                white-space: normal !important;
+                word-break: break-all !important;
+                border-radius: 6px !important;
             }
 
-            /* 電子圖手機版 - gap: 0px 防止跳行，數字格縮窄，圖片保持原大 */
+            /* ===== 修正 2: 電子圖答題區 - 強制不跳行 ===== */
             .elec-answer-row {
-                gap: 0px;
-                min-height: 60px;
+                gap: 2px !important;
+                flex-wrap: nowrap !important;
+                justify-content: center !important;
+                min-height: 60px !important;
+                padding: 0px !important;
+                margin: 0px !important;
             }
+            /* 數字框：約圖片嘅 1/3 */
             .elec-slot.count-slot {
-                flex: 0 0 34px;
+                flex: 0 0 32px !important;
+                min-width: 32px !important;
             }
             .elec-slot.image-slot {
-                flex: 0 0 100px;
+                flex: 0 0 95px !important;
+                min-width: 95px !important;
             }
+
+            /* ===== 修正 3: 數字框 - 消除所有空間 ===== */
             .elec-count-wrapper {
-                min-height: 28px;
+                min-height: 32px !important;
+                width: 32px !important;
+                padding: 0px !important;
+                border: none !important;
+                border-radius: 0px !important;
+                background: #e8dff0 !important;
             }
             .elec-count-wrapper .count-number {
-                font-size: 1.3rem;
+                font-size: 1.2rem !important;
+                line-height: 1 !important;
             }
             .elec-count-wrapper.has-value .count-number {
-                font-size: 1.3rem;
+                font-size: 1.2rem !important;
             }
+
+            /* ===== 修正 4: 圖片框 - 消除所有空間 ===== */
             .elec-selector-box {
-                min-height: 70px;
-                padding: 2px;
+                width: 95px !important;
+                min-height: 66px !important;
+                padding: 0px !important;
+                border: none !important;
+                border-radius: 0px !important;
+                background: #f0f0f0 !important;
             }
+            .elec-selector-box img {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: contain !important;
+                display: block !important;
+            }
+            .elec-selector-box .placeholder {
+                font-size: 0.6rem !important;
+                line-height: 1.2 !important;
+            }
+
+            /* 顏色框（未選時） */
+            .elec-selector-box.color-red { background: #ffe0e0 !important; border: none !important; }
+            .elec-selector-box.color-yellow { background: #fff8e0 !important; border: none !important; }
+            .elec-selector-box.color-green { background: #e0f5e0 !important; border: none !important; }
+            .elec-selector-box.color-blue { background: #e0ecff !important; border: none !important; }
+
+            .elec-selector-box.has-image {
+                background: white !important;
+                border: none !important;
+                border-radius: 0px !important;
+                padding: 0px !important;
+            }
+
             .elec-modal-box {
                 padding: 10px 8px 12px;
                 max-width: 380px;
@@ -1624,24 +1503,26 @@
                 min-height: 34px;
             }
         }
+
         @media (max-width: 400px) {
             .elec-slot.count-slot {
-                flex: 0 0 30px;
+                flex: 0 0 28px !important;
+                min-width: 28px !important;
             }
             .elec-slot.image-slot {
-                flex: 0 0 90px;
+                flex: 0 0 80px !important;
+                min-width: 80px !important;
             }
             .elec-count-wrapper {
-                min-height: 24px;
+                width: 28px !important;
+                min-height: 26px !important;
             }
             .elec-count-wrapper .count-number {
-                font-size: 1.1rem;
-            }
-            .elec-count-wrapper.has-value .count-number {
-                font-size: 1.1rem;
+                font-size: 1rem !important;
             }
             .elec-selector-box {
-                min-height: 60px;
+                width: 80px !important;
+                min-height: 56px !important;
             }
             .elec-modal-body {
                 grid-template-columns: repeat(3, 1fr);
