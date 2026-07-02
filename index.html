@@ -1055,15 +1055,9 @@
             color: #4a2a6a;
             line-height: 1.2;
         }
-        .elec-question-area .elec-q-name .elec-name-first {
+        .elec-question-area .elec-q-name .elec-name {
             font-size: 1.6rem;
             font-weight: 700;
-        }
-        .elec-question-area .elec-q-name .elec-name-second {
-            font-size: 1rem;
-            font-weight: 400;
-            color: #8a6aaa;
-            margin-left: 6px;
         }
         .elec-question-area .elec-q-hint {
             font-size: 0.6rem;
@@ -1582,29 +1576,29 @@
                 font-size: 0.5rem;
             }
 
-            /* 電子圖手機版 */
+            /* 電子圖手機版 - gap: 0px 防止跳行，數字格縮窄，圖片保持原大 */
             .elec-answer-row {
-                gap: 4px;
-                min-height: 70px;
+                gap: 0px;
+                min-height: 60px;
             }
             .elec-slot.count-slot {
-                flex: 0 0 50px;
+                flex: 0 0 34px;
             }
             .elec-slot.image-slot {
                 flex: 0 0 100px;
             }
             .elec-count-wrapper {
-                min-height: 36px;
+                min-height: 28px;
             }
             .elec-count-wrapper .count-number {
-                font-size: 1.8rem;
+                font-size: 1.3rem;
             }
             .elec-count-wrapper.has-value .count-number {
-                font-size: 1.8rem;
+                font-size: 1.3rem;
             }
             .elec-selector-box {
                 min-height: 70px;
-                padding: 3px;
+                padding: 2px;
             }
             .elec-modal-box {
                 padding: 10px 8px 12px;
@@ -1624,9 +1618,6 @@
             .elec-question-area .elec-q-name {
                 font-size: 1.3rem;
             }
-            .elec-question-area .elec-q-name .elec-name-second {
-                font-size: 0.85rem;
-            }
             .elec-btn-row .btn {
                 font-size: 0.8rem;
                 padding: 6px 10px;
@@ -1635,19 +1626,19 @@
         }
         @media (max-width: 400px) {
             .elec-slot.count-slot {
-                flex: 0 0 40px;
+                flex: 0 0 30px;
             }
             .elec-slot.image-slot {
-                flex: 0 0 80px;
+                flex: 0 0 90px;
             }
             .elec-count-wrapper {
-                min-height: 30px;
+                min-height: 24px;
             }
             .elec-count-wrapper .count-number {
-                font-size: 1.4rem;
+                font-size: 1.1rem;
             }
             .elec-count-wrapper.has-value .count-number {
-                font-size: 1.4rem;
+                font-size: 1.1rem;
             }
             .elec-selector-box {
                 min-height: 60px;
@@ -1923,14 +1914,13 @@
                     <div class="hint-row" id="hintRow5">
                         <span class="highlight">💡 點擊數字或圖片選擇，選 1 會自動隱藏</span>
                     </div>
-                    
+
                     <div class="elec-container">
                         <!-- 題目區 -->
                         <div class="elec-question-area">
                             <div class="elec-q-label" id="elecQLabel">📌 請組合出以下離子化合物的電子圖</div>
                             <div class="elec-q-name">
-                                <span class="elec-name-first" id="elecNameFirst">氯化鈉</span>
-                                <span class="elec-name-second" id="elecNameSecond">Sodium Chloride</span>
+                                <span class="elec-name" id="elecNameDisplay">氯化鈉</span>
                             </div>
                             <div class="elec-q-hint" id="elecHintText">💡 只顯示最外層電子</div>
                         </div>
@@ -2002,7 +1992,7 @@
 
     <script>
         // ============================================================
-        //  完整 JavaScript（最終修正版）
+        //  完整 JavaScript（最終極簡版）
         // ============================================================
         (function() {
             // ---- 離子資料庫 ----
@@ -2406,8 +2396,7 @@
             const elecChargeDisplay = document.getElementById('elecChargeDisplay');
             const fbText5 = document.getElementById('fbText5');
             const fbDetail5 = document.getElementById('fbDetail5');
-            const elecNameFirst = document.getElementById('elecNameFirst');
-            const elecNameSecond = document.getElementById('elecNameSecond');
+            const elecNameDisplay = document.getElementById('elecNameDisplay');
             const elecHintText = document.getElementById('elecHintText');
             const elecQLabel = document.getElementById('elecQLabel');
             const elecModal = document.getElementById('elecModal');
@@ -2583,7 +2572,6 @@
                 else if (type === 'error') fb.classList.add('error');
                 fb.querySelector('.fb-icon').textContent = icon || '✏️';
                 fbText5.textContent = text || '';
-                // 用 innerHTML 塞入 detail，令 formula-big 可以生效
                 fbDetail5.innerHTML = detail || '';
             }
 
@@ -3172,16 +3160,13 @@
             function elecUpdateNameDisplay() {
                 if (!elecCurrentQuestion) return;
                 if (currentLang === 'zh') {
-                    elecNameFirst.textContent = elecCurrentQuestion.name_zh;
-                    elecNameSecond.textContent = elecCurrentQuestion.name_en;
+                    elecNameDisplay.textContent = elecCurrentQuestion.name_zh;
                 } else {
-                    elecNameFirst.textContent = elecCurrentQuestion.name_en;
-                    elecNameSecond.textContent = elecCurrentQuestion.name_zh;
+                    elecNameDisplay.textContent = elecCurrentQuestion.name_en;
                 }
             }
 
             function elecUpdateUI() {
-                // 更新電子圖專用文字
                 elecQLabel.textContent = currentLang === 'zh' ? '📌 請組合出以下離子化合物的電子圖' :
                     '📌 Combine the electron diagram for:';
                 elecHintText.textContent = currentLang === 'zh' ? '💡 只顯示最外層電子' :
@@ -3336,8 +3321,8 @@
                     elecIsAnsweredCorrectly = true;
                     getNextBtn(5).disabled = false;
                     const formattedFormula = elecFormatSubscript(q.formula);
-                    // 使用 innerHTML 讓 formula-big 生效
-                    const detail = `${currentLang === 'zh' ? '你組合出 ' : 'You formed '}<span class="formula-big">${formattedFormula}</span>`;
+                    const detail =
+                        `${currentLang === 'zh' ? '你組合出 ' : 'You formed '}<span class="formula-big">${formattedFormula}</span>`;
                     setElecFeedback('✅', currentLang === 'zh' ? '完全正確！🎉' : 'Perfect! 🎉', detail, 'success');
                 } else {
                     const formattedFormula = elecFormatSubscript(q.formula);
@@ -3615,7 +3600,7 @@
             });
 
             console.log('🧪 離子與化合物練習已啟動！');
-            console.log('✅ 電子圖練習已整合（最終修正版）！');
+            console.log('✅ 電子圖練習已整合（最終極簡版）！');
         })();
     </script>
 </body>
