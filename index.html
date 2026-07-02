@@ -2938,21 +2938,18 @@
 function elecUpdateChargeAndFormula() {
     // ===== 正離子 =====
     if (elecSelectedCationCount === 0) {
-        // 未揀過：紫色，吉嘅
         cationCountDisplay.textContent = '';
         cationCountDisplay.classList.remove('hidden');
         cationCountWrapper.style.background = '#e8dff0';
         cationCountWrapper.style.border = '2px solid #c8b8d8';
         cationCountWrapper.style.borderRadius = '10px';
     } else if (elecSelectedCationCount === 1) {
-        // 揀咗 1：透明，成個消失
         cationCountDisplay.textContent = '';
         cationCountDisplay.classList.add('hidden');
         cationCountWrapper.style.background = 'transparent';
         cationCountWrapper.style.border = 'none';
         cationCountWrapper.style.borderRadius = '0';
     } else {
-        // 揀咗 2/3：白色，顯示數字
         cationCountDisplay.textContent = elecSelectedCationCount;
         cationCountDisplay.classList.remove('hidden');
         cationCountWrapper.style.background = 'white';
@@ -2981,17 +2978,21 @@ function elecUpdateChargeAndFormula() {
         anionCountWrapper.style.borderRadius = '0';
     }
 
-    // ===== 電荷計算（不變） =====
+    // ===== 電荷計算（修正版） =====
     if (!elecSelectedCation || !elecSelectedAnion) {
         elecChargeDisplay.className = 'elec-charge-display';
         elecChargeDisplay.innerHTML = currentLang === 'zh' ? '⚡ 請選擇完整的離子組合' : '⚡ Please select a complete ion combination';
         return;
     }
 
-    const total = (elecSelectedCationCount * elecSelectedCation.charge) + (elecSelectedAnionCount * elecSelectedAnion.charge);
-    let cationStr = elecSelectedCationCount > 1 ? elecSelectedCationCount + ' × ' : '';
+    // 🔥 修正：如果係 0（未揀過），當作 1
+    const cationCount = elecSelectedCationCount === 0 ? 1 : elecSelectedCationCount;
+    const anionCount = elecSelectedAnionCount === 0 ? 1 : elecSelectedAnionCount;
+    const total = (cationCount * elecSelectedCation.charge) + (anionCount * elecSelectedAnion.charge);
+
+    let cationStr = cationCount > 1 ? cationCount + ' × ' : '';
     cationStr += elecSelectedCation.charge > 0 ? '+' + elecSelectedCation.charge : elecSelectedCation.charge;
-    let anionStr = elecSelectedAnionCount > 1 ? elecSelectedAnionCount + ' × ' : '';
+    let anionStr = anionCount > 1 ? anionCount + ' × ' : '';
     anionStr += elecSelectedAnion.charge;
 
     let html = `${cationStr} + ${anionStr} = `;
