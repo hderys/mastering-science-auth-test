@@ -2978,14 +2978,14 @@ function elecUpdateChargeAndFormula() {
         anionCountWrapper.style.borderRadius = '0';
     }
 
-    // ===== 電荷計算（修正版） =====
+    // ===== 電荷計算 =====
     if (!elecSelectedCation || !elecSelectedAnion) {
+        const msg = currentLang === 'zh' ? '⚡ 請選擇完整的離子組合' : '⚡ Please select a complete ion combination';
         elecChargeDisplay.className = 'elec-charge-display';
-        elecChargeDisplay.innerHTML = currentLang === 'zh' ? '⚡ 請選擇完整的離子組合' : '⚡ Please select a complete ion combination';
+        elecChargeDisplay.innerHTML = msg;
         return;
     }
 
-    // 🔥 修正：如果係 0（未揀過），當作 1
     const cationCount = elecSelectedCationCount === 0 ? 1 : elecSelectedCationCount;
     const anionCount = elecSelectedAnionCount === 0 ? 1 : elecSelectedAnionCount;
     const total = (cationCount * elecSelectedCation.charge) + (anionCount * elecSelectedAnion.charge);
@@ -2996,14 +2996,25 @@ function elecUpdateChargeAndFormula() {
     anionStr += elecSelectedAnion.charge;
 
     let html = `${cationStr} + ${anionStr} = `;
+    let className = 'elec-charge-display';
     if (total === 0) {
         html += `<span class="green">0</span> ${currentLang === 'zh' ? '✅ 電荷守恆' : '✅ Charge balanced'}`;
-        elecChargeDisplay.className = 'elec-charge-display balanced';
+        className += ' balanced';
     } else {
         html += `<span class="red">${total >= 0 ? '+' : ''}${total}</span> ${currentLang === 'zh' ? '⚠️ 不平衡' : '⚠️ Unbalanced'}`;
-        elecChargeDisplay.className = 'elec-charge-display unbalanced';
+        className += ' unbalanced';
     }
+
+    // 🔥 更新兩個 display
+    elecChargeDisplay.className = className;
     elecChargeDisplay.innerHTML = '⚡ ' + html;
+
+    // 同時更新另一個 display（如果存在）
+    const otherDisplay = document.getElementById('chargeDisplay');
+    if (otherDisplay) {
+        otherDisplay.className = className;
+        otherDisplay.innerHTML = '⚡ ' + html;
+    }
 }
 
         function elecShowIonSelector(type) {
