@@ -1370,171 +1370,166 @@
 
         /* ===== 手機版 ===== */
         @media (max-width: 600px) {
-            .card {
-                padding: 0.3rem 0.5rem;
-                max-height: 95vh;
-                height: auto;
-                border-radius: 24px;
-            }
-            .header h1 {
-                font-size: 0.85rem;
-            }
-            .btn-ref {
-                font-size: 0.55rem;
-                padding: 3px 10px;
-            }
-            .lang-btn {
-                font-size: 0.5rem;
-                padding: 2px 10px;
-            }
+    .card {
+        padding: 0.3rem 0.5rem;
+        max-height: 95vh;
+        height: auto;
+        border-radius: 24px;
+    }
+    .header h1 {
+        font-size: 0.85rem;
+    }
+    .btn-ref {
+        font-size: 0.55rem;
+        padding: 3px 10px;
+    }
+    .lang-btn {
+        font-size: 0.5rem;
+        padding: 2px 10px;
+    }
 
-            /* ===== 修正 1: 善用空間 ===== */
-            .main-content {
-                gap: 4px !important;
-            }
-            .left-sidebar {
-                flex: 0 0 95px !important;
-                min-width: 95px !important;
-                padding-right: 4px !important;
-                padding-left: 0px !important;
-            }
-            .question-area {
-                padding: 0px 3px !important;
-            }
-            .tab-btn {
-                font-size: 0.55rem !important;
-                padding: 3px 4px !important;
-                min-height: 28px !important;
-                white-space: normal !important;
-                word-break: break-all !important;
-                border-radius: 6px !important;
-            }
+    /* ===== 其他分頁保持原樣 ===== */
+    .left-sidebar {
+        flex: 0 0 auto;
+        min-width: 200px;
+        padding: 0 12px 0 0;
+    }
+    .tab-btn {
+        font-size: 0.6rem;
+        padding: 4px 8px;
+        min-height: 32px;
+        white-space: nowrap;
+        word-break: normal;
+        border-radius: 8px;
+    }
+    .question-area {
+        padding: 0.2rem 0.6rem;
+    }
+    .main-content {
+        gap: 12px;
+    }
 
-            /* ===== 修正 2: 電子圖答題區 - 強制不跳行 ===== */
-            .elec-answer-row {
-                gap: 2px !important;
-                flex-wrap: nowrap !important;
-                justify-content: center !important;
-                min-height: 60px !important;
-                padding: 0px !important;
-                margin: 0px !important;
-            }
-            /* 數字框：約圖片嘅 1/3 */
-            .elec-slot.count-slot {
-                flex: 0 0 32px !important;
-                min-width: 32px !important;
-            }
-            .elec-slot.image-slot {
-                flex: 0 0 95px !important;
-                min-width: 95px !important;
-            }
+    /* ===== Tab 5: 電子圖專用修正 ===== */
+    .tab-content#tabContent5 .elec-container {
+        padding: 0px !important;
+        margin: 0px !important;
+    }
+    .elec-answer-row {
+        gap: 2px !important;
+        flex-wrap: nowrap !important;
+        justify-content: center !important;
+        min-height: 60px !important;
+        padding: 0px !important;
+        margin: 0px !important;
+    }
+    .elec-slot.count-slot {
+        flex: 0 0 32px !important;
+        min-width: 32px !important;
+    }
+    .elec-slot.image-slot {
+        flex: 0 0 95px !important;
+        min-width: 95px !important;
+    }
+    .elec-count-wrapper {
+        min-height: 32px !important;
+        width: 32px !important;
+        padding: 0px !important;
+        border: none !important;
+        border-radius: 0px !important;
+        background: #e8dff0 !important;
+    }
+    .elec-count-wrapper .count-number {
+        font-size: 1.2rem !important;
+        line-height: 1 !important;
+    }
+    .elec-count-wrapper.has-value .count-number {
+        font-size: 1.2rem !important;
+    }
+    .elec-selector-box {
+        width: 95px !important;
+        min-height: 66px !important;
+        padding: 0px !important;
+        border: none !important;
+        border-radius: 0px !important;
+        background: #f0f0f0 !important;
+    }
+    .elec-selector-box img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+        display: block !important;
+    }
+    .elec-selector-box .placeholder {
+        font-size: 0.6rem !important;
+        line-height: 1.2 !important;
+    }
+    .elec-selector-box.color-red { background: #ffe0e0 !important; border: none !important; }
+    .elec-selector-box.color-yellow { background: #fff8e0 !important; border: none !important; }
+    .elec-selector-box.color-green { background: #e0f5e0 !important; border: none !important; }
+    .elec-selector-box.color-blue { background: #e0ecff !important; border: none !important; }
+    .elec-selector-box.has-image {
+        background: white !important;
+        border: none !important;
+        border-radius: 0px !important;
+        padding: 0px !important;
+    }
 
-            /* ===== 修正 3: 數字框 - 消除所有空間 ===== */
-            .elec-count-wrapper {
-                min-height: 32px !important;
-                width: 32px !important;
-                padding: 0px !important;
-                border: none !important;
-                border-radius: 0px !important;
-                background: #e8dff0 !important;
-            }
-            .elec-count-wrapper .count-number {
-                font-size: 1.2rem !important;
-                line-height: 1 !important;
-            }
-            .elec-count-wrapper.has-value .count-number {
-                font-size: 1.2rem !important;
-            }
+    .elec-modal-box {
+        padding: 10px 8px 12px;
+        max-width: 380px;
+    }
+    .elec-modal-body {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 3px;
+    }
+    .elec-modal-option {
+        min-height: 56px;
+        padding: 1px;
+    }
+    .elec-modal-option img {
+        max-width: 56px;
+    }
+    .elec-question-area .elec-q-name {
+        font-size: 1.3rem;
+    }
+    .elec-btn-row .btn {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+        min-height: 34px;
+    }
+}
 
-            /* ===== 修正 4: 圖片框 - 消除所有空間 ===== */
-            .elec-selector-box {
-                width: 95px !important;
-                min-height: 66px !important;
-                padding: 0px !important;
-                border: none !important;
-                border-radius: 0px !important;
-                background: #f0f0f0 !important;
-            }
-            .elec-selector-box img {
-                width: 100% !important;
-                height: 100% !important;
-                object-fit: contain !important;
-                display: block !important;
-            }
-            .elec-selector-box .placeholder {
-                font-size: 0.6rem !important;
-                line-height: 1.2 !important;
-            }
-
-            /* 顏色框（未選時） */
-            .elec-selector-box.color-red { background: #ffe0e0 !important; border: none !important; }
-            .elec-selector-box.color-yellow { background: #fff8e0 !important; border: none !important; }
-            .elec-selector-box.color-green { background: #e0f5e0 !important; border: none !important; }
-            .elec-selector-box.color-blue { background: #e0ecff !important; border: none !important; }
-
-            .elec-selector-box.has-image {
-                background: white !important;
-                border: none !important;
-                border-radius: 0px !important;
-                padding: 0px !important;
-            }
-
-            .elec-modal-box {
-                padding: 10px 8px 12px;
-                max-width: 380px;
-            }
-            .elec-modal-body {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 3px;
-            }
-            .elec-modal-option {
-                min-height: 56px;
-                padding: 1px;
-            }
-            .elec-modal-option img {
-                max-width: 56px;
-            }
-            .elec-question-area .elec-q-name {
-                font-size: 1.3rem;
-            }
-            .elec-btn-row .btn {
-                font-size: 0.8rem;
-                padding: 6px 10px;
-                min-height: 34px;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .elec-slot.count-slot {
-                flex: 0 0 28px !important;
-                min-width: 28px !important;
-            }
-            .elec-slot.image-slot {
-                flex: 0 0 80px !important;
-                min-width: 80px !important;
-            }
-            .elec-count-wrapper {
-                width: 28px !important;
-                min-height: 26px !important;
-            }
-            .elec-count-wrapper .count-number {
-                font-size: 1rem !important;
-            }
-            .elec-selector-box {
-                width: 80px !important;
-                min-height: 56px !important;
-            }
-            .elec-modal-body {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 3px;
-            }
-            .elec-modal-option {
-                min-height: 48px;
-            }
-            .elec-modal-option img {
-                max-width: 44px;
-            }
-        }
+@media (max-width: 400px) {
+    .elec-slot.count-slot {
+        flex: 0 0 28px !important;
+        min-width: 28px !important;
+    }
+    .elec-slot.image-slot {
+        flex: 0 0 80px !important;
+        min-width: 80px !important;
+    }
+    .elec-count-wrapper {
+        width: 28px !important;
+        min-height: 26px !important;
+    }
+    .elec-count-wrapper .count-number {
+        font-size: 1rem !important;
+    }
+    .elec-selector-box {
+        width: 80px !important;
+        min-height: 56px !important;
+    }
+    .elec-modal-body {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 3px;
+    }
+    .elec-modal-option {
+        min-height: 48px;
+    }
+    .elec-modal-option img {
+        max-width: 44px;
+    }
+}
     </style>
 </head>
 <body>
