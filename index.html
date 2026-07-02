@@ -379,6 +379,7 @@
             overflow: hidden;
         }
 
+        /* ===== 左欄（桌面版） ===== */
         .left-sidebar {
             display: flex;
             flex-direction: column;
@@ -767,6 +768,12 @@
             font-size: 0.85rem;
             display: block;
         }
+        .hint-row .highlight-yellow {
+            background: #ffd93d;
+            padding: 0 4px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
         .feedback-area {
             padding: 6px 16px;
             border-radius: 30px;
@@ -1093,6 +1100,7 @@
             flex: 0 0 135px;
         }
 
+        /* 數字框：預設紫色背景 */
         .elec-count-wrapper {
             width: 100%;
             aspect-ratio: 1 / 1.8;
@@ -1121,11 +1129,19 @@
         .elec-count-wrapper .count-number.hidden {
             visibility: hidden;
         }
+        /* 已選擇 2 或 3：白色背景 */
         .elec-count-wrapper.has-value {
             border: none !important;
-            background: transparent !important;
+            background: white !important;
             border-radius: 0 !important;
             cursor: default;
+        }
+        /* 已選擇 1（隱藏）：透明背景 */
+        .elec-count-wrapper.has-value .count-number.hidden {
+            visibility: hidden;
+        }
+        .elec-count-wrapper.has-value:has(.count-number.hidden) {
+            background: transparent !important;
         }
         .elec-count-wrapper.has-value .count-number {
             font-size: 2.4rem;
@@ -1177,24 +1193,7 @@
             display: block;
         }
 
-        .elec-count-hint {
-            font-size: 0.55rem;
-            font-weight: 700;
-            color: #8a6a20;
-            background: #fff3b0;
-            padding: 0 8px;
-            border-radius: 12px;
-            text-align: center;
-            min-height: 16px;
-            line-height: 1.3;
-            border: 1px solid #f5d06a;
-            opacity: 0;
-            transition: 0.15s;
-            white-space: nowrap;
-        }
-        .elec-count-hint.visible {
-            opacity: 1;
-        }
+        /* 已移除 .elec-count-hint，改用 hint-row 螢光筆 */
 
         /* Tab 5 電荷顯示 */
         .elec-charge-display {
@@ -1388,20 +1387,34 @@
                 padding: 2px 10px;
             }
 
-            /* ===== Tab 0-4 保持原樣 ===== */
+            /* ===== 手機版左欄 - 垂直高度縮窄 ===== */
             .left-sidebar {
                 flex: 0 0 95px;
                 min-width: unset;
                 padding-right: 4px;
+                gap: 2px;
+                padding-top: 2px;
             }
             .tab-btn {
-                font-size: 0.6rem;
-                padding: 4px 4px;
-                min-height: 30px;
-                border-radius: 8px;
+                font-size: 0.5rem;
+                padding: 3px 4px;
+                min-height: 26px;
+                border-radius: 6px;
                 white-space: nowrap;
                 text-align: center;
             }
+            .toggle-row {
+                margin-top: 3px !important;
+            }
+            .toggle-group {
+                padding: 3px 4px !important;
+            }
+            .toggle-btn {
+                min-height: 20px !important;
+                font-size: 0.5rem !important;
+            }
+
+            /* ===== 其他分頁保持原樣 ===== */
             .split-panel {
                 flex-direction: column;
                 gap: 6px;
@@ -1424,14 +1437,6 @@
                 min-height: 38px;
                 border-radius: 40px;
                 flex: 1;
-            }
-            .toggle-btn {
-                font-size: 0.55rem !important;
-                padding: 3px 6px !important;
-                min-height: 22px !important;
-            }
-            .toggle-group .toggle-label {
-                font-size: 0.55rem !important;
             }
             .mode0-display {
                 font-size: 1.1rem;
@@ -1478,6 +1483,9 @@
                 font-size: 0.6rem;
             }
             .hint-row .subscript-hint {
+                font-size: 0.6rem;
+            }
+            .hint-row .highlight-yellow {
                 font-size: 0.6rem;
             }
             .pair-input-area input {
@@ -1612,8 +1620,22 @@
                 font-size: 1.2rem !important;
                 line-height: 1 !important;
             }
+            .tab-content#tabContent5 .elec-count-wrapper.has-value {
+                background: white !important;
+                border: none !important;
+                border-radius: 0px !important;
+                padding: 0px !important;
+            }
             .tab-content#tabContent5 .elec-count-wrapper.has-value .count-number {
                 font-size: 1.2rem !important;
+                line-height: 1 !important;
+            }
+            .tab-content#tabContent5 .elec-count-wrapper.has-value .count-number.hidden {
+                visibility: hidden;
+            }
+            /* 已選 1：透明背景 */
+            .tab-content#tabContent5 .elec-count-wrapper.has-value:has(.count-number.hidden) {
+                background: transparent !important;
             }
             .tab-content#tabContent5 .elec-selector-box {
                 width: 95px !important;
@@ -1683,6 +1705,9 @@
                 min-height: 26px !important;
             }
             .tab-content#tabContent5 .elec-count-wrapper .count-number {
+                font-size: 1rem !important;
+            }
+            .tab-content#tabContent5 .elec-count-wrapper.has-value .count-number {
                 font-size: 1rem !important;
             }
             .tab-content#tabContent5 .elec-selector-box {
@@ -1958,7 +1983,7 @@
                 <!-- Tab 5: 電子圖練習（最終修正版） -->
                 <div class="tab-content" id="tabContent5">
                     <div class="hint-row" id="hintRow5">
-                        <span class="highlight">💡 點擊數字或圖片選擇，選 1 會自動隱藏</span>
+                        <span class="highlight">💡 點擊數字或圖片選擇，<span class="highlight-yellow">選 1 會自動隱藏</span></span>
                     </div>
 
                     <div class="elec-container">
@@ -1971,14 +1996,13 @@
                             <div class="elec-q-hint" id="elecHintText">💡 只顯示最外層電子</div>
                         </div>
 
-                        <!-- 答題區 -->
+                        <!-- 答題區（已移除 elec-count-hint） -->
                         <div class="elec-answer-row" id="elecAnswerRow">
                             <!-- 正離子數量 -->
                             <div class="elec-slot count-slot">
                                 <div class="elec-count-wrapper" id="cationCountWrapper">
                                     <span class="count-number" id="cationCountDisplay">1</span>
                                 </div>
-                                <div class="elec-count-hint visible" id="cationHint">'1' 毋須顯示</div>
                             </div>
                             <!-- 正離子圖片 -->
                             <div class="elec-slot image-slot">
@@ -1991,7 +2015,6 @@
                                 <div class="elec-count-wrapper" id="anionCountWrapper">
                                     <span class="count-number" id="anionCountDisplay">1</span>
                                 </div>
-                                <div class="elec-count-hint visible" id="anionHint">'1' 毋須顯示</div>
                             </div>
                             <!-- 負離子圖片 -->
                             <div class="elec-slot image-slot">
@@ -2437,8 +2460,6 @@
             const anionCountDisplay = document.getElementById('anionCountDisplay');
             const cationCountWrapper = document.getElementById('cationCountWrapper');
             const anionCountWrapper = document.getElementById('anionCountWrapper');
-            const cationHint = document.getElementById('cationHint');
-            const anionHint = document.getElementById('anionHint');
             const elecChargeDisplay = document.getElementById('elecChargeDisplay');
             const fbText5 = document.getElementById('fbText5');
             const fbDetail5 = document.getElementById('fbDetail5');
@@ -2631,7 +2652,7 @@
                 } else if (tab === 4) {
                     return '<span class="highlight">💡 先選溶解度，再輸入顏色（如適用）</span>';
                 } else if (tab === 5) {
-                    return '<span class="highlight">💡 點擊數字或圖片選擇，選 1 會自動隱藏</span>';
+                    return '<span class="highlight">💡 點擊數字或圖片選擇，<span class="highlight-yellow">選 1 會自動隱藏</span></span>';
                 }
                 return '';
             }
@@ -3193,9 +3214,6 @@
                 anionCountDisplay.className = 'count-number hidden';
                 anionCountWrapper.className = 'elec-count-wrapper';
 
-                cationHint.classList.add('visible');
-                anionHint.classList.add('visible');
-
                 getNextBtn(5).disabled = true;
                 setElecFeedback('✏️', currentLang === 'zh' ? '選擇離子開始練習' : 'Select ions to start', '', null);
                 elecUpdateChargeAndFormula();
@@ -3217,8 +3235,6 @@
                     '📌 Combine the electron diagram for:';
                 elecHintText.textContent = currentLang === 'zh' ? '💡 只顯示最外層電子' :
                     '💡 Show outermost shell electrons only';
-                cationHint.textContent = currentLang === 'zh' ? "'1' 毋須顯示" : "'1' is hidden";
-                anionHint.textContent = currentLang === 'zh' ? "'1' 毋須顯示" : "'1' is hidden";
                 if (!elecSelectedCation) {
                     cationPlaceholder.textContent = currentLang === 'zh' ? '選\n正離子' : 'Choose the\ncation';
                 }
@@ -3233,20 +3249,23 @@
                 cationCountDisplay.textContent = elecSelectedCationCount;
                 anionCountDisplay.textContent = elecSelectedAnionCount;
 
+                // 控制數字隱藏 / 顯示
                 if (elecSelectedCationCount === 1) {
                     cationCountDisplay.classList.add('hidden');
-                    cationHint.classList.add('visible');
+                    // 已選 1：wrapper 背景透明
+                    cationCountWrapper.classList.add('has-value');
                 } else {
                     cationCountDisplay.classList.remove('hidden');
-                    cationHint.classList.remove('visible');
+                    // 已選 2 或 3：wrapper 背景白色
+                    cationCountWrapper.classList.add('has-value');
                 }
 
                 if (elecSelectedAnionCount === 1) {
                     anionCountDisplay.classList.add('hidden');
-                    anionHint.classList.add('visible');
+                    anionCountWrapper.classList.add('has-value');
                 } else {
                     anionCountDisplay.classList.remove('hidden');
-                    anionHint.classList.remove('visible');
+                    anionCountWrapper.classList.add('has-value');
                 }
 
                 if (!elecSelectedCation || !elecSelectedAnion) {
@@ -3318,11 +3337,12 @@
                     if (type === 'cation') {
                         elecSelectedCationCount = val;
                         cationCountDisplay.textContent = val;
-                        cationCountWrapper.className = 'elec-count-wrapper has-value';
+                        // 已選數值，加上 has-value class（會自動套用白色/透明背景）
+                        cationCountWrapper.classList.add('has-value');
                     } else {
                         elecSelectedAnionCount = val;
                         anionCountDisplay.textContent = val;
-                        anionCountWrapper.className = 'elec-count-wrapper has-value';
+                        anionCountWrapper.classList.add('has-value');
                     }
                     elecIsAnsweredCorrectly = false;
                     getNextBtn(5).disabled = true;
