@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>🧪 離子與化合物 · DSE 化學</title>
     <style>
+        /* ===== 全域樣式 ===== */
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
@@ -25,6 +26,7 @@
             padding-top: 10px;
         }
 
+        /* ===== 歡迎畫面 ===== */
         .welcome-screen {
             max-width: 580px;
             width: 100%;
@@ -91,8 +93,9 @@
             background: #f5effa;
         }
 
+        /* ===== 主卡片 ===== */
         .card {
-            max-width: 900px;
+            max-width: 950px;
             width: 100%;
             height: auto;
             max-height: 95vh;
@@ -181,7 +184,7 @@
             background: #f0e8f8;
         }
 
-        /* ===== Modal 彈窗 ===== */
+        /* ===== Modal 彈窗（離子對照表） ===== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -367,6 +370,7 @@
             font-size: 0.8rem;
         }
 
+        /* ===== 主內容區 ===== */
         .main-content {
             display: flex;
             gap: 12px;
@@ -414,6 +418,7 @@
         .tab-btn[data-tab="2"].active { background: #4d96ff; color: white; border-color: #4d96ff; }
         .tab-btn[data-tab="3"].active { background: #9b59b6; color: white; border-color: #9b59b6; }
         .tab-btn[data-tab="4"].active { background: #ff6b6b; color: white; border-color: #ff6b6b; }
+        .tab-btn[data-tab="5"].active { background: #2ecc71; color: white; border-color: #2ecc71; }
         .tab-btn:hover:not(.active) {
             background: #f0e8f8;
         }
@@ -468,6 +473,7 @@
             background: #e8d8f8 !important;
         }
 
+        /* ===== 題目區 ===== */
         .question-area {
             flex: 1;
             min-width: 0;
@@ -511,7 +517,6 @@
             padding-top: 2px;
         }
 
-        /* ----- 右欄：垂直按鈕 (手機版會調整) ----- */
         .right-buttons {
             display: flex;
             flex-direction: column;
@@ -543,6 +548,13 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 25px rgba(245, 166, 35, 0.5);
         }
+        .right-buttons .btn-check:disabled {
+            opacity: 0.4;
+            filter: grayscale(0.5);
+            transform: none !important;
+            box-shadow: none !important;
+            cursor: not-allowed !important;
+        }
         .right-buttons .btn-next {
             background: linear-gradient(145deg, #4d96ff, #3a7ad4);
             color: white;
@@ -553,17 +565,15 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 25px rgba(77, 150, 255, 0.5);
         }
-        .right-buttons .btn:disabled {
+        .right-buttons .btn-next:disabled {
             opacity: 0.4;
             filter: grayscale(0.5);
             transform: none !important;
             box-shadow: none !important;
             cursor: not-allowed !important;
         }
-        .right-buttons .btn:active:not(:disabled) {
-            transform: translateY(0px) !important;
-        }
 
+        /* ===== Tab 0-3 原有樣式 ===== */
         .mode0-display {
             font-size: 1.8rem;
             font-weight: 600;
@@ -577,7 +587,6 @@
             color: #7a5a9a;
             font-size: 1.5rem;
         }
-
         .mode0-input-area {
             display: flex;
             flex-wrap: wrap;
@@ -624,7 +633,6 @@
             border-color: #ff6b6b;
             background: #fce4e7;
         }
-
         .charge-group {
             display: flex;
             flex-direction: column;
@@ -666,7 +674,6 @@
             border-color: #ff6b6b;
             background: #fce4e7;
         }
-
         .color-area {
             display: flex;
             align-items: center;
@@ -739,7 +746,6 @@
             white-space: nowrap;
             min-height: 34px;
         }
-
         .hint-row {
             margin: 2px 0;
             font-size: 0.85rem;
@@ -761,7 +767,6 @@
             font-size: 0.85rem;
             display: block;
         }
-
         .feedback-area {
             padding: 6px 16px;
             border-radius: 30px;
@@ -799,6 +804,10 @@
         }
         .feedback-area.error .fb-detail {
             color: #7a3a3a;
+        }
+        .feedback-area .formula-big {
+            font-size: 1.5em;
+            font-weight: 700;
         }
 
         #answerReveal {
@@ -876,7 +885,6 @@
             display: flex;
             align-items: center;
         }
-
         .pair-display {
             font-size: 1.8rem;
             font-weight: 600;
@@ -930,7 +938,6 @@
             border-color: #ff6b6b;
             background: #fce4e7;
         }
-
         .sol-display {
             font-size: 1.8rem;
             font-weight: 600;
@@ -1023,11 +1030,350 @@
             align-items: center;
         }
 
-        .footer-note {
-            display: none;
+        /* ===== Tab 5: 電子圖練習（最終修正版） ===== */
+        .elec-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+        .elec-question-area {
+            background: #f8f4fc;
+            border-radius: 12px;
+            padding: 6px 10px;
+            border: 2px dashed #c8b0e0;
+            text-align: center;
+        }
+        .elec-question-area .elec-q-label {
+            font-size: 0.6rem;
+            color: #7a5a9a;
+            font-weight: 600;
+        }
+        .elec-question-area .elec-q-name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #4a2a6a;
+            line-height: 1.2;
+        }
+        .elec-question-area .elec-q-name .elec-name-first {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        .elec-question-area .elec-q-name .elec-name-second {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #8a6aaa;
+            margin-left: 6px;
+        }
+        .elec-question-area .elec-q-hint {
+            font-size: 0.6rem;
+            color: #7a5a9a;
+            background: #f0eaf5;
+            display: inline-block;
+            padding: 1px 12px;
+            border-radius: 30px;
+            margin-top: 2px;
+            font-weight: 600;
+            border: 1px solid #d0c0e0;
         }
 
-        /* ===== 手機版專用調整 ===== */
+        .elec-answer-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin: 6px 0 4px;
+            min-height: 90px;
+            flex-wrap: wrap;
+        }
+        .elec-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .elec-slot.count-slot {
+            flex: 0 0 66px;
+        }
+        .elec-slot.image-slot {
+            flex: 0 0 135px;
+        }
+
+        .elec-count-wrapper {
+            width: 100%;
+            aspect-ratio: 1 / 1.8;
+            border: 2px solid #c8b8d8;
+            border-radius: 10px;
+            background: #e8dff0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-height: 44px;
+            cursor: pointer;
+            transition: 0.15s;
+            user-select: none;
+        }
+        .elec-count-wrapper:hover {
+            background: #ddd0e8;
+            border-color: #7a4a9a;
+        }
+        .elec-count-wrapper .count-number {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #4a2a6a;
+            pointer-events: none;
+        }
+        .elec-count-wrapper .count-number.hidden {
+            visibility: hidden;
+        }
+        .elec-count-wrapper.has-value {
+            border: none !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            cursor: default;
+        }
+        .elec-count-wrapper.has-value .count-number {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #4a2a6a;
+        }
+
+        .elec-selector-box {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border: 3px dashed #d0c0e0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #f0f0f0;
+            padding: 4px;
+            position: relative;
+            min-height: 90px;
+        }
+        .elec-selector-box.color-red { background: #ffe0e0; border-color: #ffaaaa; }
+        .elec-selector-box.color-yellow { background: #fff8e0; border-color: #f5d06a; }
+        .elec-selector-box.color-green { background: #e0f5e0; border-color: #7ac77a; }
+        .elec-selector-box.color-blue { background: #e0ecff; border-color: #7aacd0; }
+
+        .elec-selector-box.has-image {
+            background: white !important;
+            border: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+        }
+        .elec-selector-box:hover:not(.has-image) {
+            transform: scale(1.02);
+            border-color: #7a4a9a;
+        }
+        .elec-selector-box .placeholder {
+            color: #b0a0c0;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .elec-selector-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .elec-count-hint {
+            font-size: 0.55rem;
+            font-weight: 700;
+            color: #8a6a20;
+            background: #fff3b0;
+            padding: 0 8px;
+            border-radius: 12px;
+            text-align: center;
+            min-height: 16px;
+            line-height: 1.3;
+            border: 1px solid #f5d06a;
+            opacity: 0;
+            transition: 0.15s;
+            white-space: nowrap;
+        }
+        .elec-count-hint.visible {
+            opacity: 1;
+        }
+
+        /* Tab 5 電荷顯示 */
+        .elec-charge-display {
+            background: #f0eaf5;
+            border-radius: 10px;
+            padding: 4px 10px;
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #4a2a6a;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            flex-wrap: wrap;
+            border: 2px solid transparent;
+            transition: 0.2s;
+            margin-bottom: 0;
+        }
+        .elec-charge-display.balanced {
+            border-color: #6bcb77;
+            background: #ecfdf5;
+        }
+        .elec-charge-display.unbalanced {
+            border-color: #ff6b6b;
+            background: #fce4e7;
+        }
+        .elec-charge-display .green { color: #2ecc71; }
+        .elec-charge-display .red { color: #e74c3c; }
+
+        /* Tab 5 按鈕列（獨立） */
+        .elec-btn-row {
+            display: flex;
+            gap: 8px;
+            max-width: 100%;
+            margin-top: 6px;
+        }
+        .elec-btn-row .btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            min-height: 38px;
+            text-align: center;
+        }
+        .elec-btn-row .btn-check {
+            background: linear-gradient(145deg, #f5a623, #e0941a);
+            color: white;
+            box-shadow: 0 4px 20px rgba(245, 166, 35, 0.4);
+        }
+        .elec-btn-row .btn-check:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(245, 166, 35, 0.5);
+        }
+        .elec-btn-row .btn-check:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .elec-btn-row .btn-next {
+            background: linear-gradient(145deg, #4d96ff, #3a7ad4);
+            color: white;
+            box-shadow: 0 4px 20px rgba(77, 150, 255, 0.4);
+        }
+        .elec-btn-row .btn-next:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(77, 150, 255, 0.5);
+        }
+        .elec-btn-row .btn-next:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ===== Modal（電子圖選擇器） ===== */
+        .elec-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+        .elec-modal-overlay.active {
+            display: flex;
+        }
+        .elec-modal-box {
+            background: white;
+            border-radius: 24px;
+            max-width: 520px;
+            width: 100%;
+            height: auto;
+            max-height: 85vh;
+            padding: 12px 10px 14px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .elec-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            flex-shrink: 0;
+            padding: 0 2px;
+        }
+        .elec-modal-header h2 {
+            font-size: 0.95rem;
+            color: #4a2a6a;
+        }
+        .elec-modal-close {
+            background: #f0e8f8;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: #4a2a6a;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .elec-modal-body {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            overflow: hidden;
+            flex: 1;
+            align-content: start;
+        }
+        .elec-modal-option {
+            border: 2px solid #e0d0f0;
+            border-radius: 10px;
+            padding: 2px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.15s;
+            background: white;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: #4a2a6a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70px;
+        }
+        .elec-modal-option:hover {
+            border-color: #7a4a9a;
+            background: #f5effa;
+            transform: scale(1.03);
+        }
+        .elec-modal-option img {
+            width: 100%;
+            max-width: 80px;
+            height: auto;
+            aspect-ratio: 1/1;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* ===== 手機版 ===== */
         @media (max-width: 600px) {
             .card {
                 padding: 0.3rem 0.5rem;
@@ -1035,7 +1381,6 @@
                 height: auto;
                 border-radius: 24px;
             }
-
             .header h1 {
                 font-size: 0.85rem;
             }
@@ -1047,8 +1392,6 @@
                 font-size: 0.5rem;
                 padding: 2px 10px;
             }
-
-            /* 手機版左欄維持窄版 */
             .left-sidebar {
                 flex: 0 0 95px;
                 min-width: unset;
@@ -1062,8 +1405,6 @@
                 white-space: nowrap;
                 text-align: center;
             }
-
-            /* 手機版：split-panel 改為上下排列，按鈕移到最下方 */
             .split-panel {
                 flex-direction: column;
                 gap: 6px;
@@ -1087,7 +1428,6 @@
                 border-radius: 40px;
                 flex: 1;
             }
-
             .toggle-btn {
                 font-size: 0.55rem !important;
                 padding: 3px 6px !important;
@@ -1096,7 +1436,6 @@
             .toggle-group .toggle-label {
                 font-size: 0.55rem !important;
             }
-
             .mode0-display {
                 font-size: 1.1rem;
             }
@@ -1131,6 +1470,9 @@
             }
             .feedback-area .fb-text {
                 font-size: 0.85rem;
+            }
+            .feedback-area .formula-big {
+                font-size: 1.3em;
             }
             .hint-row {
                 font-size: 0.6rem;
@@ -1205,7 +1547,6 @@
             .mode1-display {
                 font-size: 1.5rem;
             }
-
             .modal-box {
                 padding: 16px 18px;
                 max-height: 90vh;
@@ -1239,6 +1580,87 @@
             }
             .modal-body .ref-count {
                 font-size: 0.5rem;
+            }
+
+            /* 電子圖手機版 */
+            .elec-answer-row {
+                gap: 4px;
+                min-height: 70px;
+            }
+            .elec-slot.count-slot {
+                flex: 0 0 50px;
+            }
+            .elec-slot.image-slot {
+                flex: 0 0 100px;
+            }
+            .elec-count-wrapper {
+                min-height: 36px;
+            }
+            .elec-count-wrapper .count-number {
+                font-size: 1.8rem;
+            }
+            .elec-count-wrapper.has-value .count-number {
+                font-size: 1.8rem;
+            }
+            .elec-selector-box {
+                min-height: 70px;
+                padding: 3px;
+            }
+            .elec-modal-box {
+                padding: 10px 8px 12px;
+                max-width: 380px;
+            }
+            .elec-modal-body {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 3px;
+            }
+            .elec-modal-option {
+                min-height: 56px;
+                padding: 1px;
+            }
+            .elec-modal-option img {
+                max-width: 56px;
+            }
+            .elec-question-area .elec-q-name {
+                font-size: 1.3rem;
+            }
+            .elec-question-area .elec-q-name .elec-name-second {
+                font-size: 0.85rem;
+            }
+            .elec-btn-row .btn {
+                font-size: 0.8rem;
+                padding: 6px 10px;
+                min-height: 34px;
+            }
+        }
+        @media (max-width: 400px) {
+            .elec-slot.count-slot {
+                flex: 0 0 40px;
+            }
+            .elec-slot.image-slot {
+                flex: 0 0 80px;
+            }
+            .elec-count-wrapper {
+                min-height: 30px;
+            }
+            .elec-count-wrapper .count-number {
+                font-size: 1.4rem;
+            }
+            .elec-count-wrapper.has-value .count-number {
+                font-size: 1.4rem;
+            }
+            .elec-selector-box {
+                min-height: 60px;
+            }
+            .elec-modal-body {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 3px;
+            }
+            .elec-modal-option {
+                min-height: 48px;
+            }
+            .elec-modal-option img {
+                max-width: 44px;
             }
         }
     </style>
@@ -1316,6 +1738,7 @@
                 <button class="tab-btn" data-tab="2" id="tab2">📝 名稱 → 化學式</button>
                 <button class="tab-btn" data-tab="3" id="tab3">🔄 化學式 → 名稱</button>
                 <button class="tab-btn" data-tab="4" id="tab4">🎨 溶解度與顏色</button>
+                <button class="tab-btn" data-tab="5" id="tab5">⚛️ 電子圖練習</button>
                 <div class="toggle-row" id="toggleRowIon">
                     <div class="toggle-group">
                         <span class="toggle-label">📚 離子庫</span>
@@ -1495,14 +1918,91 @@
                     </div>
                 </div>
 
+                <!-- Tab 5: 電子圖練習（最終修正版） -->
+                <div class="tab-content" id="tabContent5">
+                    <div class="hint-row" id="hintRow5">
+                        <span class="highlight">💡 點擊數字或圖片選擇，選 1 會自動隱藏</span>
+                    </div>
+                    
+                    <div class="elec-container">
+                        <!-- 題目區 -->
+                        <div class="elec-question-area">
+                            <div class="elec-q-label" id="elecQLabel">📌 請組合出以下離子化合物的電子圖</div>
+                            <div class="elec-q-name">
+                                <span class="elec-name-first" id="elecNameFirst">氯化鈉</span>
+                                <span class="elec-name-second" id="elecNameSecond">Sodium Chloride</span>
+                            </div>
+                            <div class="elec-q-hint" id="elecHintText">💡 只顯示最外層電子</div>
+                        </div>
+
+                        <!-- 答題區 -->
+                        <div class="elec-answer-row" id="elecAnswerRow">
+                            <!-- 正離子數量 -->
+                            <div class="elec-slot count-slot">
+                                <div class="elec-count-wrapper" id="cationCountWrapper">
+                                    <span class="count-number" id="cationCountDisplay">1</span>
+                                </div>
+                                <div class="elec-count-hint visible" id="cationHint">'1' 毋須顯示</div>
+                            </div>
+                            <!-- 正離子圖片 -->
+                            <div class="elec-slot image-slot">
+                                <div class="elec-selector-box color-red" id="cationImgBox">
+                                    <span class="placeholder" id="cationPlaceholder">選<br>正離子</span>
+                                </div>
+                            </div>
+                            <!-- 負離子數量 -->
+                            <div class="elec-slot count-slot">
+                                <div class="elec-count-wrapper" id="anionCountWrapper">
+                                    <span class="count-number" id="anionCountDisplay">1</span>
+                                </div>
+                                <div class="elec-count-hint visible" id="anionHint">'1' 毋須顯示</div>
+                            </div>
+                            <!-- 負離子圖片 -->
+                            <div class="elec-slot image-slot">
+                                <div class="elec-selector-box color-blue" id="anionImgBox">
+                                    <span class="placeholder" id="anionPlaceholder">選<br>負離子</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 電荷顯示 -->
+                        <div class="elec-charge-display" id="elecChargeDisplay">
+                            <span>⚡ 請選擇離子</span>
+                        </div>
+
+                        <!-- 回饋區 -->
+                        <div class="feedback-area" id="feedback5" style="min-height:34px; padding:4px 12px; font-size:0.85rem; margin-top:4px;">
+                            <span class="fb-icon">✏️</span>
+                            <span class="fb-text" id="fbText5">選擇離子開始練習</span>
+                            <span class="fb-detail" id="fbDetail5"></span>
+                        </div>
+                        <div id="answerReveal5"></div>
+
+                        <!-- 按鈕列（獨立，手機版會自動適應） -->
+                        <div class="elec-btn-row">
+                            <button class="btn btn-check check-btn" data-tab="5">✔ 檢查</button>
+                            <button class="btn btn-next next-btn" data-tab="5" disabled>🎲 下一題</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
 
+    <!-- ===== Modal：電子圖選擇器 ===== -->
+    <div class="elec-modal-overlay" id="elecModal">
+        <div class="elec-modal-box">
+            <div class="elec-modal-header">
+                <h2 id="elecModalTitle">請選擇</h2>
+                <button class="elec-modal-close" id="elecModalClose">✕</button>
+            </div>
+            <div class="elec-modal-body" id="elecModalBody"></div>
+        </div>
     </div>
 
     <script>
         // ============================================================
-        //  完整 JavaScript
+        //  完整 JavaScript（最終修正版）
         // ============================================================
         (function() {
             // ---- 離子資料庫 ----
@@ -1754,6 +2254,30 @@
             const EXCLUDED_SOL = new Set(['Na2O', 'K2O', 'CaO', 'BaO', 'MgO', 'NaH', 'KH', 'CaH2', 'BaH2', 'MgH2', 'AlH3']);
             const COMPOUNDS_SOL = COMPOUNDS_FULL.filter(c => !EXCLUDED_SOL.has(c.formula));
 
+            // ---- 電子圖專用離子資料庫（英式拼寫） ----
+            const ELEC_IMAGE_BASE = 'https://raw.githubusercontent.com/hderys/chemistry_kit/main/ions/';
+            const ELEC_CATIONS = [
+                { id: 'Li', symbol: 'Li', charge: 1, label_zh: '鋰', label_en: 'lithium', img: 'Li.webp' },
+                { id: 'Be2', symbol: 'Be', charge: 2, label_zh: '鈹', label_en: 'beryllium', img: 'Be2.webp' },
+                { id: 'Na', symbol: 'Na', charge: 1, label_zh: '鈉', label_en: 'sodium', img: 'Na.webp' },
+                { id: 'Mg2', symbol: 'Mg', charge: 2, label_zh: '鎂', label_en: 'magnesium', img: 'Mg2.webp' },
+                { id: 'Al3', symbol: 'Al', charge: 3, label_zh: '鋁', label_en: 'aluminium', img: 'Al3.webp' },
+                { id: 'K', symbol: 'K', charge: 1, label_zh: '鉀', label_en: 'potassium', img: 'K.webp' },
+                { id: 'Ca2', symbol: 'Ca', charge: 2, label_zh: '鈣', label_en: 'calcium', img: 'Ca2.webp' },
+                { id: 'Ba2', symbol: 'Ba', charge: 2, label_zh: '鋇', label_en: 'barium', img: 'Ba2.webp' },
+            ];
+            const ELEC_ANIONS = [
+                { id: 'H', symbol: 'H', charge: -1, label_zh: '氫', label_en: 'hydrogen', img: 'H.webp' },
+                { id: 'N3', symbol: 'N', charge: -3, label_zh: '氮', label_en: 'nitrogen', img: 'N3.webp' },
+                { id: 'O2', symbol: 'O', charge: -2, label_zh: '氧', label_en: 'oxygen', img: 'O2.webp' },
+                { id: 'F', symbol: 'F', charge: -1, label_zh: '氟', label_en: 'fluorine', img: 'F.webp' },
+                { id: 'P3', symbol: 'P', charge: -3, label_zh: '磷', label_en: 'phosphorus', img: 'P3.webp' },
+                { id: 'S2', symbol: 'S', charge: -2, label_zh: '硫', label_en: 'sulphur', img: 'S2.webp' },
+                { id: 'Cl', symbol: 'Cl', charge: -1, label_zh: '氯', label_en: 'chlorine', img: 'Cl.webp' },
+                { id: 'Br', symbol: 'Br', charge: -1, label_zh: '溴', label_en: 'bromine', img: 'Br.webp' },
+                { id: 'I', symbol: 'I', charge: -1, label_zh: '碘', label_en: 'iodine', img: 'I.webp' },
+            ];
+
             let currentLang = 'en';
             let currentTab = 0;
             let currentIonDb = 'core';
@@ -1779,6 +2303,16 @@
             let correctAttempts = 0;
             let colorEnabled = false;
 
+            // ---- 電子圖狀態 ----
+            let elecSelectedCation = null;
+            let elecSelectedAnion = null;
+            let elecSelectedCationCount = 1;
+            let elecSelectedAnionCount = 1;
+            let elecCurrentQuestion = null;
+            let elecQuestionPool = [];
+            let elecIsAnsweredCorrectly = false;
+
+            // ---- DOM 參考（原有） ----
             const welcomeScreen = document.getElementById('welcomeScreen');
             const mainCard = document.getElementById('mainCard');
             const welcomeZh = document.getElementById('welcomeZh');
@@ -1790,21 +2324,24 @@
                 1: document.getElementById('feedback1'),
                 2: document.getElementById('feedback2'),
                 3: document.getElementById('feedback3'),
-                4: document.getElementById('feedback4')
+                4: document.getElementById('feedback4'),
+                5: document.getElementById('feedback5')
             };
             const answerReveals = {
                 0: document.getElementById('answerReveal0'),
                 1: document.getElementById('answerReveal1'),
                 2: document.getElementById('answerReveal2'),
                 3: document.getElementById('answerReveal3'),
-                4: document.getElementById('answerReveal4')
+                4: document.getElementById('answerReveal4'),
+                5: document.getElementById('answerReveal5')
             };
             const nextBtns = {
                 0: document.querySelector('.next-btn[data-tab="0"]'),
                 1: document.querySelector('.next-btn[data-tab="1"]'),
                 2: document.querySelector('.next-btn[data-tab="2"]'),
                 3: document.querySelector('.next-btn[data-tab="3"]'),
-                4: document.querySelector('.next-btn[data-tab="4"]')
+                4: document.querySelector('.next-btn[data-tab="4"]'),
+                5: document.querySelector('.next-btn[data-tab="5"]')
             };
 
             const hintRows = {
@@ -1812,7 +2349,8 @@
                 1: document.getElementById('hintRow1'),
                 2: document.getElementById('hintRow2'),
                 3: document.getElementById('hintRow3'),
-                4: document.getElementById('hintRow4')
+                4: document.getElementById('hintRow4'),
+                5: document.getElementById('hintRow5')
             };
 
             const colorArea = document.getElementById('colorArea');
@@ -1854,9 +2392,35 @@
             const colourInput = document.getElementById('colourInput');
             const btnColourless = document.getElementById('btnColourless');
 
+            // ---- 電子圖 DOM ----
+            const cationImgBox = document.getElementById('cationImgBox');
+            const anionImgBox = document.getElementById('anionImgBox');
+            const cationPlaceholder = document.getElementById('cationPlaceholder');
+            const anionPlaceholder = document.getElementById('anionPlaceholder');
+            const cationCountDisplay = document.getElementById('cationCountDisplay');
+            const anionCountDisplay = document.getElementById('anionCountDisplay');
+            const cationCountWrapper = document.getElementById('cationCountWrapper');
+            const anionCountWrapper = document.getElementById('anionCountWrapper');
+            const cationHint = document.getElementById('cationHint');
+            const anionHint = document.getElementById('anionHint');
+            const elecChargeDisplay = document.getElementById('elecChargeDisplay');
+            const fbText5 = document.getElementById('fbText5');
+            const fbDetail5 = document.getElementById('fbDetail5');
+            const elecNameFirst = document.getElementById('elecNameFirst');
+            const elecNameSecond = document.getElementById('elecNameSecond');
+            const elecHintText = document.getElementById('elecHintText');
+            const elecQLabel = document.getElementById('elecQLabel');
+            const elecModal = document.getElementById('elecModal');
+            const elecModalTitle = document.getElementById('elecModalTitle');
+            const elecModalBody = document.getElementById('elecModalBody');
+            const elecModalClose = document.getElementById('elecModalClose');
+
             const tabBtns = document.querySelectorAll('.tab-btn');
             const tabContents = document.querySelectorAll('.tab-content');
 
+            // ============================================================
+            //  工具函數
+            // ============================================================
             function getSuffix() { return currentLang === 'zh' ? '離子' : 'ion'; }
 
             function getDisplaySuffix() { return currentLang === 'zh' ? '離子' : ' ion'; }
@@ -1944,9 +2508,11 @@
             }
 
             function getTabLabel(tabIndex) {
-                const zh = ['📝 名稱 → 符號', '🔤 符號 → 名稱', '📝 名稱 → 化學式', '🔄 化學式 → 名稱', '🎨 溶解度與顏色'];
+                const zh = ['📝 名稱 → 符號', '🔤 符號 → 名稱', '📝 名稱 → 化學式', '🔄 化學式 → 名稱', '🎨 溶解度與顏色',
+                    '⚛️ 電子圖練習'
+                ];
                 const en = ['📝 Name → Symbol', '🔤 Symbol → Name', '📝 Name → Formula', '🔄 Formula → Name',
-                    '🎨 Solubility'
+                    '🎨 Solubility', '⚛️ Electron Diagram'
                 ];
                 return currentLang === 'zh' ? zh[tabIndex] : en[tabIndex];
             }
@@ -1962,13 +2528,9 @@
                 const nextLabel = getNextLabel();
                 document.querySelectorAll('.check-btn').forEach(b => b.textContent = checkLabel);
                 document.querySelectorAll('.next-btn').forEach(b => b.textContent = nextLabel);
-                // 更新「填寫顏色」文字（保留圖示，只改文字）
                 const colorToggleLabel = document.querySelector('.color-toggle');
                 if (colorToggleLabel) {
-                    // 保留 checkbox 和圖示，只更新文字節點
                     const checkbox = colorToggleLabel.querySelector('input[type="checkbox"]');
-                    const iconSpan = colorToggleLabel.querySelector('.color-icon');
-                    // 清除文字節點，重新加入
                     const textNodes = [];
                     const children = colorToggleLabel.childNodes;
                     for (let i = children.length - 1; i >= 0; i--) {
@@ -1976,7 +2538,6 @@
                             colorToggleLabel.removeChild(children[i]);
                         }
                     }
-                    // 在 checkbox 後面插入文字
                     const textNode = document.createTextNode(' ' + getColorToggleLabel());
                     if (checkbox) {
                         checkbox.parentNode.insertBefore(textNode, checkbox.nextSibling);
@@ -2006,9 +2567,24 @@
                 fb.className = 'feedback-area';
                 if (isCorrect === true) fb.classList.remove('error');
                 else if (isCorrect === false) fb.classList.add('error');
-                fb.querySelector('.fb-icon').textContent = icon;
-                fb.querySelector('.fb-text').textContent = text;
-                fb.querySelector('.fb-detail').textContent = detail || '';
+                const iconEl = fb.querySelector('.fb-icon');
+                const textEl = fb.querySelector('.fb-text');
+                const detailEl = fb.querySelector('.fb-detail');
+                if (iconEl) iconEl.textContent = icon;
+                if (textEl) textEl.textContent = text;
+                if (detailEl) detailEl.textContent = detail || '';
+            }
+
+            // ---- 電子圖專用 setFeedback（支援 HTML） ----
+            function setElecFeedback(icon, text, detail, type) {
+                const fb = document.getElementById('feedback5');
+                fb.className = 'feedback-area';
+                if (type === 'success') fb.classList.add('success');
+                else if (type === 'error') fb.classList.add('error');
+                fb.querySelector('.fb-icon').textContent = icon || '✏️';
+                fbText5.textContent = text || '';
+                // 用 innerHTML 塞入 detail，令 formula-big 可以生效
+                fbDetail5.innerHTML = detail || '';
             }
 
             function getHintText(tab) {
@@ -2020,6 +2596,8 @@
                     return '<span class="highlight">⚠️ 符號必須區分大小寫</span><span class="subscript-hint">｜請輸入完整名稱</span>';
                 } else if (tab === 4) {
                     return '<span class="highlight">💡 先選溶解度，再輸入顏色（如適用）</span>';
+                } else if (tab === 5) {
+                    return '<span class="highlight">💡 點擊數字或圖片選擇，選 1 會自動隱藏</span>';
                 }
                 return '';
             }
@@ -2057,6 +2635,9 @@
                     `${currentLang === 'zh' ? '共' : 'Total'} ${db.length} ${currentLang === 'zh' ? '個離子' : 'ions'}`;
             }
 
+            // ============================================================
+            //  Tab 0-4 原有功能
+            // ============================================================
             function pickRandomIon() {
                 const idx = Math.floor(Math.random() * ION_DB.length);
                 return { ...ION_DB[idx] };
@@ -2472,6 +3053,305 @@
                 updateButtonLabels();
             }
 
+            // ============================================================
+            //  Tab 5: 電子圖練習（最終修正版）
+            // ============================================================
+            function elecGcd(a, b) { a = Math.abs(a);
+                b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; }
+
+            function elecGetImageUrl(ion) { return ELEC_IMAGE_BASE + ion.img; }
+
+            function elecFormatSubscript(str) {
+                const map = { '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈',
+                    '9': '₉' };
+                return str.replace(/[0-9]/g, m => map[m] || m);
+            }
+
+            function elecGenerateQuestionPool() {
+                const pool = [];
+                const ideMap = {
+                    'hydrogen': 'hydride',
+                    'nitrogen': 'nitride',
+                    'oxygen': 'oxide',
+                    'fluorine': 'fluoride',
+                    'phosphorus': 'phosphide',
+                    'sulphur': 'sulphide',
+                    'chlorine': 'chloride',
+                    'bromine': 'bromide',
+                    'iodine': 'iodide'
+                };
+                for (const cation of ELEC_CATIONS) {
+                    for (const anion of ELEC_ANIONS) {
+                        const c = cation.charge,
+                            a = Math.abs(anion.charge);
+                        const lcm = (c * a) / elecGcd(c, a);
+                        const cc = lcm / c,
+                            ac = lcm / a;
+                        if (cc <= 3 && ac <= 3) {
+                            const anionNameEn = ideMap[anion.label_en] || anion.label_en;
+                            pool.push({
+                                cation,
+                                anion,
+                                cationCount: cc,
+                                anionCount: ac,
+                                formula: cation.symbol + (cc > 1 ? cc : '') + anion.symbol + (ac > 1 ? ac : ''),
+                                name_zh: anion.label_zh + '化' + cation.label_zh,
+                                name_en: cation.label_en + ' ' + anionNameEn,
+                            });
+                        }
+                    }
+                }
+                return pool;
+            }
+
+            function elecShowModal(options, title, callback) {
+                elecModalTitle.textContent = title;
+                elecModalBody.innerHTML = '';
+                options.forEach((opt, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'elec-modal-option';
+                    if (opt.img) {
+                        const img = document.createElement('img');
+                        img.src = opt.img;
+                        img.alt = '';
+                        img.loading = 'lazy';
+                        div.appendChild(img);
+                    } else {
+                        div.textContent = opt.label;
+                    }
+                    div.addEventListener('click', () => {
+                        elecModal.classList.remove('active');
+                        callback(index);
+                    });
+                    elecModalBody.appendChild(div);
+                });
+                elecModal.classList.add('active');
+            }
+
+            function elecLoadQuestion() {
+                if (elecQuestionPool.length === 0) elecQuestionPool = elecGenerateQuestionPool();
+                const idx = Math.floor(Math.random() * elecQuestionPool.length);
+                elecCurrentQuestion = elecQuestionPool[idx];
+                elecQuestionPool.splice(idx, 1);
+                if (elecQuestionPool.length === 0) elecQuestionPool = elecGenerateQuestionPool();
+
+                elecUpdateNameDisplay();
+
+                elecSelectedCation = null;
+                elecSelectedAnion = null;
+                elecSelectedCationCount = 1;
+                elecSelectedAnionCount = 1;
+                elecIsAnsweredCorrectly = false;
+
+                cationImgBox.innerHTML = `<span class="placeholder" id="cationPlaceholder">${
+                    currentLang === 'zh' ? '選\n正離子' : 'Choose the\ncation'
+                }</span>`;
+                cationImgBox.className = 'elec-selector-box color-red';
+                anionImgBox.innerHTML = `<span class="placeholder" id="anionPlaceholder">${
+                    currentLang === 'zh' ? '選\n負離子' : 'Choose the\nanion'
+                }</span>`;
+                anionImgBox.className = 'elec-selector-box color-blue';
+
+                cationCountDisplay.textContent = '1';
+                cationCountDisplay.className = 'count-number hidden';
+                cationCountWrapper.className = 'elec-count-wrapper';
+                anionCountDisplay.textContent = '1';
+                anionCountDisplay.className = 'count-number hidden';
+                anionCountWrapper.className = 'elec-count-wrapper';
+
+                cationHint.classList.add('visible');
+                anionHint.classList.add('visible');
+
+                getNextBtn(5).disabled = true;
+                setElecFeedback('✏️', currentLang === 'zh' ? '選擇離子開始練習' : 'Select ions to start', '', null);
+                elecUpdateChargeAndFormula();
+                updateButtonLabels();
+                elecUpdateUI();
+            }
+
+            function elecUpdateNameDisplay() {
+                if (!elecCurrentQuestion) return;
+                if (currentLang === 'zh') {
+                    elecNameFirst.textContent = elecCurrentQuestion.name_zh;
+                    elecNameSecond.textContent = elecCurrentQuestion.name_en;
+                } else {
+                    elecNameFirst.textContent = elecCurrentQuestion.name_en;
+                    elecNameSecond.textContent = elecCurrentQuestion.name_zh;
+                }
+            }
+
+            function elecUpdateUI() {
+                // 更新電子圖專用文字
+                elecQLabel.textContent = currentLang === 'zh' ? '📌 請組合出以下離子化合物的電子圖' :
+                    '📌 Combine the electron diagram for:';
+                elecHintText.textContent = currentLang === 'zh' ? '💡 只顯示最外層電子' :
+                    '💡 Show outermost shell electrons only';
+                cationHint.textContent = currentLang === 'zh' ? "'1' 毋須顯示" : "'1' is hidden";
+                anionHint.textContent = currentLang === 'zh' ? "'1' 毋須顯示" : "'1' is hidden";
+                if (!elecSelectedCation) {
+                    cationPlaceholder.textContent = currentLang === 'zh' ? '選\n正離子' : 'Choose the\ncation';
+                }
+                if (!elecSelectedAnion) {
+                    anionPlaceholder.textContent = currentLang === 'zh' ? '選\n負離子' : 'Choose the\nanion';
+                }
+                elecUpdateNameDisplay();
+                elecUpdateChargeAndFormula();
+            }
+
+            function elecUpdateChargeAndFormula() {
+                cationCountDisplay.textContent = elecSelectedCationCount;
+                anionCountDisplay.textContent = elecSelectedAnionCount;
+
+                if (elecSelectedCationCount === 1) {
+                    cationCountDisplay.classList.add('hidden');
+                    cationHint.classList.add('visible');
+                } else {
+                    cationCountDisplay.classList.remove('hidden');
+                    cationHint.classList.remove('visible');
+                }
+
+                if (elecSelectedAnionCount === 1) {
+                    anionCountDisplay.classList.add('hidden');
+                    anionHint.classList.add('visible');
+                } else {
+                    anionCountDisplay.classList.remove('hidden');
+                    anionHint.classList.remove('visible');
+                }
+
+                if (!elecSelectedCation || !elecSelectedAnion) {
+                    elecChargeDisplay.className = 'elec-charge-display';
+                    elecChargeDisplay.innerHTML = currentLang === 'zh' ? '⚡ 請選擇完整的離子組合' :
+                        '⚡ Please select a complete ion combination';
+                    return;
+                }
+
+                const total = (elecSelectedCationCount * elecSelectedCation.charge) + (elecSelectedAnionCount * elecSelectedAnion
+                    .charge);
+                let cationStr = elecSelectedCationCount > 1 ? elecSelectedCationCount + ' × ' : '';
+                cationStr += elecSelectedCation.charge > 0 ? '+' + elecSelectedCation.charge : elecSelectedCation.charge;
+                let anionStr = elecSelectedAnionCount > 1 ? elecSelectedAnionCount + ' × ' : '';
+                anionStr += elecSelectedAnion.charge;
+
+                let html = `${cationStr} + ${anionStr} = `;
+                if (total === 0) {
+                    html += `<span class="green">0</span> ${currentLang === 'zh' ? '✅ 電荷守恆' : '✅ Charge balanced'}`;
+                    elecChargeDisplay.className = 'elec-charge-display balanced';
+                } else {
+                    html +=
+                        `<span class="red">${total >= 0 ? '+' : ''}${total}</span> ${currentLang === 'zh' ? '⚠️ 不平衡' : '⚠️ Unbalanced'}`;
+                    elecChargeDisplay.className = 'elec-charge-display unbalanced';
+                }
+                elecChargeDisplay.innerHTML = '⚡ ' + html;
+            }
+
+            function elecShowIonSelector(type) {
+                const ions = type === 'cation' ? ELEC_CATIONS : ELEC_ANIONS;
+                const title = type === 'cation' ?
+                    (currentLang === 'zh' ? '選擇正離子' : 'Select Cation') :
+                    (currentLang === 'zh' ? '選擇負離子' : 'Select Anion');
+                const options = ions.map(ion => ({ img: elecGetImageUrl(ion) }));
+                elecShowModal(options, title, (index) => {
+                    const ion = ions[index];
+                    if (type === 'cation') {
+                        elecSelectedCation = ion;
+                        cationImgBox.innerHTML = '';
+                        cationImgBox.className = 'elec-selector-box has-image';
+                        const img = document.createElement('img');
+                        img.src = elecGetImageUrl(ion);
+                        img.alt = '';
+                        img.loading = 'lazy';
+                        cationImgBox.appendChild(img);
+                    } else {
+                        elecSelectedAnion = ion;
+                        anionImgBox.innerHTML = '';
+                        anionImgBox.className = 'elec-selector-box has-image';
+                        const img = document.createElement('img');
+                        img.src = elecGetImageUrl(ion);
+                        img.alt = '';
+                        img.loading = 'lazy';
+                        anionImgBox.appendChild(img);
+                    }
+                    elecIsAnsweredCorrectly = false;
+                    getNextBtn(5).disabled = true;
+                    setElecFeedback('✏️', currentLang === 'zh' ? '已選擇，繼續調整或檢查' : 'Selected, adjust or check', '', null);
+                    elecUpdateChargeAndFormula();
+                    updateButtonLabels();
+                });
+            }
+
+            function elecShowCountSelector(type) {
+                const title = currentLang === 'zh' ? '選擇數量 (1-3)' : 'Select count (1-3)';
+                const options = [1, 2, 3].map(n => ({ label: n }));
+                elecShowModal(options, title, (index) => {
+                    const val = index + 1;
+                    if (type === 'cation') {
+                        elecSelectedCationCount = val;
+                        cationCountDisplay.textContent = val;
+                        cationCountWrapper.className = 'elec-count-wrapper has-value';
+                    } else {
+                        elecSelectedAnionCount = val;
+                        anionCountDisplay.textContent = val;
+                        anionCountWrapper.className = 'elec-count-wrapper has-value';
+                    }
+                    elecIsAnsweredCorrectly = false;
+                    getNextBtn(5).disabled = true;
+                    setElecFeedback('✏️', currentLang === 'zh' ? '已調整數量' : 'Count adjusted', '', null);
+                    elecUpdateChargeAndFormula();
+                    updateButtonLabels();
+                });
+            }
+
+            function elecCheckAnswer() {
+                if (!elecSelectedCation || !elecSelectedAnion) {
+                    setElecFeedback('⚠️', currentLang === 'zh' ? '請選擇完整的離子組合' : 'Please select a complete ion combination',
+                        '', 'error');
+                    return;
+                }
+                if (elecIsAnsweredCorrectly) {
+                    setElecFeedback('✅', currentLang === 'zh' ? '已答對，請點「下一題」' : 'Correct! Click "Next"', '', 'success');
+                    return;
+                }
+
+                const total = (elecSelectedCationCount * elecSelectedCation.charge) + (elecSelectedAnionCount * elecSelectedAnion
+                    .charge);
+                if (total !== 0) {
+                    setElecFeedback('❌', currentLang === 'zh' ? '電荷不平衡！' : 'Charge imbalance!',
+                        `${currentLang === 'zh' ? '總電荷為' : 'Total charge is'} ${total >= 0 ? '+' : ''}${total}`,
+                        'error');
+                    return;
+                }
+
+                const g = elecGcd(elecSelectedCationCount, elecSelectedAnionCount);
+                if (g > 1) {
+                    setElecFeedback('⚠️', currentLang === 'zh' ? '不是最簡比！' : 'Not in simplest ratio!',
+                        `${currentLang === 'zh' ? '可約分為' : 'Can be reduced to'} ${elecSelectedCationCount/g} : ${elecSelectedAnionCount/g}`,
+                        'error');
+                    return;
+                }
+
+                const q = elecCurrentQuestion;
+                const correct = elecSelectedCation.id === q.cation.id && elecSelectedAnion.id === q.anion.id &&
+                    elecSelectedCationCount === q.cationCount && elecSelectedAnionCount === q.anionCount;
+                if (correct) {
+                    elecIsAnsweredCorrectly = true;
+                    getNextBtn(5).disabled = false;
+                    const formattedFormula = elecFormatSubscript(q.formula);
+                    // 使用 innerHTML 讓 formula-big 生效
+                    const detail = `${currentLang === 'zh' ? '你組合出 ' : 'You formed '}<span class="formula-big">${formattedFormula}</span>`;
+                    setElecFeedback('✅', currentLang === 'zh' ? '完全正確！🎉' : 'Perfect! 🎉', detail, 'success');
+                } else {
+                    const formattedFormula = elecFormatSubscript(q.formula);
+                    const name = currentLang === 'zh' ? q.name_zh : q.name_en;
+                    const detail =
+                        `${currentLang === 'zh' ? '題目要求 ' : 'Expected '}<span class="formula-big">${formattedFormula}</span>（${name}）`;
+                    setElecFeedback('❌', currentLang === 'zh' ? '組合不正確' : 'Incorrect combination', detail, 'error');
+                }
+                updateButtonLabels();
+            }
+
+            // ============================================================
+            //  頁籤切換與初始化
+            // ============================================================
             function switchTab(tabIndex) {
                 currentTab = tabIndex;
                 for (let i = 0; i < tabBtns.length; i++) {
@@ -2480,6 +3360,8 @@
                 }
 
                 let isIonTab = (tabIndex === 0 || tabIndex === 1);
+                let isElecTab = (tabIndex === 5);
+
                 if (isIonTab) {
                     toggleRowIon.style.display = 'flex';
                 } else {
@@ -2503,6 +3385,10 @@
                     loadCompoundQuestion3();
                 } else if (tabIndex === 4) {
                     loadSolQuestion();
+                } else if (tabIndex === 5) {
+                    if (elecQuestionPool.length === 0) elecQuestionPool = elecGenerateQuestionPool();
+                    elecLoadQuestion();
+                    toggleRowIon.style.display = 'none';
                 }
             }
 
@@ -2512,14 +3398,24 @@
                 for (let i = 0; i < btns.length; i++) {
                     btns[i].classList.toggle('active', btns[i].dataset.lang === lang);
                 }
+
                 updateTabLabels();
                 updateButtonLabels();
+
                 if (currentTab === 0 || currentTab === 1) loadIonQuestion();
                 else if (currentTab === 2) loadCompoundQuestion2();
                 else if (currentTab === 3) loadCompoundQuestion3();
                 else if (currentTab === 4) loadSolQuestion();
+                else if (currentTab === 5) {
+                    elecUpdateUI();
+                    if (!elecSelectedCation && !elecSelectedAnion) {
+                        setElecFeedback('✏️', lang === 'zh' ? '選擇離子開始練習' : 'Select ions to start', '', null);
+                    } else if (elecSelectedCation && elecSelectedAnion && !elecIsAnsweredCorrectly) {
+                        setElecFeedback('✏️', lang === 'zh' ? '已選擇，繼續調整或檢查' : 'Selected, adjust or check', '', null);
+                    }
+                }
                 if (refModal.classList.contains('active')) renderModalTable();
-                if (currentTab !== 4) {
+                if (currentTab !== 4 && currentTab !== 5) {
                     getHintRow(currentTab).innerHTML = getHintText(currentTab);
                 }
             }
@@ -2550,6 +3446,8 @@
                 }
                 modalChargeFilter.value = 'all';
 
+                elecQuestionPool = elecGenerateQuestionPool();
+
                 updateTabLabels();
                 updateButtonLabels();
                 switchTab(0);
@@ -2561,7 +3459,6 @@
                 coreToggle.classList.toggle('active', dbType === 'core');
                 extraToggle.classList.toggle('active', dbType === 'extra');
 
-                // 不影響對照表的獨立切換
                 if (currentTab === 0 || currentTab === 1) loadIonQuestion();
             }
 
@@ -2572,17 +3469,17 @@
                 renderModalTable();
             }
 
-            // ---- 歡迎畫面 ----
+            // ============================================================
+            //  事件綁定
+            // ============================================================
             welcomeZh.addEventListener('click', function() { initApp('zh'); });
             welcomeEn.addEventListener('click', function() { initApp('en'); });
 
-            // ---- 語言切換 ----
             let langBtns = document.querySelectorAll('.lang-btn');
             for (let i = 0; i < langBtns.length; i++) {
                 langBtns[i].addEventListener('click', function() { setLanguage(this.dataset.lang); });
             }
 
-            // ---- 頁籤切換 ----
             for (let i = 0; i < tabBtns.length; i++) {
                 (function(index) {
                     tabBtns[index].addEventListener('click', function() {
@@ -2591,11 +3488,9 @@
                 })(i);
             }
 
-            // ---- 離子庫切換 (主畫面) ----
             coreToggle.addEventListener('click', function() { if (currentIonDb !== 'core') switchDb('core'); });
             extraToggle.addEventListener('click', function() { if (currentIonDb !== 'extra') switchDb('extra'); });
 
-            // ---- Modal 對照表 ----
             btnOpenRef.addEventListener('click', function() {
                 refModal.classList.add('active');
                 renderModalTable();
@@ -2622,6 +3517,7 @@
                     else if (tab === 2) checkCompound2();
                     else if (tab === 3) checkCompound3();
                     else if (tab === 4) checkSolAnswer();
+                    else if (tab === 5) elecCheckAnswer();
                 }
 
                 const nextBtn = e.target.closest('.next-btn');
@@ -2631,6 +3527,7 @@
                     else if (tab === 2) loadCompoundQuestion2();
                     else if (tab === 3) loadCompoundQuestion3();
                     else if (tab === 4) loadSolQuestion();
+                    else if (tab === 5) elecLoadQuestion();
                 }
             });
 
@@ -2699,7 +3596,26 @@
                 });
             }
 
+            // ---- 電子圖事件 ----
+            cationImgBox.addEventListener('click', () => {
+                if (!elecIsAnsweredCorrectly) elecShowIonSelector('cation');
+            });
+            anionImgBox.addEventListener('click', () => {
+                if (!elecIsAnsweredCorrectly) elecShowIonSelector('anion');
+            });
+            cationCountWrapper.addEventListener('click', () => {
+                if (!elecIsAnsweredCorrectly) elecShowCountSelector('cation');
+            });
+            anionCountWrapper.addEventListener('click', () => {
+                if (!elecIsAnsweredCorrectly) elecShowCountSelector('anion');
+            });
+            elecModalClose.addEventListener('click', () => elecModal.classList.remove('active'));
+            elecModal.addEventListener('click', (e) => {
+                if (e.target === elecModal) elecModal.classList.remove('active');
+            });
+
             console.log('🧪 離子與化合物練習已啟動！');
+            console.log('✅ 電子圖練習已整合（最終修正版）！');
         })();
     </script>
 </body>
