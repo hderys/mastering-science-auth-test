@@ -5,389 +5,143 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>🧪 離子與化合物 · DSE 化學</title>
     <style>
-        /* ===== 全部樣式 ===== */
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, system-ui, sans-serif; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; }
         body {
             background: linear-gradient(145deg, #f3edff 0%, #d5c8e8 100%);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 10px;
-            padding-top: 10px;
+            display: flex; justify-content: center; align-items: flex-start;
+            padding: 10px; padding-top: 10px;
         }
-
-        /* ===== 歡迎畫面 ===== */
         .welcome-screen {
-            max-width: 580px;
-            width: 100%;
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(12px);
-            border-radius: 64px;
-            padding: 48px 36px;
-            text-align: center;
-            box-shadow: 0 30px 60px rgba(80,40,120,0.2);
-            border: 1px solid rgba(255,255,255,0.5);
-            margin-top: 0;
+            max-width: 580px; width: 100%; background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(12px); border-radius: 64px; padding: 48px 36px;
+            text-align: center; box-shadow: 0 30px 60px rgba(80,40,120,0.2);
+            border: 1px solid rgba(255,255,255,0.5); margin-top: 0;
         }
         .welcome-screen.hidden { display: none; }
         .welcome-screen .icon { font-size: 3.6rem; margin-bottom: 6px; }
         .welcome-screen h1 { font-size: 2.2rem; font-weight: 700; color: #4a2a6a; margin-bottom: 4px; }
         .welcome-screen .sub { color: #7a5a9a; font-size: 1.05rem; margin-bottom: 28px; }
         .welcome-screen .stats-badge {
-            display: inline-block;
-            background: #eaf0f8;
-            padding: 4px 20px;
-            border-radius: 40px;
-            font-size: 0.9rem;
-            color: #4a2a6a;
-            margin-bottom: 30px;
+            display: inline-block; background: #eaf0f8; padding: 4px 20px;
+            border-radius: 40px; font-size: 0.9rem; color: #4a2a6a; margin-bottom: 30px;
         }
-        .lang-selector {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+        .lang-selector { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
         .lang-selector button {
-            border: none;
-            padding: 16px 44px;
-            border-radius: 60px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.25s;
-            background: white;
-            color: #4a2a6a;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-            border: 2px solid #d9c8e8;
-            flex: 1 1 auto;
-            min-width: 140px;
+            border: none; padding: 16px 44px; border-radius: 60px; font-size: 1.2rem;
+            font-weight: 600; cursor: pointer; transition: 0.25s; background: white;
+            color: #4a2a6a; box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border: 2px solid #d9c8e8; flex: 1 1 auto; min-width: 140px;
         }
-        .lang-selector button:hover {
-            transform: scale(1.02);
-            border-color: #7a4a9a;
-            background: #f5effa;
-        }
+        .lang-selector button:hover { transform: scale(1.02); border-color: #7a4a9a; background: #f5effa; }
 
-        /* ===== 主卡片 ===== */
         .card {
-            max-width: 950px;
-            width: 100%;
-            height: auto;
-            max-height: 95vh;
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 40px;
-            box-shadow: 0 20px 40px rgba(80,40,120,0.15), 0 4px 12px rgba(0,0,0,0.05);
-            padding: 0.6rem 1.2rem;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid rgba(180,120,220,0.2);
-            margin-top: 0;
+            max-width: 950px; width: 100%; height: auto; max-height: 95vh;
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);
+            border-radius: 40px; box-shadow: 0 20px 40px rgba(80,40,120,0.15), 0 4px 12px rgba(0,0,0,0.05);
+            padding: 0.6rem 1.2rem; display: none; flex-direction: column;
+            overflow: hidden; border: 1px solid rgba(180,120,220,0.2); margin-top: 0;
         }
         .card.active { display: flex; }
 
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-            margin-bottom: 6px;
-            gap: 6px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; margin-bottom: 6px; gap: 6px;
         }
-        .header h1 {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #4a2a6a;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-            flex-shrink: 0;
-        }
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-        }
+        .header h1 { font-size: 1rem; font-weight: 700; color: #4a2a6a; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }
+        .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
         .btn-ref {
-            background: #6bcb77;
-            color: white;
-            border: none;
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.15s;
-            white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(107,203,119,0.3);
+            background: #6bcb77; color: white; border: none; padding: 4px 12px;
+            border-radius: 30px; font-size: 0.65rem; font-weight: 700; cursor: pointer;
+            transition: 0.15s; white-space: nowrap; box-shadow: 0 2px 8px rgba(107,203,119,0.3);
         }
-        .btn-ref:hover {
-            background: #5ab868;
-            transform: scale(1.02);
-        }
+        .btn-ref:hover { background: #5ab868; transform: scale(1.02); }
         .lang-toggle {
-            display: flex;
-            gap: 3px;
-            background: white;
-            padding: 2px;
-            border-radius: 30px;
-            flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            display: flex; gap: 3px; background: white; padding: 2px;
+            border-radius: 30px; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
         .lang-btn {
-            padding: 3px 12px;
-            border: none;
-            border-radius: 30px;
-            font-size: 0.6rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.15s;
-            background: transparent;
-            color: #7a5a9a;
+            padding: 3px 12px; border: none; border-radius: 30px; font-size: 0.6rem;
+            font-weight: 700; cursor: pointer; transition: 0.15s;
+            background: transparent; color: #7a5a9a;
         }
-        .lang-btn.active {
-            background: #7a4a9a;
-            color: white;
-            box-shadow: 0 2px 8px rgba(120,60,160,0.3);
-        }
-        .lang-btn:hover:not(.active) {
-            background: #f0e8f8;
-        }
+        .lang-btn.active { background: #7a4a9a; color: white; box-shadow: 0 2px 8px rgba(120,60,160,0.3); }
+        .lang-btn:hover:not(.active) { background: #f0e8f8; }
 
-        /* ===== Modal 彈窗（離子對照表） ===== */
+        /* ===== Modal 離子對照表 ===== */
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000;
+            justify-content: center; align-items: center; padding: 20px;
         }
         .modal-overlay.active { display: flex; }
         .modal-box {
-            background: white;
-            border-radius: 32px;
-            max-width: 700px;
-            width: 100%;
-            max-height: 85vh;
-            padding: 24px 28px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            position: relative;
+            background: white; border-radius: 32px; max-width: 700px; width: 100%;
+            max-height: 85vh; padding: 24px 28px; box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; position: relative;
         }
         .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-            gap: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
         }
         .modal-header h2 { font-size: 1.2rem; color: #4a2a6a; }
         .modal-close {
-            background: #f0e8f8;
-            border: none;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: #4a2a6a;
-            font-weight: 700;
-            transition: 0.15s;
+            background: #f0e8f8; border: none; border-radius: 50%; width: 36px; height: 36px;
+            font-size: 1.2rem; cursor: pointer; color: #4a2a6a; font-weight: 700; transition: 0.15s;
         }
         .modal-close:hover { background: #e0d0f0; }
-        .modal-body {
-            flex: 1;
-            overflow-y: auto;
-            min-height: 0;
-        }
-        .modal-body .ref-top-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 8px 12px;
-            margin-bottom: 10px;
-        }
-        .modal-body .ref-sort-group {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .modal-body .ref-sort-group label {
-            font-size: 0.55rem;
-            font-weight: 600;
-            color: #7a5a9a;
-        }
+        .modal-body { flex: 1; overflow-y: auto; min-height: 0; }
+        .modal-body .ref-top-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px; }
+        .modal-body .ref-sort-group { display: flex; align-items: center; gap: 4px; }
+        .modal-body .ref-sort-group label { font-size: 0.55rem; font-weight: 600; color: #7a5a9a; }
         .modal-body .ref-sort-group select {
-            padding: 3px 10px;
-            border: 1px solid #d0c0e0;
-            border-radius: 30px;
-            background: #f5f0fa;
-            font-size: 0.55rem;
-            font-weight: 600;
-            color: #4a2a6a;
-            outline: none;
-            cursor: pointer;
+            padding: 3px 10px; border: 1px solid #d0c0e0; border-radius: 30px;
+            background: #f5f0fa; font-size: 0.55rem; font-weight: 600; color: #4a2a6a;
+            outline: none; cursor: pointer;
         }
-        .modal-body .ref-db-toggle {
-            display: flex;
-            gap: 4px;
-            background: #f0e8f8;
-            padding: 3px;
-            border-radius: 30px;
-            flex-shrink: 0;
-        }
+        .modal-body .ref-db-toggle { display: flex; gap: 4px; background: #f0e8f8; padding: 3px; border-radius: 30px; flex-shrink: 0; }
         .modal-body .ref-db-btn {
-            padding: 3px 14px;
-            border: none;
-            border-radius: 30px;
-            font-size: 0.55rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.15s;
-            background: transparent;
-            color: #7a5a9a;
+            padding: 3px 14px; border: none; border-radius: 30px; font-size: 0.55rem;
+            font-weight: 700; cursor: pointer; transition: 0.15s;
+            background: transparent; color: #7a5a9a;
         }
-        .modal-body .ref-db-btn.active {
-            background: #7a4a9a;
-            color: white;
-            box-shadow: 0 2px 8px rgba(120,60,160,0.3);
-        }
-        .modal-body .ref-db-btn:hover:not(.active) {
-            background: #e0d0f0;
-        }
-        .modal-body .ref-count {
-            font-size: 0.6rem;
-            color: #8a6aaa;
-            font-weight: 500;
-            margin-left: auto;
-        }
+        .modal-body .ref-db-btn.active { background: #7a4a9a; color: white; box-shadow: 0 2px 8px rgba(120,60,160,0.3); }
+        .modal-body .ref-db-btn:hover:not(.active) { background: #e0d0f0; }
+        .modal-body .ref-count { font-size: 0.6rem; color: #8a6aaa; font-weight: 500; margin-left: auto; }
         .modal-body .reference-table-wrap {
-            border: 1px solid #e8e0f0;
-            border-radius: 12px;
-            overflow-y: auto;
-            max-height: 50vh;
+            border: 1px solid #e8e0f0; border-radius: 12px; overflow-y: auto; max-height: 50vh;
         }
-        .modal-body .reference-table-wrap::-webkit-scrollbar {
-            width: 4px;
-        }
-        .modal-body .reference-table-wrap::-webkit-scrollbar-thumb {
-            background: #c8b8d8;
-            border-radius: 10px;
-        }
-        .modal-body .reference-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.7rem;
-        }
-        .modal-body .reference-table thead {
-            position: sticky;
-            top: 0;
-            z-index: 5;
-        }
+        .modal-body .reference-table-wrap::-webkit-scrollbar { width: 4px; }
+        .modal-body .reference-table-wrap::-webkit-scrollbar-thumb { background: #c8b8d8; border-radius: 10px; }
+        .modal-body .reference-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+        .modal-body .reference-table thead { position: sticky; top: 0; z-index: 5; }
         .modal-body .reference-table th {
-            background: #7a4a9a;
-            color: white;
-            padding: 6px 10px;
-            text-align: left;
-            font-weight: 700;
-            font-size: 0.6rem;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
+            background: #7a4a9a; color: white; padding: 6px 10px; text-align: left;
+            font-weight: 700; font-size: 0.6rem; letter-spacing: 0.3px; white-space: nowrap;
         }
-        .modal-body .reference-table td {
-            padding: 5px 10px;
-            border-bottom: 1px solid #f0eaf5;
-            color: #2a1a3a;
-            vertical-align: middle;
-        }
+        .modal-body .reference-table td { padding: 5px 10px; border-bottom: 1px solid #f0eaf5; color: #2a1a3a; vertical-align: middle; }
         .modal-body .reference-table .color-dot {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            border: 1px solid #d0c0e0;
-            vertical-align: middle;
-            margin-right: 6px;
-            flex-shrink: 0;
+            display: inline-block; width: 16px; height: 16px; border-radius: 50%;
+            border: 1px solid #d0c0e0; vertical-align: middle; margin-right: 6px; flex-shrink: 0;
         }
-        .modal-body .reference-table .ion-symbol {
-            font-weight: 700;
-            color: #4a2a6a;
-            font-size: 0.8rem;
-            white-space: nowrap;
-        }
-        .modal-body .ref-empty {
-            text-align: center;
-            color: #8a6aaa;
-            padding: 30px 0;
-            font-size: 0.8rem;
-        }
+        .modal-body .reference-table .ion-symbol { font-weight: 700; color: #4a2a6a; font-size: 0.8rem; white-space: nowrap; }
+        .modal-body .ref-empty { text-align: center; color: #8a6aaa; padding: 30px 0; font-size: 0.8rem; }
 
         /* ===== 主內容區 ===== */
-        .main-content {
-            display: flex;
-            gap: 12px;
-            flex: 1;
-            min-height: 0;
-            overflow: hidden;
-        }
+        .main-content { display: flex; gap: 12px; flex: 1; min-height: 0; overflow: hidden; }
 
         .left-sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            flex: 0 0 auto;
-            min-width: 200px;
-            padding: 0 12px 0 0;
-            border-right: 2px solid #e8e0f0;
-            overflow-y: auto;
-            flex-shrink: 0;
+            display: flex; flex-direction: column; gap: 4px; flex: 0 0 auto;
+            min-width: 200px; padding: 0 12px 0 0; border-right: 2px solid #e8e0f0;
+            overflow-y: auto; flex-shrink: 0;
         }
-        .left-sidebar::-webkit-scrollbar {
-            width: 3px;
-        }
-        .left-sidebar::-webkit-scrollbar-thumb {
-            background: #c8b8d8;
-            border-radius: 10px;
-        }
+        .left-sidebar::-webkit-scrollbar { width: 3px; }
+        .left-sidebar::-webkit-scrollbar-thumb { background: #c8b8d8; border-radius: 10px; }
 
         .tab-btn {
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-            background: white;
-            color: #7a5a9a;
-            border: 2px solid #d0c0e0;
-            text-align: left;
-            min-height: 42px;
-            width: 100%;
-            white-space: nowrap;
+            padding: 6px 12px; border-radius: 12px; font-size: 0.9rem; font-weight: 700;
+            cursor: pointer; transition: 0.2s; background: white; color: #7a5a9a;
+            border: 2px solid #d0c0e0; text-align: left; min-height: 42px; width: 100%; white-space: nowrap;
         }
         .tab-btn[data-tab="0"].active { background: #ff6b6b; color: white; border-color: #ff6b6b; }
         .tab-btn[data-tab="1"].active { background: #ffd93d; color: #4a2a6a; border-color: #ffd93d; }
@@ -395,989 +149,322 @@
         .tab-btn[data-tab="3"].active { background: #9b59b6; color: white; border-color: #9b59b6; }
         .tab-btn[data-tab="4"].active { background: #ff6b6b; color: white; border-color: #ff6b6b; }
         .tab-btn[data-tab="5"].active { background: #2ecc71; color: white; border-color: #2ecc71; }
-        .tab-btn:hover:not(.active) {
-            background: #f0e8f8;
-        }
+        .tab-btn:hover:not(.active) { background: #f0e8f8; }
 
-        .toggle-row {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: stretch !important;
-            gap: 3px !important;
-            margin: 6px 0 0 0 !important;
-        }
+        .toggle-row { display: flex !important; flex-direction: column !important; align-items: stretch !important; gap: 3px !important; margin: 6px 0 0 0 !important; }
         .toggle-row.hidden { display: none !important; }
         .toggle-group {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: stretch !important;
-            gap: 3px !important;
-            padding: 6px 8px !important;
-            border-radius: 14px !important;
-            border: 2px solid #ffd93d !important;
-            background: white !important;
+            display: flex !important; flex-direction: column !important; align-items: stretch !important;
+            gap: 3px !important; padding: 6px 8px !important; border-radius: 14px !important;
+            border: 2px solid #ffd93d !important; background: white !important;
         }
         .toggle-group .toggle-label {
-            font-size: 0.7rem !important;
-            text-align: center !important;
-            display: block !important;
-            font-weight: 700 !important;
-            color: #5a3a7a !important;
-            margin-bottom: 2px !important;
+            font-size: 0.7rem !important; text-align: center !important; display: block !important;
+            font-weight: 700 !important; color: #5a3a7a !important; margin-bottom: 2px !important;
         }
         .toggle-btn {
-            padding: 4px 10px !important;
-            border: none !important;
-            border-radius: 30px !important;
-            font-size: 0.7rem !important;
-            font-weight: 700 !important;
-            cursor: pointer !important;
-            transition: 0.15s !important;
-            background: #f0e8f8 !important;
-            color: #7a5a9a !important;
-            min-height: 28px !important;
-            width: 100% !important;
+            padding: 4px 10px !important; border: none !important; border-radius: 30px !important;
+            font-size: 0.7rem !important; font-weight: 700 !important; cursor: pointer !important;
+            transition: 0.15s !important; background: #f0e8f8 !important; color: #7a5a9a !important;
+            min-height: 28px !important; width: 100% !important;
         }
-        .toggle-btn.active {
-            background: #ffd93d !important;
-            color: #4a2a6a !important;
-            box-shadow: 0 2px 6px rgba(255,217,61,0.4) !important;
-        }
-        .toggle-btn:hover:not(.active) {
-            background: #e8d8f8 !important;
-        }
+        .toggle-btn.active { background: #ffd93d !important; color: #4a2a6a !important; box-shadow: 0 2px 6px rgba(255,217,61,0.4) !important; }
+        .toggle-btn:hover:not(.active) { background: #e8d8f8 !important; }
 
         /* ===== 題目區 ===== */
         .question-area {
-            flex: 1;
-            min-width: 0;
-            padding: 0.2rem 0.6rem;
-            overflow: hidden;
-            border-radius: 16px;
-            background: white;
-            display: flex;
-            flex-direction: column;
+            flex: 1; min-width: 0; padding: 0.2rem 0.6rem; overflow: hidden;
+            border-radius: 16px; background: white; display: flex; flex-direction: column;
         }
-        .question-area .tab-content {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-        }
-        .question-area .tab-content.active {
-            display: flex;
-        }
+        .question-area .tab-content { display: none; flex-direction: column; height: 100%; }
+        .question-area .tab-content.active { display: flex; }
 
-        .split-panel {
-            display: flex;
-            gap: 10px;
-            flex: 1;
-            min-height: 0;
-            align-items: flex-start;
-        }
-        .split-left {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 1px;
-            min-width: 0;
-        }
+        .split-panel { display: flex; gap: 10px; flex: 1; min-height: 0; align-items: flex-start; }
+        .split-left { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
         .split-right {
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            gap: 4px;
-            flex: 0 0 120px;
-            padding-top: 2px;
+            display: flex; flex-direction: column; justify-content: flex-start;
+            align-items: center; gap: 4px; flex: 0 0 120px; padding-top: 2px;
         }
 
         .right-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            align-items: stretch;
-            width: 100%;
-            max-width: 150px;
+            display: flex; flex-direction: column; gap: 6px; align-items: stretch;
+            width: 100%; max-width: 150px;
         }
         .right-buttons .btn {
-            border: none;
-            border-radius: 50px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            width: 100%;
-            font-size: 1.2rem;
-            padding: 10px 16px;
-            min-height: 44px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+            border: none; border-radius: 50px; font-weight: 700; cursor: pointer;
+            transition: all 0.3s ease; text-align: center; width: 100%; font-size: 1.2rem;
+            padding: 10px 16px; min-height: 44px; box-shadow: 0 4px 15px rgba(0,0,0,0.12);
         }
         .right-buttons .btn-check {
             background: linear-gradient(145deg, #f5a623, #e0941a);
-            color: white;
-            box-shadow: 0 4px 20px rgba(245,166,35,0.4);
+            color: white; box-shadow: 0 4px 20px rgba(245,166,35,0.4);
         }
         .right-buttons .btn-check:hover:not(:disabled) {
             background: linear-gradient(145deg, #f7b840, #d4880a);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(245,166,35,0.5);
+            transform: translateY(-2px); box-shadow: 0 6px 25px rgba(245,166,35,0.5);
         }
-        .right-buttons .btn-check:disabled {
-            opacity: 0.4;
-            filter: grayscale(0.5);
-            transform: none !important;
-            box-shadow: none !important;
-            cursor: not-allowed !important;
-        }
+        .right-buttons .btn-check:disabled { opacity: 0.4; filter: grayscale(0.5); transform: none !important; box-shadow: none !important; cursor: not-allowed !important; }
         .right-buttons .btn-next {
             background: linear-gradient(145deg, #4d96ff, #3a7ad4);
-            color: white;
-            box-shadow: 0 4px 20px rgba(77,150,255,0.4);
+            color: white; box-shadow: 0 4px 20px rgba(77,150,255,0.4);
         }
         .right-buttons .btn-next:hover:not(:disabled) {
             background: linear-gradient(145deg, #60a8ff, #2a6ab4);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(77,150,255,0.5);
+            transform: translateY(-2px); box-shadow: 0 6px 25px rgba(77,150,255,0.5);
         }
-        .right-buttons .btn-next:disabled {
-            opacity: 0.4;
-            filter: grayscale(0.5);
-            transform: none !important;
-            box-shadow: none !important;
-            cursor: not-allowed !important;
-        }
+        .right-buttons .btn-next:disabled { opacity: 0.4; filter: grayscale(0.5); transform: none !important; box-shadow: none !important; cursor: not-allowed !important; }
 
-        /* ===== 螢光筆 ===== */
-        .highlight-yellow {
-            background: #ffd93d;
-            padding: 0 4px;
-            border-radius: 4px;
-            font-weight: 700;
-        }
+        .highlight-yellow { background: #ffd93d; padding: 0 4px; border-radius: 4px; font-weight: 700; }
 
         /* ===== Tab 0 樣式 ===== */
-        .mode0-display {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: #4a2a6a;
-            text-align: center;
-            padding: 1px 0;
-            flex-shrink: 0;
-        }
-        .mode0-display .chinese {
-            font-weight: 400;
-            color: #7a5a9a;
-            font-size: 1.5rem;
-        }
-        .mode0-input-area {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: flex-end;
-            gap: 2px;
-            margin: 1px 0 2px 0;
-            min-height: 34px;
-            padding: 0;
-            flex-shrink: 0;
-        }
-        .symbol-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .symbol-group label {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #7a5a9a;
-            letter-spacing: 0.5px;
-            margin-bottom: 1px;
-        }
+        .mode0-display { font-size: 1.8rem; font-weight: 600; color: #4a2a6a; text-align: center; padding: 1px 0; flex-shrink: 0; }
+        .mode0-display .chinese { font-weight: 400; color: #7a5a9a; font-size: 1.5rem; }
+        .mode0-input-area { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 2px; margin: 1px 0 2px 0; min-height: 34px; padding: 0; flex-shrink: 0; }
+        .symbol-group { display: flex; flex-direction: column; align-items: center; }
+        .symbol-group label { font-size: 0.8rem; font-weight: 600; color: #7a5a9a; letter-spacing: 0.5px; margin-bottom: 1px; }
         .symbol-input-wrap input {
-            width: 180px;
-            height: 68px;
-            padding: 0 6px;
-            font-size: 2rem;
-            font-weight: 700;
-            border: 3px solid #d0c0e0;
-            border-radius: 12px;
-            background: white;
-            text-align: center;
-            transition: 0.15s;
-            color: #2a1a3a;
-            outline: none;
-            letter-spacing: 2px;
+            width: 180px; height: 68px; padding: 0 6px; font-size: 2rem; font-weight: 700;
+            border: 3px solid #d0c0e0; border-radius: 12px; background: white;
+            text-align: center; transition: 0.15s; color: #2a1a3a; outline: none; letter-spacing: 2px;
         }
-        .symbol-input-wrap input.correct {
-            border-color: #6bcb77;
-            background: #ecfdf5;
-        }
-        .symbol-input-wrap input.incorrect {
-            border-color: #ff6b6b;
-            background: #fce4e7;
-        }
-        .charge-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-left: -12px;
-        }
-        .charge-group label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #7a5a9a;
-            letter-spacing: 0.5px;
-            margin-bottom: 1px;
-            opacity: 0;
-            pointer-events: none;
-        }
-        .charge-input-wrap {
-            position: relative;
-            transform: translateY(-22px);
-        }
+        .symbol-input-wrap input.correct { border-color: #6bcb77; background: #ecfdf5; }
+        .symbol-input-wrap input.incorrect { border-color: #ff6b6b; background: #fce4e7; }
+        .charge-group { display: flex; flex-direction: column; align-items: center; margin-left: -12px; }
+        .charge-group label { font-size: 0.7rem; font-weight: 600; color: #7a5a9a; letter-spacing: 0.5px; margin-bottom: 1px; opacity: 0; pointer-events: none; }
+        .charge-input-wrap { position: relative; transform: translateY(-22px); }
         .charge-input-wrap input {
-            width: 50px;
-            height: 40px;
-            padding: 0 4px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            border: 3px solid #d0c0e0;
-            border-radius: 10px;
-            background: white;
-            text-align: center;
-            transition: 0.15s;
-            color: #2a1a3a;
-            outline: none;
+            width: 50px; height: 40px; padding: 0 4px; font-size: 1.2rem; font-weight: 700;
+            border: 3px solid #d0c0e0; border-radius: 10px; background: white;
+            text-align: center; transition: 0.15s; color: #2a1a3a; outline: none;
         }
-        .charge-input-wrap input.correct {
-            border-color: #6bcb77;
-            background: #ecfdf5;
-        }
-        .charge-input-wrap input.incorrect {
-            border-color: #ff6b6b;
-            background: #fce4e7;
-        }
-        .color-area {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-shrink: 0;
-            margin: 2px 0;
-            padding: 2px 6px;
-            background: #f8f4fc;
-            border-radius: 10px;
-            border: 1px solid #c8b0e0;
-            flex-wrap: wrap;
-        }
+        .charge-input-wrap input.correct { border-color: #6bcb77; background: #ecfdf5; }
+        .charge-input-wrap input.incorrect { border-color: #ff6b6b; background: #fce4e7; }
+        .color-area { display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin: 2px 0; padding: 2px 6px; background: #f8f4fc; border-radius: 10px; border: 1px solid #c8b0e0; flex-wrap: wrap; }
         .color-area.hidden { display: none !important; }
-        .color-toggle {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 1rem;
-            font-weight: 700;
-            color: #5a3a7a;
-            cursor: pointer;
-        }
-        .color-toggle input[type="checkbox"] {
-            width: 14px;
-            height: 14px;
-            cursor: pointer;
-            accent-color: #ffd93d;
-        }
-        .color-input-wrap {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+        .color-toggle { display: flex; align-items: center; gap: 4px; font-size: 1rem; font-weight: 700; color: #5a3a7a; cursor: pointer; }
+        .color-toggle input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; accent-color: #ffd93d; }
+        .color-input-wrap { display: flex; align-items: center; gap: 4px; }
         .color-input-wrap.hidden { display: none !important; }
         .color-input-wrap input {
-            width: 130px;
-            height: 38px;
-            padding: 0 6px;
-            font-size: 1rem;
-            font-weight: 500;
-            border: 2px solid #c8b0e0;
-            border-radius: 8px;
-            background: white;
-            text-align: center;
-            outline: none;
-            color: #2a1a3a;
+            width: 130px; height: 38px; padding: 0 6px; font-size: 1rem; font-weight: 500;
+            border: 2px solid #c8b0e0; border-radius: 8px; background: white;
+            text-align: center; outline: none; color: #2a1a3a;
         }
-        .color-input-wrap input.correct {
-            border-color: #6bcb77;
-            background: #ecfdf5;
-        }
-        .color-input-wrap input.incorrect {
-            border-color: #ff6b6b;
-            background: #fce4e7;
-        }
+        .color-input-wrap input.correct { border-color: #6bcb77; background: #ecfdf5; }
+        .color-input-wrap input.incorrect { border-color: #ff6b6b; background: #fce4e7; }
         .btn-small {
-            padding: 4px 14px;
-            font-size: 0.9rem;
-            border-radius: 30px;
-            border: 1px solid #c8b0e0;
-            background: #f0e8f8;
-            font-weight: 600;
-            color: #5a3a7a;
-            cursor: pointer;
-            transition: 0.15s;
-            white-space: nowrap;
-            min-height: 34px;
+            padding: 4px 14px; font-size: 0.9rem; border-radius: 30px; border: 1px solid #c8b0e0;
+            background: #f0e8f8; font-weight: 600; color: #5a3a7a; cursor: pointer;
+            transition: 0.15s; white-space: nowrap; min-height: 34px;
         }
-        .hint-row {
-            margin: 2px 0;
-            font-size: 0.85rem;
-            color: #8a6aaa;
-            flex-shrink: 0;
-            text-align: center;
-            padding: 0;
-            line-height: 1.5;
-        }
-        .hint-row .highlight {
-            color: #ff6b6b;
-            font-weight: 700;
-            font-size: 0.85rem;
-            display: block;
-        }
-        .hint-row .subscript-hint {
-            color: #7a5a9a;
-            font-weight: 500;
-            font-size: 0.85rem;
-            display: block;
-        }
+        .hint-row { margin: 2px 0; font-size: 0.85rem; color: #8a6aaa; flex-shrink: 0; text-align: center; padding: 0; line-height: 1.5; }
+        .hint-row .highlight { color: #ff6b6b; font-weight: 700; font-size: 0.85rem; display: block; }
+        .hint-row .subscript-hint { color: #7a5a9a; font-weight: 500; font-size: 0.85rem; display: block; }
         .feedback-area {
-            padding: 6px 16px;
-            border-radius: 30px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            background: #d4f5d4;
-            border: 2px solid #6bcb77;
-            color: #0d553a;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            width: 100%;
-            min-height: 48px;
-            transition: 0.2s;
-            margin-top: 8px;
-            flex-shrink: 0;
+            padding: 6px 16px; border-radius: 30px; font-size: 1.1rem; font-weight: 600;
+            background: #d4f5d4; border: 2px solid #6bcb77; color: #0d553a;
+            display: flex; align-items: center; gap: 6px; width: 100%; min-height: 48px;
+            transition: 0.2s; margin-top: 8px; flex-shrink: 0;
         }
-        .feedback-area.error {
-            background: #fce4e7;
-            border-color: #ff6b6b;
-            color: #9d3340;
-        }
-        .feedback-area .fb-icon {
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-        .feedback-area .fb-text {
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-        .feedback-area .fb-detail {
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: #5a3a7a;
-        }
-        .feedback-area.error .fb-detail {
-            color: #7a3a3a;
-        }
-        .feedback-area .formula-big {
-            font-size: 1.5em;
-            font-weight: 700;
-        }
+        .feedback-area.error { background: #fce4e7; border-color: #ff6b6b; color: #9d3340; }
+        .feedback-area .fb-icon { font-size: 1.5rem; flex-shrink: 0; }
+        .feedback-area .fb-text { font-size: 1.1rem; font-weight: 700; }
+        .feedback-area .fb-detail { font-size: 0.95rem; font-weight: 500; color: #5a3a7a; }
+        .feedback-area.error .fb-detail { color: #7a3a3a; }
+        .feedback-area .formula-big { font-size: 1.5em; font-weight: 700; }
 
-        #answerReveal {
-            margin-top: 2px;
-            min-height: 14px;
-            flex-shrink: 0;
-            text-align: center;
-        }
+        #answerReveal { margin-top: 2px; min-height: 14px; flex-shrink: 0; text-align: center; }
         #answerReveal:empty { display: none; }
-        .answer-hint {
-            font-size: 0.5rem;
-            background: #f0e8f8;
-            padding: 2px 10px;
-            border-radius: 20px;
-            display: inline-block;
-            border: 2px solid #b090d0;
-            color: #4a2a6a;
-            font-weight: 600;
-        }
+        .answer-hint { font-size: 0.5rem; background: #f0e8f8; padding: 2px 10px; border-radius: 20px; display: inline-block; border: 2px solid #b090d0; color: #4a2a6a; font-weight: 600; }
 
-        .mode1-display {
-            font-size: 2.4rem;
-            font-weight: 700;
-            color: #4a2a6a;
-            text-align: center;
-            padding: 1px 0;
-            flex-shrink: 0;
-        }
-        .mode1-input-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 0px;
-            flex-shrink: 0;
-            margin: 2px 0 4px 0;
-        }
+        .mode1-display { font-size: 2.4rem; font-weight: 700; color: #4a2a6a; text-align: center; padding: 1px 0; flex-shrink: 0; }
+        .mode1-input-wrapper { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0px; flex-shrink: 0; margin: 2px 0 4px 0; }
         .mode1-input-wrapper input {
-            padding: 4px 10px;
-            font-size: 1.6rem;
-            font-weight: 600;
-            border: 3px solid #d0c0e0;
-            border-radius: 10px 0 0 10px;
-            background: white;
-            text-align: center;
-            transition: 0.15s;
-            color: #2a1a3a;
-            outline: none;
-            width: 240px;
-            height: 60px;
+            padding: 4px 10px; font-size: 1.6rem; font-weight: 600;
+            border: 3px solid #d0c0e0; border-radius: 10px 0 0 10px; background: white;
+            text-align: center; transition: 0.15s; color: #2a1a3a; outline: none; width: 240px; height: 60px;
         }
-        .mode1-input-wrapper input.correct {
-            border-color: #6bcb77;
-            background: #ecfdf5;
-        }
-        .mode1-input-wrapper input.incorrect {
-            border-color: #ff6b6b;
-            background: #fce4e7;
-        }
+        .mode1-input-wrapper input.correct { border-color: #6bcb77; background: #ecfdf5; }
+        .mode1-input-wrapper input.incorrect { border-color: #ff6b6b; background: #fce4e7; }
         .mode1-input-suffix {
-            padding: 0 18px;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #7a4a9a;
-            background: #f0e8f8;
-            border: 3px solid #d0c0e0;
-            border-left: none;
-            border-radius: 0 10px 10px 0;
-            white-space: nowrap;
-            min-width: 25px;
-            text-align: center;
-            height: 60px;
-            display: flex;
-            align-items: center;
+            padding: 0 18px; font-size: 1.5rem; font-weight: 700; color: #7a4a9a;
+            background: #f0e8f8; border: 3px solid #d0c0e0; border-left: none;
+            border-radius: 0 10px 10px 0; white-space: nowrap; min-width: 25px;
+            text-align: center; height: 60px; display: flex; align-items: center;
         }
-        .pair-display {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: #4a2a6a;
-            text-align: center;
-            padding: 1px 0;
-            flex-shrink: 0;
-        }
-        .pair-display small {
-            font-weight: 300;
-            font-size: 1.4rem;
-            color: #7a5a9a;
-            margin-left: 6px;
-        }
-        .pair-display-mode4 {
-            font-size: 2.4rem;
-            font-weight: 700;
-            color: #4a2a6a;
-            text-align: center;
-            padding: 1px 0;
-            flex-shrink: 0;
-        }
-        .pair-input-area {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-            margin: 2px 0 4px 0;
-        }
+        .pair-display { font-size: 1.8rem; font-weight: 600; color: #4a2a6a; text-align: center; padding: 1px 0; flex-shrink: 0; }
+        .pair-display small { font-weight: 300; font-size: 1.4rem; color: #7a5a9a; margin-left: 6px; }
+        .pair-display-mode4 { font-size: 2.4rem; font-weight: 700; color: #4a2a6a; text-align: center; padding: 1px 0; flex-shrink: 0; }
+        .pair-input-area { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; flex-shrink: 0; margin: 2px 0 4px 0; }
         .pair-input-area input {
-            padding: 4px 10px;
-            font-size: 1.6rem;
-            font-weight: 600;
-            border: 3px solid #d0c0e0;
-            border-radius: 10px;
-            background: white;
-            text-align: center;
-            transition: 0.15s;
-            color: #2a1a3a;
-            outline: none;
-            width: 260px;
-            height: 60px;
+            padding: 4px 10px; font-size: 1.6rem; font-weight: 600;
+            border: 3px solid #d0c0e0; border-radius: 10px; background: white;
+            text-align: center; transition: 0.15s; color: #2a1a3a; outline: none; width: 260px; height: 60px;
         }
-        .pair-input-area input.correct {
-            border-color: #6bcb77;
-            background: #ecfdf5;
-        }
-        .pair-input-area input.incorrect {
-            border-color: #ff6b6b;
-            background: #fce4e7;
-        }
-        .sol-display {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: #4a2a6a;
-            text-align: center;
-            padding: 1px 0;
-            flex-shrink: 0;
-        }
-        .sol-display small {
-            font-weight: 300;
-            font-size: 1.4rem;
-            color: #7a5a9a;
-            margin-left: 6px;
-        }
-        .sol-question-sub {
-            font-size: 1.3rem;
-            color: #7a5a9a;
-            margin: 2px 0 1px 0;
-            font-weight: 500;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        .sol-options {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 2px 0 3px 0;
-            flex-shrink: 0;
-        }
+        .pair-input-area input.correct { border-color: #6bcb77; background: #ecfdf5; }
+        .pair-input-area input.incorrect { border-color: #ff6b6b; background: #fce4e7; }
+
+        .sol-display { font-size: 1.8rem; font-weight: 600; color: #4a2a6a; text-align: center; padding: 1px 0; flex-shrink: 0; }
+        .sol-display small { font-weight: 300; font-size: 1.4rem; color: #7a5a9a; margin-left: 6px; }
+        .sol-question-sub { font-size: 1.3rem; color: #7a5a9a; margin: 2px 0 1px 0; font-weight: 500; text-align: center; flex-shrink: 0; }
+        .sol-options { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 2px 0 3px 0; flex-shrink: 0; }
         .sol-options button {
-            border: 2px solid #d0c0e0;
-            background: white;
-            padding: 8px 28px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 1.3rem;
-            cursor: pointer;
-            transition: 0.2s;
-            color: #4a2a6a;
-            min-height: 52px;
+            border: 2px solid #d0c0e0; background: white; padding: 8px 28px;
+            border-radius: 40px; font-weight: 600; font-size: 1.3rem; cursor: pointer;
+            transition: 0.2s; color: #4a2a6a; min-height: 52px;
         }
-        .sol-options button.selected {
-            border-color: #ffd93d;
-            background: #fff8e0;
-        }
-        .colour-input-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            margin: 2px 0 3px 0;
-            flex-shrink: 0;
-        }
+        .sol-options button.selected { border-color: #ffd93d; background: #fff8e0; }
+        .colour-input-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; margin: 2px 0 3px 0; flex-shrink: 0; }
         .colour-input-row input {
-            padding: 3px 10px;
-            font-size: 1.3rem;
-            font-weight: 500;
-            border: 2px solid #d0c0e0;
-            border-radius: 30px;
-            background: white;
-            text-align: center;
-            outline: none;
-            color: #2a1a3a;
-            width: 190px;
-            height: 50px;
+            padding: 3px 10px; font-size: 1.3rem; font-weight: 500;
+            border: 2px solid #d0c0e0; border-radius: 30px; background: white;
+            text-align: center; outline: none; color: #2a1a3a; width: 190px; height: 50px;
         }
-        .colour-input-row input.correct {
-            border-color: #6bcb77;
-            background: #ecfdf5;
-        }
-        .colour-input-row input.incorrect {
-            border-color: #ff6b6b;
-            background: #fce4e7;
-        }
+        .colour-input-row input.correct { border-color: #6bcb77; background: #ecfdf5; }
+        .colour-input-row input.incorrect { border-color: #ff6b6b; background: #fce4e7; }
         .colour-input-row .btn-colourless {
-            background: #f0e8f8;
-            border: 2px solid #d0c0e0;
-            padding: 0 18px;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: 0.2s;
-            color: #4a2a6a;
-            white-space: nowrap;
-            height: 50px;
-            display: flex;
-            align-items: center;
+            background: #f0e8f8; border: 2px solid #d0c0e0; padding: 0 18px;
+            border-radius: 30px; font-weight: 600; font-size: 1.1rem; cursor: pointer;
+            transition: 0.2s; color: #4a2a6a; white-space: nowrap; height: 50px; display: flex; align-items: center;
         }
 
         /* ===== Tab 5: 電子圖練習 ===== */
-        .elec-container {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            flex: 1;
-        }
+        .elec-container { display: flex; flex-direction: column; gap: 4px; flex: 1; }
         .elec-question-area {
-            background: #f8f4fc;
-            border-radius: 12px;
-            padding: 6px 10px;
-            border: 2px dashed #c8b0e0;
-            text-align: center;
+            background: #f8f4fc; border-radius: 12px; padding: 6px 10px;
+            border: 2px dashed #c8b0e0; text-align: center;
         }
-        .elec-question-area .elec-q-label {
-            font-size: 0.6rem;
-            color: #7a5a9a;
-            font-weight: 600;
-        }
-        .elec-question-area .elec-q-name {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #4a2a6a;
-            line-height: 1.2;
-        }
-        .elec-question-area .elec-q-name .elec-name {
-            font-size: 1.6rem;
-            font-weight: 700;
-        }
+        .elec-question-area .elec-q-label { font-size: 0.6rem; color: #7a5a9a; font-weight: 600; }
+        .elec-question-area .elec-q-name { font-size: 1.6rem; font-weight: 700; color: #4a2a6a; line-height: 1.2; }
+        .elec-question-area .elec-q-name .elec-name { font-size: 1.6rem; font-weight: 700; }
         .elec-question-area .elec-q-hint {
-            font-size: 0.6rem;
-            color: #7a5a9a;
-            background: #f0eaf5;
-            display: inline-block;
-            padding: 1px 12px;
-            border-radius: 30px;
-            margin-top: 2px;
-            font-weight: 600;
-            border: 1px solid #d0c0e0;
+            font-size: 0.6rem; color: #7a5a9a; background: #f0eaf5;
+            display: inline-block; padding: 1px 12px; border-radius: 30px;
+            margin-top: 2px; font-weight: 600; border: 1px solid #d0c0e0;
         }
 
         .elec-answer-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            margin: 6px 0 4px;
-            min-height: 90px;
-            flex-wrap: wrap;
+            display: flex; align-items: center; justify-content: center;
+            gap: 6px; margin: 6px 0 4px; min-height: 90px; flex-wrap: wrap;
         }
-        .elec-slot {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-        }
-        .elec-slot.count-slot {
-            flex: 0 0 66px;
-        }
-        .elec-slot.image-slot {
-            flex: 0 0 135px;
-        }
+        .elec-slot { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .elec-slot.count-slot { flex: 0 0 66px; }
+        .elec-slot.image-slot { flex: 0 0 135px; }
 
-        /* 數字框 - 背景色由 JS 控制 */
         .elec-count-wrapper {
-            width: 100%;
-            aspect-ratio: 1 / 1.8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            min-height: 44px;
-            cursor: pointer;
-            transition: 0.15s;
-            user-select: none;
+            width: 100%; aspect-ratio: 1 / 1.8; display: flex; align-items: center;
+            justify-content: center; position: relative; min-height: 44px;
+            cursor: pointer; transition: 0.15s; user-select: none;
         }
-        .elec-count-wrapper .count-number {
-            font-size: 2.4rem;
-            font-weight: 700;
-            color: #4a2a6a;
-            pointer-events: none;
-        }
-        .elec-count-wrapper .count-number.hidden {
-            visibility: hidden;
-        }
+        .elec-count-wrapper .count-number { font-size: 2.4rem; font-weight: 700; color: #4a2a6a; pointer-events: none; }
+        .elec-count-wrapper .count-number.hidden { visibility: hidden; }
 
         .elec-selector-box {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            border: 3px dashed #d0c0e0;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.2s;
-            background: #f0f0f0;
-            padding: 4px;
-            position: relative;
-            min-height: 90px;
+            width: 100%; aspect-ratio: 1 / 1; border: 3px dashed #d0c0e0;
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; background: #f0f0f0; padding: 4px;
+            position: relative; min-height: 90px;
         }
         .elec-selector-box.color-red { background: #ffe0e0; border-color: #ffaaaa; }
         .elec-selector-box.color-yellow { background: #fff8e0; border-color: #f5d06a; }
         .elec-selector-box.color-green { background: #e0f5e0; border-color: #7ac77a; }
         .elec-selector-box.color-blue { background: #e0ecff; border-color: #7aacd0; }
-
-        .elec-selector-box.has-image {
-            background: white !important;
-            border: none !important;
-            border-radius: 0 !important;
-            padding: 0 !important;
-        }
-        .elec-selector-box:hover:not(.has-image) {
-            transform: scale(1.02);
-            border-color: #7a4a9a;
-        }
-        .elec-selector-box .placeholder {
-            color: #b0a0c0;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-align: center;
-            line-height: 1.2;
-        }
-        .elec-selector-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-        }
+        .elec-selector-box.has-image { background: white !important; border: none !important; border-radius: 0 !important; padding: 0 !important; }
+        .elec-selector-box:hover:not(.has-image) { transform: scale(1.02); border-color: #7a4a9a; }
+        .elec-selector-box .placeholder { color: #b0a0c0; font-size: 0.75rem; font-weight: 600; text-align: center; line-height: 1.2; }
+        .elec-selector-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
         .elec-charge-display {
-            background: #f0eaf5;
-            border-radius: 10px;
-            padding: 4px 10px;
-            text-align: center;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #4a2a6a;
-            min-height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            flex-wrap: wrap;
-            border: 2px solid transparent;
-            transition: 0.2s;
-            margin-bottom: 0;
+            background: #f0eaf5; border-radius: 10px; padding: 4px 10px;
+            text-align: center; font-size: 0.95rem; font-weight: 600; color: #4a2a6a;
+            min-height: 30px; display: flex; align-items: center; justify-content: center;
+            gap: 4px; flex-wrap: wrap; border: 2px solid transparent; transition: 0.2s; margin-bottom: 0;
         }
-        .elec-charge-display.balanced {
-            border-color: #6bcb77;
-            background: #ecfdf5;
-        }
-        .elec-charge-display.unbalanced {
-            border-color: #ff6b6b;
-            background: #fce4e7;
-        }
+        .elec-charge-display.balanced { border-color: #6bcb77; background: #ecfdf5; }
+        .elec-charge-display.unbalanced { border-color: #ff6b6b; background: #fce4e7; }
         .elec-charge-display .green { color: #2ecc71; }
         .elec-charge-display .red { color: #e74c3c; }
 
-        .elec-btn-row {
-            display: flex;
-            gap: 8px;
-            max-width: 100%;
-            margin-top: 6px;
-        }
+        .elec-btn-row { display: flex; gap: 8px; max-width: 100%; margin-top: 6px; }
         .elec-btn-row .btn {
-            flex: 1;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: 0.2s;
-            min-height: 38px;
-            text-align: center;
+            flex: 1; padding: 8px 12px; border: none; border-radius: 50px;
+            font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: 0.2s;
+            min-height: 38px; text-align: center;
         }
         .elec-btn-row .btn-check {
             background: linear-gradient(145deg, #f5a623, #e0941a);
-            color: white;
-            box-shadow: 0 4px 20px rgba(245,166,35,0.4);
+            color: white; box-shadow: 0 4px 20px rgba(245,166,35,0.4);
         }
         .elec-btn-row .btn-check:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(245,166,35,0.5);
+            transform: translateY(-2px); box-shadow: 0 6px 25px rgba(245,166,35,0.5);
         }
-        .elec-btn-row .btn-check:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none !important;
-        }
+        .elec-btn-row .btn-check:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
         .elec-btn-row .btn-next {
             background: linear-gradient(145deg, #4d96ff, #3a7ad4);
-            color: white;
-            box-shadow: 0 4px 20px rgba(77,150,255,0.4);
+            color: white; box-shadow: 0 4px 20px rgba(77,150,255,0.4);
         }
         .elec-btn-row .btn-next:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(77,150,255,0.5);
+            transform: translateY(-2px); box-shadow: 0 6px 25px rgba(77,150,255,0.5);
         }
-        .elec-btn-row .btn-next:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none !important;
-        }
+        .elec-btn-row .btn-next:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
 
         .elec-modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 12px;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000;
+            justify-content: center; align-items: center; padding: 12px;
         }
         .elec-modal-overlay.active { display: flex; }
         .elec-modal-box {
-            background: white;
-            border-radius: 24px;
-            max-width: 520px;
-            width: 100%;
-            height: auto;
-            max-height: 85vh;
-            padding: 12px 10px 14px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background: white; border-radius: 24px; max-width: 520px; width: 100%;
+            height: auto; max-height: 85vh; padding: 12px 10px 14px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden;
         }
         .elec-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-            flex-shrink: 0;
-            padding: 0 2px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 6px; flex-shrink: 0; padding: 0 2px;
         }
-        .elec-modal-header h2 {
-            font-size: 0.95rem;
-            color: #4a2a6a;
-        }
+        .elec-modal-header h2 { font-size: 0.95rem; color: #4a2a6a; }
         .elec-modal-close {
-            background: #f0e8f8;
-            border: none;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            color: #4a2a6a;
-            font-weight: 700;
-            flex-shrink: 0;
+            background: #f0e8f8; border: none; border-radius: 50%; width: 28px; height: 28px;
+            font-size: 0.9rem; cursor: pointer; color: #4a2a6a; font-weight: 700; flex-shrink: 0;
         }
         .elec-modal-body {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
-            overflow: hidden;
-            flex: 1;
-            align-content: start;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+            overflow: hidden; flex: 1; align-content: start;
         }
         .elec-modal-option {
-            border: 2px solid #e0d0f0;
-            border-radius: 10px;
-            padding: 2px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.15s;
-            background: white;
-            font-weight: 700;
-            font-size: 1.4rem;
-            color: #4a2a6a;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 70px;
+            border: 2px solid #e0d0f0; border-radius: 10px; padding: 2px;
+            text-align: center; cursor: pointer; transition: 0.15s; background: white;
+            font-weight: 700; font-size: 1.4rem; color: #4a2a6a;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70px;
         }
-        .elec-modal-option:hover {
-            border-color: #7a4a9a;
-            background: #f5effa;
-            transform: scale(1.03);
-        }
-        .elec-modal-option img {
-            width: 100%;
-            max-width: 80px;
-            height: auto;
-            aspect-ratio: 1/1;
-            object-fit: contain;
-            display: block;
-        }
+        .elec-modal-option:hover { border-color: #7a4a9a; background: #f5effa; transform: scale(1.03); }
+        .elec-modal-option img { width: 100%; max-width: 80px; height: auto; aspect-ratio: 1/1; object-fit: contain; display: block; }
 
         /* ===== 手機版 ===== */
         @media (max-width: 600px) {
-            .card {
-                padding: 0.3rem 0.5rem;
-                max-height: 95vh;
-                height: auto;
-                border-radius: 24px;
-            }
+            .card { padding: 0.3rem 0.5rem; max-height: 95vh; height: auto; border-radius: 24px; }
             .header h1 { font-size: 0.85rem; }
             .btn-ref { font-size: 0.55rem; padding: 3px 10px; }
             .lang-btn { font-size: 0.5rem; padding: 2px 10px; }
 
-            .left-sidebar {
-                flex: 0 0 95px;
-                min-width: unset;
-                padding-right: 4px;
-                gap: 2px;
-                padding-top: 2px;
-            }
-            .tab-btn {
-                font-size: 0.5rem;
-                padding: 3px 4px;
-                min-height: 26px;
-                border-radius: 6px;
-                white-space: nowrap;
-                text-align: center;
-            }
+            .left-sidebar { flex: 0 0 95px; min-width: unset; padding-right: 4px; gap: 2px; padding-top: 2px; }
+            .tab-btn { font-size: 0.5rem; padding: 3px 4px; min-height: 26px; border-radius: 6px; white-space: nowrap; text-align: center; }
             .toggle-row { margin-top: 3px !important; }
             .toggle-group { padding: 3px 4px !important; }
             .toggle-btn { min-height: 20px !important; font-size: 0.5rem !important; }
 
-            .split-panel {
-                flex-direction: column;
-                gap: 6px;
-            }
-            .split-right {
-                flex: 0 0 auto;
-                width: 100%;
-                flex-direction: column;
-                align-items: stretch;
-                padding-top: 2px;
-            }
-            .right-buttons {
-                flex-direction: row;
-                max-width: 100%;
-                gap: 6px;
-            }
-            .right-buttons .btn {
-                font-size: 1rem;
-                padding: 8px 12px;
-                min-height: 38px;
-                border-radius: 40px;
-                flex: 1;
-            }
+            .split-panel { flex-direction: column; gap: 6px; }
+            .split-right { flex: 0 0 auto; width: 100%; flex-direction: column; align-items: stretch; padding-top: 2px; }
+            .right-buttons { flex-direction: row; max-width: 100%; gap: 6px; }
+            .right-buttons .btn { font-size: 1rem; padding: 8px 12px; min-height: 38px; border-radius: 40px; flex: 1; }
             .mode0-display { font-size: 1.1rem; }
             .mode0-display .chinese { font-size: 0.95rem; }
-            .symbol-input-wrap input {
-                width: 120px;
-                height: 46px;
-                font-size: 1.3rem;
-            }
-            .charge-input-wrap input {
-                width: 40px;
-                height: 34px;
-                font-size: 1rem;
-            }
+            .symbol-input-wrap input { width: 120px; height: 46px; font-size: 1.3rem; }
+            .charge-input-wrap input { width: 40px; height: 34px; font-size: 1rem; }
             .charge-input-wrap { transform: translateY(-16px); }
             .charge-group { margin-left: -8px; }
-            .feedback-area {
-                font-size: 0.85rem;
-                padding: 5px 12px;
-                min-height: 36px;
-                border-radius: 20px;
-                margin-top: 6px;
-            }
+            .feedback-area { font-size: 0.85rem; padding: 5px 12px; min-height: 36px; border-radius: 20px; margin-top: 6px; }
             .feedback-area .fb-icon { font-size: 1.1rem; }
             .feedback-area .fb-text { font-size: 0.85rem; }
             .feedback-area .formula-big { font-size: 1.3em; }
@@ -1385,47 +472,15 @@
             .hint-row .highlight { font-size: 0.6rem; }
             .hint-row .subscript-hint { font-size: 0.6rem; }
             .hint-row .highlight-yellow { font-size: 0.6rem; }
-            .pair-input-area input {
-                width: 160px;
-                font-size: 1.2rem;
-                height: 44px;
-            }
-            .mode1-input-wrapper input {
-                width: 150px;
-                font-size: 1.2rem;
-                height: 44px;
-            }
-            .mode1-input-suffix {
-                font-size: 1.2rem;
-                height: 44px;
-                padding: 0 12px;
-            }
+            .pair-input-area input { width: 160px; font-size: 1.2rem; height: 44px; }
+            .mode1-input-wrapper input { width: 150px; font-size: 1.2rem; height: 44px; }
+            .mode1-input-suffix { font-size: 1.2rem; height: 44px; padding: 0 12px; }
             .color-toggle { font-size: 0.75rem; }
-            .color-input-wrap input {
-                width: 85px;
-                height: 32px;
-                font-size: 0.75rem;
-            }
-            .btn-small {
-                font-size: 0.65rem;
-                padding: 2px 10px;
-                min-height: 28px;
-            }
-            .sol-options button {
-                font-size: 1rem;
-                padding: 5px 16px;
-                min-height: 40px;
-            }
-            .colour-input-row input {
-                width: 130px;
-                font-size: 0.95rem;
-                height: 38px;
-            }
-            .colour-input-row .btn-colourless {
-                font-size: 0.85rem;
-                height: 38px;
-                padding: 0 12px;
-            }
+            .color-input-wrap input { width: 85px; height: 32px; font-size: 0.75rem; }
+            .btn-small { font-size: 0.65rem; padding: 2px 10px; min-height: 28px; }
+            .sol-options button { font-size: 1rem; padding: 5px 16px; min-height: 40px; }
+            .colour-input-row input { width: 130px; font-size: 0.95rem; height: 38px; }
+            .colour-input-row .btn-colourless { font-size: 0.85rem; height: 38px; padding: 0 12px; }
             .pair-display { font-size: 1.1rem; }
             .pair-display small { font-size: 0.95rem; }
             .pair-display-mode4 { font-size: 1.5rem; }
@@ -1433,147 +488,56 @@
             .sol-display small { font-size: 0.95rem; }
             .sol-question-sub { font-size: 1rem; }
             .mode1-display { font-size: 1.5rem; }
-            .modal-box {
-                padding: 16px 18px;
-                max-height: 90vh;
-            }
+            .modal-box { padding: 16px 18px; max-height: 90vh; }
             .modal-header h2 { font-size: 1rem; }
             .modal-body .reference-table { font-size: 0.55rem; }
-            .modal-body .reference-table th {
-                font-size: 0.5rem;
-                padding: 4px 6px;
-            }
-            .modal-body .reference-table td {
-                padding: 4px 6px;
-            }
-            .modal-body .reference-table .ion-symbol {
-                font-size: 0.65rem;
-            }
+            .modal-body .reference-table th { font-size: 0.5rem; padding: 4px 6px; }
+            .modal-body .reference-table td { padding: 4px 6px; }
+            .modal-body .reference-table .ion-symbol { font-size: 0.65rem; }
             .modal-body .ref-sort-group label { font-size: 0.5rem; }
-            .modal-body .ref-sort-group select {
-                font-size: 0.5rem;
-                padding: 2px 8px;
-            }
-            .modal-body .ref-db-btn {
-                font-size: 0.5rem;
-                padding: 2px 10px;
-            }
+            .modal-body .ref-sort-group select { font-size: 0.5rem; padding: 2px 8px; }
+            .modal-body .ref-db-btn { font-size: 0.5rem; padding: 2px 10px; }
             .modal-body .ref-count { font-size: 0.5rem; }
 
-            .tab-content#tabContent5 .elec-container {
-                padding: 0px !important;
-                margin: 0px !important;
-            }
+            .tab-content#tabContent5 .elec-container { padding: 0px !important; margin: 0px !important; }
             .tab-content#tabContent5 .elec-answer-row {
-                gap: 2px !important;
-                flex-wrap: nowrap !important;
-                justify-content: center !important;
-                min-height: 60px !important;
-                padding: 0px !important;
-                margin: 0px !important;
+                gap: 2px !important; flex-wrap: nowrap !important; justify-content: center !important;
+                min-height: 60px !important; padding: 0px !important; margin: 0px !important;
             }
-            .tab-content#tabContent5 .elec-slot.count-slot {
-                flex: 0 0 32px !important;
-                min-width: 32px !important;
-            }
-            .tab-content#tabContent5 .elec-slot.image-slot {
-                flex: 0 0 95px !important;
-                min-width: 95px !important;
-            }
+            .tab-content#tabContent5 .elec-slot.count-slot { flex: 0 0 32px !important; min-width: 32px !important; }
+            .tab-content#tabContent5 .elec-slot.image-slot { flex: 0 0 95px !important; min-width: 95px !important; }
             .tab-content#tabContent5 .elec-count-wrapper {
-                min-height: 32px !important;
-                width: 32px !important;
-                padding: 0px !important;
-                border: none !important;
-                border-radius: 0px !important;
+                min-height: 32px !important; width: 32px !important; padding: 0px !important;
+                border: none !important; border-radius: 0px !important;
             }
-            .tab-content#tabContent5 .elec-count-wrapper .count-number {
-                font-size: 1.2rem !important;
-                line-height: 1 !important;
-            }
+            .tab-content#tabContent5 .elec-count-wrapper .count-number { font-size: 1.2rem !important; line-height: 1 !important; }
             .tab-content#tabContent5 .elec-selector-box {
-                width: 95px !important;
-                min-height: 66px !important;
-                padding: 0px !important;
-                border: none !important;
-                border-radius: 0px !important;
-                background: #f0f0f0 !important;
+                width: 95px !important; min-height: 66px !important; padding: 0px !important;
+                border: none !important; border-radius: 0px !important; background: #f0f0f0 !important;
             }
-            .tab-content#tabContent5 .elec-selector-box img {
-                width: 100% !important;
-                height: 100% !important;
-                object-fit: contain !important;
-                display: block !important;
-            }
-            .tab-content#tabContent5 .elec-selector-box .placeholder {
-                font-size: 0.6rem !important;
-                line-height: 1.2 !important;
-            }
+            .tab-content#tabContent5 .elec-selector-box img { width: 100% !important; height: 100% !important; object-fit: contain !important; display: block !important; }
+            .tab-content#tabContent5 .elec-selector-box .placeholder { font-size: 0.6rem !important; line-height: 1.2 !important; }
             .tab-content#tabContent5 .elec-selector-box.color-red { background: #ffe0e0 !important; border: none !important; }
             .tab-content#tabContent5 .elec-selector-box.color-yellow { background: #fff8e0 !important; border: none !important; }
             .tab-content#tabContent5 .elec-selector-box.color-green { background: #e0f5e0 !important; border: none !important; }
             .tab-content#tabContent5 .elec-selector-box.color-blue { background: #e0ecff !important; border: none !important; }
-            .tab-content#tabContent5 .elec-selector-box.has-image {
-                background: white !important;
-                border: none !important;
-                border-radius: 0px !important;
-                padding: 0px !important;
-            }
-            .tab-content#tabContent5 .elec-modal-box {
-                padding: 10px 8px 12px;
-                max-width: 380px;
-            }
-            .tab-content#tabContent5 .elec-modal-body {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 3px;
-            }
-            .tab-content#tabContent5 .elec-modal-option {
-                min-height: 56px;
-                padding: 1px;
-            }
-            .tab-content#tabContent5 .elec-modal-option img {
-                max-width: 56px;
-            }
-            .tab-content#tabContent5 .elec-question-area .elec-q-name {
-                font-size: 1.3rem;
-            }
-            .tab-content#tabContent5 .elec-btn-row .btn {
-                font-size: 0.8rem;
-                padding: 6px 10px;
-                min-height: 34px;
-            }
+            .tab-content#tabContent5 .elec-selector-box.has-image { background: white !important; border: none !important; border-radius: 0px !important; padding: 0px !important; }
+            .tab-content#tabContent5 .elec-modal-box { padding: 10px 8px 12px; max-width: 380px; }
+            .tab-content#tabContent5 .elec-modal-body { grid-template-columns: repeat(4, 1fr); gap: 3px; }
+            .tab-content#tabContent5 .elec-modal-option { min-height: 56px; padding: 1px; }
+            .tab-content#tabContent5 .elec-modal-option img { max-width: 56px; }
+            .tab-content#tabContent5 .elec-question-area .elec-q-name { font-size: 1.3rem; }
+            .tab-content#tabContent5 .elec-btn-row .btn { font-size: 0.8rem; padding: 6px 10px; min-height: 34px; }
         }
-
         @media (max-width: 400px) {
-            .tab-content#tabContent5 .elec-slot.count-slot {
-                flex: 0 0 28px !important;
-                min-width: 28px !important;
-            }
-            .tab-content#tabContent5 .elec-slot.image-slot {
-                flex: 0 0 80px !important;
-                min-width: 80px !important;
-            }
-            .tab-content#tabContent5 .elec-count-wrapper {
-                width: 28px !important;
-                min-height: 26px !important;
-            }
-            .tab-content#tabContent5 .elec-count-wrapper .count-number {
-                font-size: 1rem !important;
-            }
-            .tab-content#tabContent5 .elec-selector-box {
-                width: 80px !important;
-                min-height: 56px !important;
-            }
-            .tab-content#tabContent5 .elec-modal-body {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 3px;
-            }
-            .tab-content#tabContent5 .elec-modal-option {
-                min-height: 48px;
-            }
-            .tab-content#tabContent5 .elec-modal-option img {
-                max-width: 44px;
-            }
+            .tab-content#tabContent5 .elec-slot.count-slot { flex: 0 0 28px !important; min-width: 28px !important; }
+            .tab-content#tabContent5 .elec-slot.image-slot { flex: 0 0 80px !important; min-width: 80px !important; }
+            .tab-content#tabContent5 .elec-count-wrapper { width: 28px !important; min-height: 26px !important; }
+            .tab-content#tabContent5 .elec-count-wrapper .count-number { font-size: 1rem !important; }
+            .tab-content#tabContent5 .elec-selector-box { width: 80px !important; min-height: 56px !important; }
+            .tab-content#tabContent5 .elec-modal-body { grid-template-columns: repeat(3, 1fr); gap: 3px; }
+            .tab-content#tabContent5 .elec-modal-option { min-height: 48px; }
+            .tab-content#tabContent5 .elec-modal-option img { max-width: 44px; }
         }
     </style>
 </head>
@@ -1583,9 +547,7 @@
 <div class="welcome-screen" id="welcomeScreen">
     <div class="icon">🧪</div>
     <h1>離子與化合物 · 練習</h1>
-    <div class="sub" style="font-size:0.95rem; line-height:1.6;">
-        Chapter 7 Ionic Compounds
-    </div>
+    <div class="sub" style="font-size:0.95rem; line-height:1.6;">Chapter 7 Ionic Compounds</div>
     <div class="stats-badge">📚 離子 + 化合物 綜合練習</div>
     <p style="color: #7a5a9a; margin-bottom: 24px; font-weight: 400;">
         請選擇您的語言<br><span style="font-size: 0.9rem; opacity: 0.7;">Please select your language</span>
@@ -1669,9 +631,7 @@
                 </div>
                 <div class="split-panel">
                     <div class="split-left">
-                        <div class="mode0-display" id="mode0Display">
-                            iron(II) ion <span class="chinese">(鐵(II)離子)</span>
-                        </div>
+                        <div class="mode0-display" id="mode0Display">iron(II) ion <span class="chinese">(鐵(II)離子)</span></div>
                         <div class="mode0-input-area">
                             <div class="symbol-group">
                                 <label for="symbolInput">符號</label>
@@ -1846,25 +806,21 @@
                     </div>
 
                     <div class="elec-answer-row" id="elecAnswerRow">
-                        <!-- 正離子數量 -->
                         <div class="elec-slot count-slot">
                             <div class="elec-count-wrapper" id="cationCountWrapper">
                                 <span class="count-number" id="cationCountDisplay"></span>
                             </div>
                         </div>
-                        <!-- 正離子圖片 -->
                         <div class="elec-slot image-slot">
                             <div class="elec-selector-box color-red" id="cationImgBox">
                                 <span class="placeholder" id="cationPlaceholder">選<br>正離子</span>
                             </div>
                         </div>
-                        <!-- 負離子數量 -->
                         <div class="elec-slot count-slot">
                             <div class="elec-count-wrapper" id="anionCountWrapper">
                                 <span class="count-number" id="anionCountDisplay"></span>
                             </div>
                         </div>
-                        <!-- 負離子圖片 -->
                         <div class="elec-slot image-slot">
                             <div class="elec-selector-box color-blue" id="anionImgBox">
                                 <span class="placeholder" id="anionPlaceholder">選<br>負離子</span>
@@ -1906,7 +862,7 @@
 
 <script>
     // ============================================================
-    //  完整 JavaScript
+    //  完整 JavaScript（最終修正版）
     // ============================================================
     (function() {
         // ---- 離子資料庫 ----
@@ -2078,9 +1034,7 @@
         let currentCompound2 = null;
         let currentCompound3 = null;
         let currentCompound5 = null;
-
         let solSelectedSoluble = null;
-
         let currentIon = null;
         let isAnsweredCorrectly = false;
         let totalAttempts = 0;
@@ -2803,6 +1757,7 @@
 
         // ---- 電子圖功能 ----
         function elecGcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; }
+
         function elecGetImageUrl(ion) { return ELEC_IMAGE_BASE + ion.img; }
 
         function elecFormatSubscript(str) {
@@ -2813,15 +1768,9 @@
         function elecGenerateQuestionPool() {
             const pool = [];
             const ideMap = {
-                'hydrogen': 'hydride',
-                'nitrogen': 'nitride',
-                'oxygen': 'oxide',
-                'fluorine': 'fluoride',
-                'phosphorus': 'phosphide',
-                'sulphur': 'sulphide',
-                'chlorine': 'chloride',
-                'bromine': 'bromide',
-                'iodine': 'iodide'
+                'hydrogen': 'hydride', 'nitrogen': 'nitride', 'oxygen': 'oxide',
+                'fluorine': 'fluoride', 'phosphorus': 'phosphide', 'sulphur': 'sulphide',
+                'chlorine': 'chloride', 'bromine': 'bromide', 'iodine': 'iodide'
             };
             for (const cation of ELEC_CATIONS) {
                 for (const anion of ELEC_ANIONS) {
@@ -2867,59 +1816,62 @@
             elecModal.classList.add('active');
         }
 
+        // ===== 核心修正：elecLoadQuestion =====
         function elecLoadQuestion() {
-    if (elecQuestionPool.length === 0) elecQuestionPool = elecGenerateQuestionPool();
-    const idx = Math.floor(Math.random() * elecQuestionPool.length);
-    elecCurrentQuestion = elecQuestionPool[idx];
-    elecQuestionPool.splice(idx, 1);
-    if (elecQuestionPool.length === 0) elecQuestionPool = elecGenerateQuestionPool();
+            if (elecQuestionPool.length === 0) elecQuestionPool = elecGenerateQuestionPool();
+            const idx = Math.floor(Math.random() * elecQuestionPool.length);
+            elecCurrentQuestion = elecQuestionPool[idx];
+            elecQuestionPool.splice(idx, 1);
+            if (elecQuestionPool.length === 0) elecQuestionPool = elecGenerateQuestionPool();
 
-    elecUpdateNameDisplay();
+            elecUpdateNameDisplay();
 
-    elecSelectedCation = null;
-    elecSelectedAnion = null;
-    elecSelectedCationCount = 0;
-    elecSelectedAnionCount = 0;
-    elecIsAnsweredCorrectly = false;
+            elecSelectedCation = null;
+            elecSelectedAnion = null;
+            elecSelectedCationCount = 0;
+            elecSelectedAnionCount = 0;
+            elecIsAnsweredCorrectly = false;
 
-    cationImgBox.innerHTML = `<span class="placeholder" id="cationPlaceholder">${
-        currentLang === 'zh' ? '選\n正離子' : 'Choose the\ncation'
-    }</span>`;
-    cationImgBox.className = 'elec-selector-box color-red';
-    anionImgBox.innerHTML = `<span class="placeholder" id="anionPlaceholder">${
-        currentLang === 'zh' ? '選\n負離子' : 'Choose the\nanion'
-    }</span>`;
-    anionImgBox.className = 'elec-selector-box color-blue';
+            cationImgBox.innerHTML = `<span class="placeholder" id="cationPlaceholder">${currentLang === 'zh' ? '選\n正離子' : 'Choose the\ncation'}</span>`;
+            cationImgBox.className = 'elec-selector-box color-red';
+            anionImgBox.innerHTML = `<span class="placeholder" id="anionPlaceholder">${currentLang === 'zh' ? '選\n負離子' : 'Choose the\nanion'}</span>`;
+            anionImgBox.className = 'elec-selector-box color-blue';
 
-    // ===== 重點：預設紫色，吉嘅 =====
-    cationCountDisplay.textContent = '';
-    cationCountDisplay.className = 'count-number';
-    cationCountWrapper.style.background = '#e8dff0';
-    cationCountWrapper.style.border = '2px solid #c8b8d8';
-    cationCountWrapper.style.borderRadius = '10px';
+            // 重置：紫色背景，吉嘅，移除 has-value
+            cationCountDisplay.textContent = '';
+            cationCountDisplay.className = 'count-number';
+            cationCountDisplay.classList.remove('hidden');
+            cationCountWrapper.style.background = '#e8dff0';
+            cationCountWrapper.style.border = '2px solid #c8b8d8';
+            cationCountWrapper.style.borderRadius = '10px';
+            cationCountWrapper.classList.remove('has-value');
 
-    anionCountDisplay.textContent = '';
-    anionCountDisplay.className = 'count-number';
-    anionCountWrapper.style.background = '#e8dff0';
-    anionCountWrapper.style.border = '2px solid #c8b8d8';
-    anionCountWrapper.style.borderRadius = '10px';
+            anionCountDisplay.textContent = '';
+            anionCountDisplay.className = 'count-number';
+            anionCountDisplay.classList.remove('hidden');
+            anionCountWrapper.style.background = '#e8dff0';
+            anionCountWrapper.style.border = '2px solid #c8b8d8';
+            anionCountWrapper.style.borderRadius = '10px';
+            anionCountWrapper.classList.remove('has-value');
 
-    const nextBtn = document.querySelector('.next-btn[data-tab="5"]');
-    if (nextBtn) nextBtn.disabled = true;
+            // 重置電荷顯示
+            const msg = currentLang === 'zh' ? '⚡ 請選擇完整的離子組合' : '⚡ Please select a complete ion combination';
+            elecChargeDisplay.className = 'elec-charge-display';
+            elecChargeDisplay.innerHTML = msg;
+            const other = document.getElementById('chargeDisplay');
+            if (other) { other.className = 'elec-charge-display'; other.innerHTML = msg; }
 
-    setElecFeedback('✏️', currentLang === 'zh' ? '選擇離子開始練習' : 'Select ions to start', '', null);
-    elecUpdateChargeAndFormula();
-    updateButtonLabels();
-    elecUpdateUI();
-}
+            const nextBtn = document.querySelector('.next-btn[data-tab="5"]');
+            if (nextBtn) nextBtn.disabled = true;
+
+            setElecFeedback('✏️', currentLang === 'zh' ? '選擇離子開始練習' : 'Select ions to start', '', null);
+            updateButtonLabels();
+            elecUpdateUI();
+        }
 
         function elecUpdateNameDisplay() {
             if (!elecCurrentQuestion) return;
-            if (currentLang === 'zh') {
-                elecNameDisplay.textContent = elecCurrentQuestion.name_zh;
-            } else {
-                elecNameDisplay.textContent = elecCurrentQuestion.name_en;
-            }
+            elecNameDisplay.textContent = currentLang === 'zh' ? elecCurrentQuestion.name_zh : elecCurrentQuestion.name_en;
         }
 
         function elecUpdateUI() {
@@ -2935,87 +1887,206 @@
             elecUpdateChargeAndFormula();
         }
 
-function elecUpdateChargeAndFormula() {
-    // ===== 正離子 =====
-    if (elecSelectedCationCount === 0) {
-        cationCountDisplay.textContent = '';
-        cationCountDisplay.classList.remove('hidden');
-        cationCountWrapper.style.background = '#e8dff0';
-        cationCountWrapper.style.border = '2px solid #c8b8d8';
-        cationCountWrapper.style.borderRadius = '10px';
-    } else if (elecSelectedCationCount === 1) {
-        cationCountDisplay.textContent = '';
-        cationCountDisplay.classList.add('hidden');
-        cationCountWrapper.style.background = 'transparent';
-        cationCountWrapper.style.border = 'none';
-        cationCountWrapper.style.borderRadius = '0';
-    } else {
-        cationCountDisplay.textContent = elecSelectedCationCount;
-        cationCountDisplay.classList.remove('hidden');
-        cationCountWrapper.style.background = 'white';
-        cationCountWrapper.style.border = 'none';
-        cationCountWrapper.style.borderRadius = '0';
-    }
+        // ===== 核心修正：elecUpdateChargeAndFormula =====
+        function elecUpdateChargeAndFormula() {
+            // 正離子
+            if (elecSelectedCationCount === 0) {
+                cationCountDisplay.textContent = '';
+                cationCountDisplay.classList.remove('hidden');
+                cationCountWrapper.style.background = '#e8dff0';
+                cationCountWrapper.style.border = '2px solid #c8b8d8';
+                cationCountWrapper.style.borderRadius = '10px';
+                cationCountWrapper.classList.remove('has-value');
+            } else if (elecSelectedCationCount === 1) {
+                cationCountDisplay.textContent = '';
+                cationCountDisplay.classList.add('hidden');
+                cationCountWrapper.style.background = 'transparent';
+                cationCountWrapper.style.border = 'none';
+                cationCountWrapper.style.borderRadius = '0';
+                cationCountWrapper.classList.add('has-value');
+            } else {
+                cationCountDisplay.textContent = elecSelectedCationCount;
+                cationCountDisplay.classList.remove('hidden');
+                cationCountWrapper.style.background = 'white';
+                cationCountWrapper.style.border = 'none';
+                cationCountWrapper.style.borderRadius = '0';
+                cationCountWrapper.classList.add('has-value');
+            }
 
-    // ===== 負離子 =====
-    if (elecSelectedAnionCount === 0) {
-        anionCountDisplay.textContent = '';
-        anionCountDisplay.classList.remove('hidden');
-        anionCountWrapper.style.background = '#e8dff0';
-        anionCountWrapper.style.border = '2px solid #c8b8d8';
-        anionCountWrapper.style.borderRadius = '10px';
-    } else if (elecSelectedAnionCount === 1) {
-        anionCountDisplay.textContent = '';
-        anionCountDisplay.classList.add('hidden');
-        anionCountWrapper.style.background = 'transparent';
-        anionCountWrapper.style.border = 'none';
-        anionCountWrapper.style.borderRadius = '0';
-    } else {
-        anionCountDisplay.textContent = elecSelectedAnionCount;
-        anionCountDisplay.classList.remove('hidden');
-        anionCountWrapper.style.background = 'white';
-        anionCountWrapper.style.border = 'none';
-        anionCountWrapper.style.borderRadius = '0';
-    }
+            // 負離子
+            if (elecSelectedAnionCount === 0) {
+                anionCountDisplay.textContent = '';
+                anionCountDisplay.classList.remove('hidden');
+                anionCountWrapper.style.background = '#e8dff0';
+                anionCountWrapper.style.border = '2px solid #c8b8d8';
+                anionCountWrapper.style.borderRadius = '10px';
+                anionCountWrapper.classList.remove('has-value');
+            } else if (elecSelectedAnionCount === 1) {
+                anionCountDisplay.textContent = '';
+                anionCountDisplay.classList.add('hidden');
+                anionCountWrapper.style.background = 'transparent';
+                anionCountWrapper.style.border = 'none';
+                anionCountWrapper.style.borderRadius = '0';
+                anionCountWrapper.classList.add('has-value');
+            } else {
+                anionCountDisplay.textContent = elecSelectedAnionCount;
+                anionCountDisplay.classList.remove('hidden');
+                anionCountWrapper.style.background = 'white';
+                anionCountWrapper.style.border = 'none';
+                anionCountWrapper.style.borderRadius = '0';
+                anionCountWrapper.classList.add('has-value');
+            }
 
-    // ===== 電荷計算 =====
-    if (!elecSelectedCation || !elecSelectedAnion) {
-        const msg = currentLang === 'zh' ? '⚡ 請選擇完整的離子組合' : '⚡ Please select a complete ion combination';
-        elecChargeDisplay.className = 'elec-charge-display';
-        elecChargeDisplay.innerHTML = msg;
-        return;
-    }
+            // 電荷計算
+            if (!elecSelectedCation || !elecSelectedAnion) {
+                const msg = currentLang === 'zh' ? '⚡ 請選擇完整的離子組合' : '⚡ Please select a complete ion combination';
+                elecChargeDisplay.className = 'elec-charge-display';
+                elecChargeDisplay.innerHTML = msg;
+                const other = document.getElementById('chargeDisplay');
+                if (other) { other.className = 'elec-charge-display'; other.innerHTML = msg; }
+                return;
+            }
 
-    const cationCount = elecSelectedCationCount === 0 ? 1 : elecSelectedCationCount;
-    const anionCount = elecSelectedAnionCount === 0 ? 1 : elecSelectedAnionCount;
-    const total = (cationCount * elecSelectedCation.charge) + (anionCount * elecSelectedAnion.charge);
+            const cationCount = elecSelectedCationCount === 0 ? 1 : elecSelectedCationCount;
+            const anionCount = elecSelectedAnionCount === 0 ? 1 : elecSelectedAnionCount;
+            const total = (cationCount * elecSelectedCation.charge) + (anionCount * elecSelectedAnion.charge);
 
-    let cationStr = cationCount > 1 ? cationCount + ' × ' : '';
-    cationStr += elecSelectedCation.charge > 0 ? '+' + elecSelectedCation.charge : elecSelectedCation.charge;
-    let anionStr = anionCount > 1 ? anionCount + ' × ' : '';
-    anionStr += elecSelectedAnion.charge;
+            let cationStr = cationCount > 1 ? cationCount + ' × ' : '';
+            cationStr += elecSelectedCation.charge > 0 ? '+' + elecSelectedCation.charge : elecSelectedCation.charge;
+            let anionStr = anionCount > 1 ? anionCount + ' × ' : '';
+            anionStr += elecSelectedAnion.charge;
 
-    let html = `${cationStr} + ${anionStr} = `;
-    let className = 'elec-charge-display';
-    if (total === 0) {
-        html += `<span class="green">0</span> ${currentLang === 'zh' ? '✅ 電荷守恆' : '✅ Charge balanced'}`;
-        className += ' balanced';
-    } else {
-        html += `<span class="red">${total >= 0 ? '+' : ''}${total}</span> ${currentLang === 'zh' ? '⚠️ 不平衡' : '⚠️ Unbalanced'}`;
-        className += ' unbalanced';
-    }
+            let html = `${cationStr} + ${anionStr} = `;
+            let className = 'elec-charge-display';
+            if (total === 0) {
+                html += `<span class="green">0</span> ${currentLang === 'zh' ? '✅ 電荷守恆' : '✅ Charge balanced'}`;
+                className += ' balanced';
+            } else {
+                html += `<span class="red">${total >= 0 ? '+' : ''}${total}</span> ${currentLang === 'zh' ? '⚠️ 不平衡' : '⚠️ Unbalanced'}`;
+                className += ' unbalanced';
+            }
 
-    // 🔥 更新兩個 display
-    elecChargeDisplay.className = className;
-    elecChargeDisplay.innerHTML = '⚡ ' + html;
+            elecChargeDisplay.className = className;
+            elecChargeDisplay.innerHTML = '⚡ ' + html;
+            const other = document.getElementById('chargeDisplay');
+            if (other) {
+                other.className = className;
+                other.innerHTML = '⚡ ' + html;
+            }
+        }
 
-    // 同時更新另一個 display（如果存在）
-    const otherDisplay = document.getElementById('chargeDisplay');
-    if (otherDisplay) {
-        otherDisplay.className = className;
-        otherDisplay.innerHTML = '⚡ ' + html;
-    }
-}
+        // ===== 核心修正：elecCheckAnswer =====
+        function elecCheckAnswer() {
+            if (!elecSelectedCation || !elecSelectedAnion) {
+                setElecFeedback('⚠️', currentLang === 'zh' ? '請選擇完整的離子組合' : 'Please select a complete ion combination', '', 'error');
+                return;
+            }
+            if (elecIsAnsweredCorrectly) {
+                setElecFeedback('✅', currentLang === 'zh' ? '已答對，請點「下一題」' : 'Correct! Click "Next"', '', 'success');
+                return;
+            }
+
+            const cationCount = elecSelectedCationCount === 0 ? 1 : elecSelectedCationCount;
+            const anionCount = elecSelectedAnionCount === 0 ? 1 : elecSelectedAnionCount;
+
+            const total = (cationCount * elecSelectedCation.charge) + (anionCount * elecSelectedAnion.charge);
+            if (total !== 0) {
+                setElecFeedback('❌', currentLang === 'zh' ? '電荷不平衡！' : 'Charge imbalance!', `${currentLang === 'zh' ? '總電荷為' : 'Total charge is'} ${total >= 0 ? '+' : ''}${total}`, 'error');
+                updateChargeDisplay(total, cationCount, anionCount);
+                return;
+            }
+
+            const g = elecGcd(cationCount, anionCount);
+            if (g > 1) {
+                setElecFeedback('⚠️', currentLang === 'zh' ? '不是最簡比！' : 'Not in simplest ratio!', `${currentLang === 'zh' ? '可約分為' : 'Can be reduced to'} ${cationCount/g} : ${anionCount/g}`, 'error');
+                updateChargeDisplay(total, cationCount, anionCount);
+                return;
+            }
+
+            const q = elecCurrentQuestion;
+            // 用 cationCount / anionCount 比較（0 當作 1）
+            const correct = elecSelectedCation.id === q.cation.id && 
+                            elecSelectedAnion.id === q.anion.id &&
+                            cationCount === q.cationCount && 
+                            anionCount === q.anionCount;
+                            
+            if (correct) {
+                elecIsAnsweredCorrectly = true;
+                const nextBtn = document.querySelector('.next-btn[data-tab="5"]');
+                if (nextBtn) nextBtn.disabled = false;
+                const formattedFormula = elecFormatSubscript(q.formula);
+                const detail = `${currentLang === 'zh' ? '你組合出 ' : 'You formed '}<span class="formula-big">${formattedFormula}</span>`;
+                setElecFeedback('✅', currentLang === 'zh' ? '完全正確！🎉' : 'Perfect! 🎉', detail, 'success');
+                updateChargeDisplay(total, cationCount, anionCount);
+            } else {
+                const formattedFormula = elecFormatSubscript(q.formula);
+                const name = currentLang === 'zh' ? q.name_zh : q.name_en;
+                const detail = `${currentLang === 'zh' ? '題目要求 ' : 'Expected '}<span class="formula-big">${formattedFormula}</span>（${name}）`;
+                setElecFeedback('❌', currentLang === 'zh' ? '組合不正確' : 'Incorrect combination', detail, 'error');
+                updateChargeDisplay(total, cationCount, anionCount);
+            }
+            updateButtonLabels();
+        }
+
+        // ===== 核心修正：updateChargeDisplay（輔助函數） =====
+        function updateChargeDisplay(total, cationCount, anionCount) {
+            if (!elecSelectedCation || !elecSelectedAnion) {
+                const msg = currentLang === 'zh' ? '⚡ 請選擇完整的離子組合' : '⚡ Please select a complete ion combination';
+                elecChargeDisplay.className = 'elec-charge-display';
+                elecChargeDisplay.innerHTML = msg;
+                const other = document.getElementById('chargeDisplay');
+                if (other) { other.className = 'elec-charge-display'; other.innerHTML = msg; }
+                return;
+            }
+            
+            const cCount = cationCount !== undefined ? cationCount : (elecSelectedCationCount === 0 ? 1 : elecSelectedCationCount);
+            const aCount = anionCount !== undefined ? anionCount : (elecSelectedAnionCount === 0 ? 1 : elecSelectedAnionCount);
+            const t = total !== undefined ? total : (cCount * elecSelectedCation.charge) + (aCount * elecSelectedAnion.charge);
+            
+            let cationStr = cCount > 1 ? cCount + ' × ' : '';
+            cationStr += elecSelectedCation.charge > 0 ? '+' + elecSelectedCation.charge : elecSelectedCation.charge;
+            let anionStr = aCount > 1 ? aCount + ' × ' : '';
+            anionStr += elecSelectedAnion.charge;
+
+            let html = `${cationStr} + ${anionStr} = `;
+            let className = 'elec-charge-display';
+            if (t === 0) {
+                html += `<span class="green">0</span> ${currentLang === 'zh' ? '✅ 電荷守恆' : '✅ Charge balanced'}`;
+                className += ' balanced';
+            } else {
+                html += `<span class="red">${t >= 0 ? '+' : ''}${t}</span> ${currentLang === 'zh' ? '⚠️ 不平衡' : '⚠️ Unbalanced'}`;
+                className += ' unbalanced';
+            }
+            
+            elecChargeDisplay.className = className;
+            elecChargeDisplay.innerHTML = '⚡ ' + html;
+            
+            const other = document.getElementById('chargeDisplay');
+            if (other) {
+                other.className = className;
+                other.innerHTML = '⚡ ' + html;
+            }
+        }
+
+        // ===== 核心修正：elecShowCountSelector =====
+        function elecShowCountSelector(type) {
+            const title = currentLang === 'zh' ? '選擇數量 (1-3)' : 'Select count (1-3)';
+            const options = [1, 2, 3].map(n => ({ label: n }));
+            elecShowModal(options, title, (index) => {
+                const val = index + 1;
+                if (type === 'cation') {
+                    elecSelectedCationCount = val;
+                } else {
+                    elecSelectedAnionCount = val;
+                }
+                elecIsAnsweredCorrectly = false;
+                const nextBtn = document.querySelector('.next-btn[data-tab="5"]');
+                if (nextBtn) nextBtn.disabled = true;
+                setElecFeedback('✏️', currentLang === 'zh' ? '已調整數量' : 'Count adjusted', '', null);
+                elecUpdateChargeAndFormula();
+                updateButtonLabels();
+            });
+        }
 
         function elecShowIonSelector(type) {
             const ions = type === 'cation' ? ELEC_CATIONS : ELEC_ANIONS;
@@ -3051,66 +2122,6 @@ function elecUpdateChargeAndFormula() {
             });
         }
 
-        function elecShowCountSelector(type) {
-            const title = currentLang === 'zh' ? '選擇數量 (1-3)' : 'Select count (1-3)';
-            const options = [1, 2, 3].map(n => ({ label: n }));
-            elecShowModal(options, title, (index) => {
-                const val = index + 1;
-                if (type === 'cation') {
-                    elecSelectedCationCount = val;
-                } else {
-                    elecSelectedAnionCount = val;
-                }
-                elecIsAnsweredCorrectly = false;
-                const nextBtn = document.querySelector('.next-btn[data-tab="5"]');
-                if (nextBtn) nextBtn.disabled = true;
-                setElecFeedback('✏️', currentLang === 'zh' ? '已調整數量' : 'Count adjusted', '', null);
-                elecUpdateChargeAndFormula();
-                updateButtonLabels();
-            });
-        }
-
-        function elecCheckAnswer() {
-            if (!elecSelectedCation || !elecSelectedAnion) {
-                setElecFeedback('⚠️', currentLang === 'zh' ? '請選擇完整的離子組合' : 'Please select a complete ion combination', '', 'error');
-                return;
-            }
-            if (elecIsAnsweredCorrectly) {
-                setElecFeedback('✅', currentLang === 'zh' ? '已答對，請點「下一題」' : 'Correct! Click "Next"', '', 'success');
-                return;
-            }
-
-            const total = (elecSelectedCationCount * elecSelectedCation.charge) + (elecSelectedAnionCount * elecSelectedAnion.charge);
-            if (total !== 0) {
-                setElecFeedback('❌', currentLang === 'zh' ? '電荷不平衡！' : 'Charge imbalance!', `${currentLang === 'zh' ? '總電荷為' : 'Total charge is'} ${total >= 0 ? '+' : ''}${total}`, 'error');
-                return;
-            }
-
-            const g = elecGcd(elecSelectedCationCount, elecSelectedAnionCount);
-            if (g > 1) {
-                setElecFeedback('⚠️', currentLang === 'zh' ? '不是最簡比！' : 'Not in simplest ratio!', `${currentLang === 'zh' ? '可約分為' : 'Can be reduced to'} ${elecSelectedCationCount/g} : ${elecSelectedAnionCount/g}`, 'error');
-                return;
-            }
-
-            const q = elecCurrentQuestion;
-            const correct = elecSelectedCation.id === q.cation.id && elecSelectedAnion.id === q.anion.id &&
-                elecSelectedCationCount === q.cationCount && elecSelectedAnionCount === q.anionCount;
-            if (correct) {
-                elecIsAnsweredCorrectly = true;
-                const nextBtn = document.querySelector('.next-btn[data-tab="5"]');
-                if (nextBtn) nextBtn.disabled = false;
-                const formattedFormula = elecFormatSubscript(q.formula);
-                const detail = `${currentLang === 'zh' ? '你組合出 ' : 'You formed '}<span class="formula-big">${formattedFormula}</span>`;
-                setElecFeedback('✅', currentLang === 'zh' ? '完全正確！🎉' : 'Perfect! 🎉', detail, 'success');
-            } else {
-                const formattedFormula = elecFormatSubscript(q.formula);
-                const name = currentLang === 'zh' ? q.name_zh : q.name_en;
-                const detail = `${currentLang === 'zh' ? '題目要求 ' : 'Expected '}<span class="formula-big">${formattedFormula}</span>（${name}）`;
-                setElecFeedback('❌', currentLang === 'zh' ? '組合不正確' : 'Incorrect combination', detail, 'error');
-            }
-            updateButtonLabels();
-        }
-
         // ---- 頁籤切換 ----
         function switchTab(tabIndex) {
             currentTab = tabIndex;
@@ -3119,8 +2130,7 @@ function elecUpdateChargeAndFormula() {
                 tabContents[i].classList.toggle('active', i === tabIndex);
             }
 
-            let isIonTab = (tabIndex === 0 || tabIndex === 1);
-            if (isIonTab) {
+            if (tabIndex === 0 || tabIndex === 1) {
                 toggleRowIon.style.display = 'flex';
             } else {
                 toggleRowIon.style.display = 'none';
