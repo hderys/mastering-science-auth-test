@@ -924,24 +924,26 @@
         }
 
         /* ================================================================
-           手機版專屬調整 (max-width: 768px)
+           手機版專屬調整 (max-width: 768px) - 重新設計
            ================================================================ */
         @media (max-width: 768px) {
             .card {
-                padding: 0.3rem 0.5rem;
+                padding: 0.3rem 0.4rem;
                 border-radius: 16px;
                 max-height: 100vh;
                 height: 100vh;
                 overflow: hidden;
             }
+
+            /* 頂部導航精簡 */
             .header-left select {
                 font-size: 0.55rem;
-                max-width: 90px;
+                max-width: 85px;
             }
             .header-funcs .func-btn {
-                font-size: 0.35rem;
-                padding: 1px 4px;
-                min-height: 18px;
+                font-size: 0.4rem;
+                padding: 1px 5px;
+                min-height: 20px;
             }
             .header-tabs .tab-btn {
                 font-size: 0.4rem;
@@ -949,156 +951,260 @@
                 min-height: 20px;
             }
             .lang-btn {
-                font-size: 0.35rem;
-                padding: 1px 4px;
+                font-size: 0.4rem;
+                padding: 1px 5px;
             }
 
+            /* 提示行 + 平衡開關 */
             .hint-row-wrap .hint-text {
-                font-size: 0.4rem;
+                font-size: 0.45rem;
             }
             .hint-row-wrap .balance-toggle-compact {
-                font-size: 0.35rem;
-                padding: 1px 5px 1px 3px;
+                font-size: 0.4rem;
+                padding: 1px 6px 1px 4px;
             }
             .hint-row-wrap .balance-toggle-compact input {
-                width: 14px;
-                height: 14px;
+                width: 16px;
+                height: 16px;
             }
 
+            /* ===== 抽題區：3項同一行 ===== */
             .top-row {
-                gap: 3px 6px;
-                padding: 2px 0;
+                display: flex;
+                flex-wrap: nowrap;
+                justify-content: space-between;
+                gap: 4px;
+                padding: 3px 0;
             }
             .top-row .spin-box {
-                padding: 2px 6px;
-                min-width: 40px;
+                flex: 1;
+                min-width: 0;
+                padding: 2px 4px;
             }
             .top-row .spin-box .label {
-                font-size: 0.35rem;
+                font-size: 0.4rem;
             }
             .top-row .spin-box .value {
-                font-size: 0.8rem;
+                font-size: 0.85rem;
                 min-height: 1.1rem;
             }
             .top-row .btn-spin {
-                font-size: 0.6rem;
+                font-size: 0.7rem;
                 padding: 3px 10px;
-                min-height: 28px;
-            }
-            .top-row .arrow-display {
-                font-size: 0.8rem;
-                min-width: 22px;
+                min-height: 32px;
+                flex-shrink: 0;
             }
             .top-row .operator-plus {
                 font-size: 0.8rem;
+                flex-shrink: 0;
+            }
+            .top-row .arrow-display {
+                display: none;
             }
 
+            /* ===== 反應判斷：3項同一行 ===== */
+            .q-row {
+                gap: 3px 4px;
+            }
             .q-label {
-                font-size: 0.45rem;
-                min-width: 35px;
+                font-size: 0.6rem;
+                min-width: 40px;
+                width: 100%;
+            }
+            .q-options {
+                flex: 1;
+                display: flex;
+                gap: 3px;
             }
             .q-options .opt-btn {
-                font-size: 0.45rem;
-                padding: 2px 8px;
-                min-height: 22px;
+                font-size: 0.65rem;
+                padding: 4px 6px;
+                min-height: 30px;
+                flex: 1;
+                text-align: center;
             }
             .btn-check {
-                font-size: 0.45rem;
-                padding: 2px 8px;
-                min-height: 22px;
+                font-size: 0.65rem;
+                padding: 4px 10px;
+                min-height: 30px;
+                flex: 0 1 auto;
+            }
+            /* 反應判斷整行：標籤佔滿寬度，三個按鈕同一行 */
+            .q-row:first-child {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+            .q-row:first-child .q-label {
+                width: 100%;
+                margin-bottom: 2px;
+            }
+            .q-row:first-child .q-options {
+                flex: 2;
+            }
+            .q-row:first-child .btn-check {
+                flex: 0 1 auto;
             }
 
+            /* ===== 產物區：每行3個 ===== */
             .product-group .prod-btn {
-                font-size: 0.4rem;
-                padding: 1px 6px;
-                min-height: 18px;
-                max-width: 80px;
+                font-size: 0.6rem;
+                padding: 5px 4px;
+                min-height: 28px;
+                flex: 1 0 calc(33.33% - 4px);
+                max-width: none;
+                border-radius: 20px;
             }
             .product-group .btn-next-step {
-                font-size: 0.45rem;
-                padding: 2px 8px;
-                min-height: 18px;
+                font-size: 0.6rem;
+                padding: 5px 8px;
+                min-height: 28px;
+                flex: 1 0 calc(33.33% - 4px);
+                max-width: none;
+                text-align: center;
             }
             .product-feedback {
-                font-size: 0.45rem;
+                font-size: 0.5rem;
+                width: 100%;
+                margin-left: 0;
+                margin-top: 2px;
             }
 
+            /* ===== 平衡區 ===== */
             .balance-area .bal-title {
-                font-size: 0.45rem;
+                font-size: 0.5rem;
             }
             .balance-row .term {
-                font-size: 0.5rem;
+                font-size: 0.55rem;
             }
             .balance-row .arrow-symbol {
-                font-size: 0.5rem;
+                font-size: 0.55rem;
             }
             .balance-row .coeff-box {
-                min-width: 18px;
-                height: 18px;
-                line-height: 14px;
-                font-size: 0.5rem;
-                padding: 0 2px;
+                min-width: 24px;
+                height: 24px;
+                line-height: 20px;
+                font-size: 0.55rem;
+                padding: 0 4px;
             }
 
+            /* ===== 觀察區 ===== */
             .obs-section .obs-title {
-                font-size: 0.45rem;
+                font-size: 0.5rem;
+            }
+            .obs-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 3px 4px;
             }
             .obs-row .obs-label {
-                font-size: 0.4rem;
-                min-width: 28px;
+                font-size: 0.5rem;
+                min-width: 32px;
+                width: 100%;
+                margin-bottom: 1px;
             }
             .obs-row select {
-                font-size: 0.4rem;
-                min-height: 18px;
-                min-width: 55px;
-                padding: 1px 4px;
+                font-size: 0.5rem;
+                min-height: 28px;
+                min-width: 60px;
+                padding: 2px 6px;
+                flex: 1 0 calc(50% - 4px);
+            }
+            .obs-row .obs-btn-group {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 3px;
+                width: 100%;
             }
             .obs-row .obs-btn {
-                font-size: 0.35rem;
-                padding: 1px 5px;
-                min-height: 16px;
+                font-size: 0.5rem;
+                padding: 4px 6px;
+                min-height: 28px;
+                flex: 1 0 calc(33.33% - 4px);
+                text-align: center;
+                border-radius: 20px;
+                white-space: nowrap;
             }
-            .color-temp-wrapper {
-                padding: 2px 4px;
+            /* 沉積物只有2個，各佔一半 */
+            #obsRowDeposit .obs-btn {
+                flex: 1 0 calc(50% - 4px);
             }
-            .color-temp-wrapper select {
-                min-width: 40px;
-                font-size: 0.35rem;
-                min-height: 16px;
+            /* 沉澱：藍綠棕 3個一行，白色單獨一行 */
+            #obsRowPpt .obs-btn:nth-child(1),
+            #obsRowPpt .obs-btn:nth-child(2),
+            #obsRowPpt .obs-btn:nth-child(3) {
+                flex: 1 0 calc(33.33% - 4px);
             }
-            .color-temp-wrapper .temp-label {
-                font-size: 0.35rem;
+            #obsRowPpt .obs-btn:nth-child(4) {
+                flex: 1 0 calc(33.33% - 4px);
             }
-            .color-temp-wrapper .temp-arrow {
-                font-size: 0.4rem;
+            /* 其他：氣泡浮起沉底 3個一行，停止溶解 2個一行 */
+            #obsRowOther .obs-btn:nth-child(1),
+            #obsRowOther .obs-btn:nth-child(2),
+            #obsRowOther .obs-btn:nth-child(3) {
+                flex: 1 0 calc(33.33% - 4px);
+            }
+            #obsRowOther .obs-btn:nth-child(4),
+            #obsRowOther .obs-btn:nth-child(5) {
+                flex: 1 0 calc(50% - 4px);
             }
 
-            .feedback-area {
-                padding: 4px 8px;
-                font-size: 0.5rem;
+            /* 顏色溫度子選單 */
+            .color-temp-wrapper {
+                padding: 3px 6px;
+                width: 100%;
+                justify-content: space-around;
+            }
+            .color-temp-wrapper select {
+                min-width: 50px;
+                font-size: 0.45rem;
                 min-height: 24px;
+                flex: 1;
+            }
+            .color-temp-wrapper .temp-label {
+                font-size: 0.4rem;
+            }
+            .color-temp-wrapper .temp-arrow {
+                font-size: 0.5rem;
+            }
+
+            /* 底部檢查按鈕 */
+            .bottom-check-row .btn-check {
+                font-size: 0.7rem;
+                padding: 6px 20px;
+                min-height: 34px;
+            }
+
+            /* ===== 回饋區 ===== */
+            .feedback-area {
+                padding: 4px 10px;
+                font-size: 0.55rem;
+                min-height: 28px;
             }
             .feedback-area .fb-text {
-                font-size: 0.5rem;
+                font-size: 0.55rem;
             }
             .feedback-area .fb-detail {
-                font-size: 0.45rem;
+                font-size: 0.5rem;
                 padding-left: 16px;
             }
 
+            /* 係數彈窗 */
             .coeff-popup {
                 padding: 5px;
                 min-width: 100px;
             }
             .coeff-popup .grid button {
-                font-size: 0.6rem;
-                padding: 3px 0;
+                font-size: 0.7rem;
+                padding: 6px 0;
             }
+
+            /* 活性序表格 */
             .ref-table {
-                font-size: 0.4rem;
+                font-size: 0.45rem;
             }
             .ref-table th {
-                font-size: 0.35rem;
+                font-size: 0.4rem;
                 padding: 2px 3px;
             }
             .ref-table td {
@@ -1108,8 +1214,8 @@
                 font-size: 0.5rem;
             }
             .ref-table .color-dot {
-                width: 12px;
-                height: 12px;
+                width: 14px;
+                height: 14px;
             }
             .modal-box {
                 padding: 10px 12px;
@@ -1119,24 +1225,34 @@
                 font-size: 0.8rem;
             }
 
-            /* 手機版讓內容充分利用高度 */
+            /* 整體間距微調 */
             .split-left {
                 gap: 2px;
             }
             .question-block {
-                gap: 2px;
-                flex-shrink: 0;
+                gap: 4px;
             }
             .obs-section {
-                gap: 2px;
-                padding: 3px 0;
-                flex-shrink: 0;
+                gap: 4px;
+                padding: 4px 0;
             }
             .balance-area {
-                padding: 2px 0;
+                padding: 3px 0;
             }
             .bottom-check-row {
-                padding: 2px 0 0 0;
+                padding: 4px 0 0 0;
+            }
+
+            /* 讓內容充分利用高度 */
+            .question-area {
+                overflow-y: auto;
+            }
+            .question-area::-webkit-scrollbar {
+                width: 3px;
+            }
+            .question-area::-webkit-scrollbar-thumb {
+                background: #c0c8d8;
+                border-radius: 10px;
             }
         }
 
@@ -1149,60 +1265,81 @@
                 font-size: 0.7rem;
             }
             .top-row .btn-spin {
-                font-size: 0.5rem;
+                font-size: 0.6rem;
                 padding: 2px 7px;
+                min-height: 28px;
+            }
+            .q-options .opt-btn {
+                font-size: 0.55rem;
+                padding: 3px 4px;
+                min-height: 26px;
+            }
+            .btn-check {
+                font-size: 0.55rem;
+                padding: 3px 6px;
+                min-height: 26px;
+            }
+            .product-group .prod-btn {
+                font-size: 0.5rem;
+                padding: 4px 2px;
+                min-height: 24px;
+                flex: 1 0 calc(33.33% - 3px);
+            }
+            .product-group .btn-next-step {
+                font-size: 0.5rem;
+                padding: 4px 2px;
+                min-height: 24px;
+                flex: 1 0 calc(33.33% - 3px);
+            }
+            .obs-row .obs-btn {
+                font-size: 0.4rem;
+                padding: 3px 4px;
                 min-height: 24px;
             }
             .obs-row select {
-                min-width: 40px;
-            }
-            .obs-row .obs-label {
-                min-width: 22px;
-            }
-            .product-group .prod-btn {
-                max-width: 65px;
-                font-size: 0.35rem;
-                padding: 1px 4px;
-            }
-            .q-options .opt-btn {
                 font-size: 0.4rem;
-                padding: 2px 6px;
-                min-height: 18px;
-            }
-            .btn-check {
-                font-size: 0.4rem;
-                padding: 2px 6px;
-                min-height: 18px;
+                min-height: 24px;
+                min-width: 50px;
             }
             .color-temp-wrapper select {
-                min-width: 32px;
-                font-size: 0.3rem;
-            }
-            .color-temp-wrapper .temp-label {
-                font-size: 0.3rem;
-            }
-            .hint-row-wrap .hint-text {
+                min-width: 40px;
                 font-size: 0.35rem;
-            }
-            .hint-row-wrap .balance-toggle-compact {
-                font-size: 0.3rem;
-                padding: 1px 4px 1px 2px;
-            }
-            .hint-row-wrap .balance-toggle-compact input {
-                width: 12px;
-                height: 12px;
-            }
-            .feedback-area {
-                padding: 3px 6px;
-                font-size: 0.45rem;
                 min-height: 20px;
             }
+            .color-temp-wrapper .temp-label {
+                font-size: 0.35rem;
+            }
+            .hint-row-wrap .hint-text {
+                font-size: 0.4rem;
+            }
+            .hint-row-wrap .balance-toggle-compact {
+                font-size: 0.35rem;
+                padding: 1px 4px 1px 3px;
+            }
+            .hint-row-wrap .balance-toggle-compact input {
+                width: 14px;
+                height: 14px;
+            }
+            .feedback-area {
+                padding: 3px 8px;
+                font-size: 0.5rem;
+                min-height: 24px;
+            }
             .feedback-area .fb-text {
-                font-size: 0.45rem;
+                font-size: 0.5rem;
             }
             .feedback-area .fb-detail {
-                font-size: 0.4rem;
+                font-size: 0.45rem;
                 padding-left: 14px;
+            }
+            .bottom-check-row .btn-check {
+                font-size: 0.6rem;
+                padding: 4px 14px;
+                min-height: 30px;
+            }
+            .q-label {
+                font-size: 0.5rem;
+                min-width: 32px;
             }
         }
     </style>
@@ -1278,7 +1415,6 @@
                                 <div class="label" id="reagentLabel">🧪 反應物</div>
                                 <div class="value" id="reagentDisplay">—</div>
                             </div>
-                            <span class="arrow-display" id="reactionQuestionMark">→ ?</span>
                             <button class="btn-spin" id="spinBtn">🎲 抽題</button>
                         </div>
 
@@ -1349,29 +1485,29 @@
                                 <div class="obs-row" id="obsRowDeposit">
                                     <span class="obs-label" id="obsDepositLabel">🔄 固體沉積物</span>
                                     <div class="obs-btn-group" id="obsDepositGroup">
-                                        <button class="obs-btn" data-obs="deposit_brown">🟤 紅棕色固體沉積在表面</button>
-                                        <button class="obs-btn" data-obs="deposit_silver">⬜ 銀白色固體沉積在表面</button>
+                                        <button class="obs-btn" data-obs="deposit_brown">🟤 紅棕色</button>
+                                        <button class="obs-btn" data-obs="deposit_silver">⬜ 銀白色</button>
                                     </div>
                                 </div>
 
                                 <div class="obs-row" id="obsRowPpt">
                                     <span class="obs-label" id="obsPptLabel">🟦 沉澱</span>
                                     <div class="obs-btn-group" id="obsPptGroup">
-                                        <button class="obs-btn" data-obs="ppt_blue">🟦 藍色沉澱</button>
-                                        <button class="obs-btn" data-obs="ppt_green">🟩 綠色沉澱</button>
-                                        <button class="obs-btn" data-obs="ppt_brown">🟫 棕色沉澱</button>
-                                        <button class="obs-btn" data-obs="ppt_white">⬜ 白色沉澱</button>
+                                        <button class="obs-btn" data-obs="ppt_blue">🟦 藍色</button>
+                                        <button class="obs-btn" data-obs="ppt_green">🟩 綠色</button>
+                                        <button class="obs-btn" data-obs="ppt_brown">🟫 棕色</button>
+                                        <button class="obs-btn" data-obs="ppt_white">⬜ 白色</button>
                                     </div>
                                 </div>
 
                                 <div class="obs-row" id="obsRowOther">
                                     <span class="obs-label" id="obsOtherLabel">🔦 其他</span>
                                     <div class="obs-btn-group" id="obsOtherGroup">
-                                        <button class="obs-btn" data-obs="gas">💨 有無色氣泡釋出</button>
-                                        <button class="obs-btn" data-obs="float">🌊 金屬浮在水面</button>
-                                        <button class="obs-btn" data-obs="sink">⬇️ 金屬沉在水底</button>
-                                        <button class="obs-btn" data-obs="stop">⏹️ 反應很快停止</button>
-                                        <button class="obs-btn" data-obs="dissolve">🫠 金屬溶解</button>
+                                        <button class="obs-btn" data-obs="gas">💨 氣泡</button>
+                                        <button class="obs-btn" data-obs="float">🌊 浮起</button>
+                                        <button class="obs-btn" data-obs="sink">⬇️ 沉底</button>
+                                        <button class="obs-btn" data-obs="stop">⏹️ 停止</button>
+                                        <button class="obs-btn" data-obs="dissolve">🫠 溶解</button>
                                     </div>
                                 </div>
 
@@ -1407,13 +1543,13 @@
                     <table class="ref-table" id="modalRefTable">
                         <thead>
                             <tr>
-                                <th id="mthSymbol">Symbol</th>
-                                <th id="mthEnglish">English Name</th>
+                                <th id="mthSymbol">符號</th>
+                                <th id="mthEnglish">英文名稱</th>
                                 <th id="mthChinese">中文名稱</th>
-                                <th id="mthMetalColor">Metal Colour</th>
-                                <th id="mthOxideColor">Oxide Colour</th>
-                                <th id="mthIonColor">Ion Colour in Aqueous Solution</th>
-                                <th id="mthFlame">Flame Test</th>
+                                <th id="mthMetalColor">金屬顏色</th>
+                                <th id="mthOxideColor">氧化物顏色</th>
+                                <th id="mthIonColor">離子顏色</th>
+                                <th id="mthFlame">焰色</th>
                             </tr>
                         </thead>
                         <tbody id="modalRefBody"></tbody>
@@ -1464,41 +1600,146 @@
             }
 
             // ============================================================
-            // 資料庫
+            // 資料庫 - 新增中文支援
             // ============================================================
             const METALS = ['K', 'Na', 'Ba', 'Ca', 'Mg', 'Al', 'Zn', 'Fe', 'Sn', 'Pb', 'Cu', 'Hg', 'Ag', 'Pt', 'Au'];
 
             const METAL_DATA = {
-                'K': { symbol: 'K', english: 'Potassium', chinese: '鉀', metalColor: 'Silvery white', oxideColor: 'White',
-                    ionColor: 'Colourless', flame: 'Lilac' },
-                'Na': { symbol: 'Na', english: 'Sodium', chinese: '鈉', metalColor: 'Silvery white', oxideColor: 'White',
-                    ionColor: 'Colourless', flame: 'Golden yellow' },
-                'Ba': { symbol: 'Ba', english: 'Barium', chinese: '鋇', metalColor: 'Silvery white', oxideColor: 'White',
-                    ionColor: 'Colourless', flame: 'Apple green' },
-                'Ca': { symbol: 'Ca', english: 'Calcium', chinese: '鈣', metalColor: 'Silvery white', oxideColor: 'White',
-                    ionColor: 'Colourless', flame: 'Brick-red' },
-                'Mg': { symbol: 'Mg', english: 'Magnesium', chinese: '鎂', metalColor: 'Silvery white', oxideColor: 'White',
-                    ionColor: 'Colourless', flame: 'Dazzling white light' },
-                'Al': { symbol: 'Al', english: 'Aluminium', chinese: '鋁', metalColor: 'Silvery white', oxideColor: 'White',
-                    ionColor: 'Colourless', flame: '—' },
-                'Zn': { symbol: 'Zn', english: 'Zinc', chinese: '鋅', metalColor: 'Silvery white',
-                    oxideColor: 'White (yellow when hot)', ionColor: 'Colourless', flame: '—' },
-                'Fe': { symbol: 'Fe', english: 'Iron', chinese: '鐵', metalColor: 'Silvery white',
-                    oxideColor: 'Black (Fe₃O₄)', ionColor: 'Pale green (Fe²⁺) / Yellow-brown (Fe³⁺)', flame: '—' },
-                'Sn': { symbol: 'Sn', english: 'Tin', chinese: '錫', metalColor: 'Silvery white', oxideColor: 'White',
-                    ionColor: 'Colourless', flame: '—' },
-                'Pb': { symbol: 'Pb', english: 'Lead', chinese: '鉛', metalColor: 'Silvery white',
-                    oxideColor: 'Yellow (orange when hot)', ionColor: 'Colourless', flame: '—' },
-                'Cu': { symbol: 'Cu', english: 'Copper', chinese: '銅', metalColor: 'Reddish-brown', oxideColor: 'Black (CuO)',
-                    ionColor: 'Blue (Cu²⁺)', flame: '—' },
-                'Hg': { symbol: 'Hg', english: 'Mercury', chinese: '汞', metalColor: 'Silvery white (liquid)',
-                    oxideColor: 'Red (HgO)', ionColor: 'Colourless', flame: '—' },
-                'Ag': { symbol: 'Ag', english: 'Silver', chinese: '銀', metalColor: 'Silvery white',
-                    oxideColor: 'Black (Ag₂O)', ionColor: 'Colourless', flame: '—' },
-                'Pt': { symbol: 'Pt', english: 'Platinum', chinese: '鉑', metalColor: 'Silvery white', oxideColor: '—',
-                    ionColor: 'Colourless', flame: '—' },
-                'Au': { symbol: 'Au', english: 'Gold', chinese: '金', metalColor: 'Golden yellow', oxideColor: '—',
-                    ionColor: 'Colourless', flame: '—' }
+                'K': {
+                    symbol: 'K',
+                    english: 'Potassium',
+                    chinese: '鉀',
+                    metalColor: { en: 'Silvery white', zh: '銀白色' },
+                    oxideColor: { en: 'White', zh: '白色' },
+                    ionColor: { en: 'Colourless', zh: '無色' },
+                    flame: { en: 'Lilac', zh: '淺紫色' }
+                },
+                'Na': {
+                    symbol: 'Na',
+                    english: 'Sodium',
+                    chinese: '鈉',
+                    metalColor: { en: 'Silvery white', zh: '銀白色' },
+                    oxideColor: { en: 'White', zh: '白色' },
+                    ionColor: { en: 'Colourless', zh: '無色' },
+                    flame: { en: 'Golden yellow', zh: '金黃色' }
+                },
+                'Ba': {
+                    symbol: 'Ba',
+                    english: 'Barium',
+                    chinese: '鋇',
+                    metalColor: { en: 'Silvery white', zh: '銀白色' },
+                    oxideColor: { en: 'White', zh: '白色' },
+                    ionColor: { en: 'Colourless', zh: '無色' },
+                    flame: { en: 'Apple green', zh: '蘋果綠色' }
+                },
+                'Ca': {
+                    symbol: 'Ca',
+                    english: 'Calcium',
+                    chinese: '鈣',
+                    metalColor: { en: 'Silvery white', zh: '銀白色' },
+                    oxideColor: { en: 'White', zh: '白色' },
+                    ionColor: { en: 'Colourless', zh: '無色' },
+                    flame: { en: 'Brick-red', zh: '磚紅色' }
+                },
+                'Mg': {
+                    symbol: 'Mg',
+                    english: 'Magnesium',
+                    chinese: '鎂',
+                    metalColor: { en: 'Silvery white', zh: '銀白色' },
+                    oxideColor: { en: 'White', zh: '白色' },
+                    ionColor: { en: 'Colourless', zh: '無色' },
+                    flame: { en: 'Dazzling white light', zh: '耀眼白光' }
+                },
+                'Al': {
+                    symbol: 'Al',
+                    english: 'Aluminium',
+                    chinese: '鋁',
+                    metalColor: { en: 'Silvery white', zh: '銀白色' },
+                    oxideColor: { en: 'White', zh: '白色' },
+                    ionColor: { en: 'Colourless', zh: '無色' },
+                    flame: { en: '—', zh: '—' }
+                },
+                'Zn': {
+                    symbol: 'Zn',
+                    english: 'Zinc',
+                    chinese: '鋅',
+                    metalColor: { en: 'Silvery white', zh: '銀白色' },
+                    oxideColor: { en: 'White (yellow when hot)', zh: '白色（熱時黃色）' },
+                    ionColor: { en: 'Colourless', zh: '無色' },
+                    flame: { en: '—', zh: '—' }
+                },
+                'Fe': {
+                    symbol: 'Fe',
+                    english: 'Iron',
+                    chinese: '鐵',
+                    metalColor: { en: 'Silvery white', zh: '銀白色' },
+                    oxideColor: { en: 'Black (Fe₃O₄)', zh: '黑色（Fe₃O₄）' },
+                    ionColor: { en: 'Pale green (Fe²⁺) / Yellow-brown (Fe³⁺)', zh: '淺綠色（Fe²⁺）/ 黃棕色（Fe³⁺）' },
+                    flame: { en: '—', zh: '—' }
+                },
+                'Sn': {
+                    symbol: 'Sn',
+                    english: 'Tin',
+                    chinese: '錫',
+                    metalColor: { en: 'Silvery white', zh: '銀白色' },
+                    oxideColor: { en: 'White', zh: '白色' },
+                    ionColor: { en: 'Colourless', zh: '無色' },
+                    flame: { en: '—', zh: '—' }
+                },
+                'Pb': {
+                    symbol: 'Pb',
+                    english: 'Lead',
+                    chinese: '鉛',
+                    metalColor: { en: 'Silvery white', zh: '銀白色' },
+                    oxideColor: { en: 'Yellow (orange when hot)', zh: '黃色（熱時橙色）' },
+                    ionColor: { en: 'Colourless', zh: '無色' },
+                    flame: { en: '—', zh: '—' }
+                },
+                'Cu': {
+                    symbol: 'Cu',
+                    english: 'Copper',
+                    chinese: '銅',
+                    metalColor: { en: 'Reddish-brown', zh: '紅棕色' },
+                    oxideColor: { en: 'Black (CuO)', zh: '黑色（CuO）' },
+                    ionColor: { en: 'Blue (Cu²⁺)', zh: '藍色（Cu²⁺）' },
+                    flame: { en: '—', zh: '—' }
+                },
+                'Hg': {
+                    symbol: 'Hg',
+                    english: 'Mercury',
+                    chinese: '汞',
+                    metalColor: { en: 'Silvery white (liquid)', zh: '銀白色（液態）' },
+                    oxideColor: { en: 'Red (HgO)', zh: '紅色（HgO）' },
+                    ionColor: { en: 'Colourless', zh: '無色' },
+                    flame: { en: '—', zh: '—' }
+                },
+                'Ag': {
+                    symbol: 'Ag',
+                    english: 'Silver',
+                    chinese: '銀',
+                    metalColor: { en: 'Silvery white', zh: '銀白色' },
+                    oxideColor: { en: 'Black (Ag₂O)', zh: '黑色（Ag₂O）' },
+                    ionColor: { en: 'Colourless', zh: '無色' },
+                    flame: { en: '—', zh: '—' }
+                },
+                'Pt': {
+                    symbol: 'Pt',
+                    english: 'Platinum',
+                    chinese: '鉑',
+                    metalColor: { en: 'Silvery white', zh: '銀白色' },
+                    oxideColor: { en: '—', zh: '—' },
+                    ionColor: { en: 'Colourless', zh: '無色' },
+                    flame: { en: '—', zh: '—' }
+                },
+                'Au': {
+                    symbol: 'Au',
+                    english: 'Gold',
+                    chinese: '金',
+                    metalColor: { en: 'Golden yellow', zh: '金黃色' },
+                    oxideColor: { en: '—', zh: '—' },
+                    ionColor: { en: 'Colourless', zh: '無色' },
+                    flame: { en: '—', zh: '—' }
+                }
             };
 
             const REAGENTS = [
@@ -2072,8 +2313,8 @@
                     q1Yes: '✅ 有反應',
                     q1No: '❌ 無反應',
                     productLabel: '📦 產物（可複選）',
-                    prod_oxide: '金屬氧化物',
-                    prod_hydroxide: '金屬氫氧化物',
+                    prod_oxide: '氧化物',
+                    prod_hydroxide: '氫氧化物',
                     prod_salt: '鹽',
                     prod_hydrogen: '氫氣',
                     prod_metal: '金屬',
@@ -2102,41 +2343,41 @@
                     thChinese: '中文名稱',
                     thMetalColor: '金屬顏色',
                     thOxideColor: '氧化物顏色',
-                    thIonColor: '離子溶液顏色',
-                    thFlame: '焰色測試',
+                    thIonColor: '離子顏色',
+                    thFlame: '焰色',
                     productsCorrect: '✅ 產物正確！',
                     productMissing: '❌ 漏選：',
                     productExtra: '多選：',
                     productFeedbackError: '產物選擇有誤，請修正',
                     tempHotLabel: '🔥 熱',
                     tempColdLabel: '❄️ 室溫',
-                    flame_lilac: '🟣 發出淺紫色火焰',
-                    flame_golden: '🟡 發出金黃色火焰',
-                    flame_brick: '🔴 發出磚紅色火焰',
-                    flame_apple_green: '🟢 發出蘋果綠色火焰',
-                    bright: '💡 發出耀眼白光',
-                    spark: '✨ 迸發出火花',
-                    sol_green: '🟩 溶液變成淺綠色',
-                    sol_blue: '🟦 溶液變成藍色',
+                    flame_lilac: '🟣 淺紫色火焰',
+                    flame_golden: '🟡 金黃色火焰',
+                    flame_brick: '🔴 磚紅色火焰',
+                    flame_apple_green: '🟢 蘋果綠色火焰',
+                    bright: '💡 耀眼白光',
+                    spark: '✨ 火花',
+                    sol_green: '🟩 溶液變淺綠色',
+                    sol_blue: '🟦 溶液變藍色',
                     sol_fade: '🎨 溶液顏色變淡',
-                    solid_white: '⬜ 白色固體生成',
-                    solid_black: '⬛ 黑色固體生成',
-                    solid_brown: '🟤 紅棕色固體生成',
-                    solid_silver: '⬜ 銀白色固體生成',
-                    solid_red: '🔴 紅色固體生成',
-                    solid_yellow: '🟡 黃色固體生成',
-                    color_temp: '🌡️ 生成物之顏色隨溫度轉變',
-                    deposit_brown: '🟤 紅棕色固體沉積在表面',
-                    deposit_silver: '⬜ 銀白色固體沉積在表面',
+                    solid_white: '⬜ 白色固體',
+                    solid_black: '⬛ 黑色固體',
+                    solid_brown: '🟤 紅棕色固體',
+                    solid_silver: '⬜ 銀白色固體',
+                    solid_red: '🔴 紅色固體',
+                    solid_yellow: '🟡 黃色固體',
+                    color_temp: '🌡️ 顏色隨溫度轉變',
+                    deposit_brown: '🟤 紅棕色沉積物',
+                    deposit_silver: '⬜ 銀白色沉積物',
                     ppt_blue: '🟦 藍色沉澱',
                     ppt_green: '🟩 綠色沉澱',
                     ppt_brown: '🟫 棕色沉澱',
                     ppt_white: '⬜ 白色沉澱',
-                    gas: '💨 有無色氣泡釋出',
-                    float: '🌊 金屬浮在水面',
-                    sink: '⬇️ 金屬沉在水底',
-                    stop: '⏹️ 反應很快停止',
-                    dissolve: '🫠 金屬溶解',
+                    gas: '💨 氣泡',
+                    float: '🌊 浮起',
+                    sink: '⬇️ 沉底',
+                    stop: '⏹️ 停止',
+                    dissolve: '🫠 溶解',
                     correctAnswer: '✅ 正確答案：',
                     hintText: '💡 ',
                     reactionHint: '這個組合會產生反應，請記住正確答案。',
@@ -2155,8 +2396,8 @@
                     q1Yes: '✅ Reaction',
                     q1No: '❌ No reaction',
                     productLabel: '📦 Products (select all)',
-                    prod_oxide: 'Metal oxide',
-                    prod_hydroxide: 'Metal hydroxide',
+                    prod_oxide: 'Oxide',
+                    prod_hydroxide: 'Hydroxide',
                     prod_salt: 'Salt',
                     prod_hydrogen: 'Hydrogen',
                     prod_metal: 'Metal',
@@ -2185,7 +2426,7 @@
                     thChinese: '中文名稱',
                     thMetalColor: 'Metal Colour',
                     thOxideColor: 'Oxide Colour',
-                    thIonColor: 'Ion Colour in Aqueous Solution',
+                    thIonColor: 'Ion Colour',
                     thFlame: 'Flame Test',
                     productsCorrect: '✅ Products correct!',
                     productMissing: '❌ Missing: ',
@@ -2193,33 +2434,33 @@
                     productFeedbackError: 'Product selection incorrect, please fix',
                     tempHotLabel: '🔥 Hot',
                     tempColdLabel: '❄️ Room temp',
-                    flame_lilac: '🟣 Lilac flame was emitted',
-                    flame_golden: '🟡 Golden yellow flame was emitted',
-                    flame_brick: '🔴 Brick-red flame was emitted',
-                    flame_apple_green: '🟢 Apple green flame was emitted',
-                    bright: '💡 Dazzling white light was emitted',
-                    spark: '✨ Sparks were emitted',
+                    flame_lilac: '🟣 Lilac flame',
+                    flame_golden: '🟡 Golden yellow flame',
+                    flame_brick: '🔴 Brick-red flame',
+                    flame_apple_green: '🟢 Apple green flame',
+                    bright: '💡 Dazzling white light',
+                    spark: '✨ Sparks',
                     sol_green: '🟩 Solution turned pale green',
                     sol_blue: '🟦 Solution turned blue',
                     sol_fade: '🎨 Solution faded',
-                    solid_white: '⬜ White solid was formed',
-                    solid_black: '⬛ Black solid was formed',
-                    solid_brown: '🟤 Reddish-brown solid was formed',
-                    solid_silver: '⬜ Silvery solid was formed',
-                    solid_red: '🔴 Red solid was formed',
-                    solid_yellow: '🟡 Yellow solid was formed',
-                    color_temp: '🌡️ Product colour changes with temperature',
-                    deposit_brown: '🟤 Reddish-brown deposit on surface',
-                    deposit_silver: '⬜ Silvery deposit on surface',
+                    solid_white: '⬜ White solid',
+                    solid_black: '⬛ Black solid',
+                    solid_brown: '🟤 Reddish-brown solid',
+                    solid_silver: '⬜ Silvery solid',
+                    solid_red: '🔴 Red solid',
+                    solid_yellow: '🟡 Yellow solid',
+                    color_temp: '🌡️ Colour changes with temperature',
+                    deposit_brown: '🟤 Reddish-brown deposit',
+                    deposit_silver: '⬜ Silvery deposit',
                     ppt_blue: '🟦 Blue precipitate',
                     ppt_green: '🟩 Green precipitate',
                     ppt_brown: '🟫 Brown precipitate',
                     ppt_white: '⬜ White precipitate',
-                    gas: '💨 Colourless gas bubbles given off',
-                    float: '🌊 Metal floated on water',
-                    sink: '⬇️ Metal sank in water',
-                    stop: '⏹️ Reaction stopped quickly',
-                    dissolve: '🫠 Metal dissolved',
+                    gas: '💨 Bubbles',
+                    float: '🌊 Floated',
+                    sink: '⬇️ Sank',
+                    stop: '⏹️ Stopped',
+                    dissolve: '🫠 Dissolved',
                     correctAnswer: '✅ Correct answer: ',
                     hintText: '💡 ',
                     reactionHint: 'This combination will react. Remember the correct answer.',
@@ -2347,27 +2588,32 @@
             }
 
             // ============================================================
-            // 參考表格
+            // 參考表格 - 支援中文
             // ============================================================
             function renderReferenceTable() {
                 const metals = [...METALS];
                 let html = '';
+                const lang = currentLang;
                 metals.forEach((m, i) => {
                     const data = METAL_DATA[m];
                     if (!data) return;
                     const rowClass = i % 2 === 0 ? '' : 'row-highlight';
-                    const metalDot = getColorDotStyle(data.metalColor);
-                    const oxideDot = getColorDotStyle(data.oxideColor);
-                    const ionDot = getColorDotStyle(data.ionColor);
-                    const flameDot = getColorDotStyle(data.flame);
+                    const metalColor = lang === 'zh' ? data.metalColor.zh : data.metalColor.en;
+                    const oxideColor = lang === 'zh' ? data.oxideColor.zh : data.oxideColor.en;
+                    const ionColor = lang === 'zh' ? data.ionColor.zh : data.ionColor.en;
+                    const flame = lang === 'zh' ? data.flame.zh : data.flame.en;
+                    const metalDot = getColorDotStyle(metalColor);
+                    const oxideDot = getColorDotStyle(oxideColor);
+                    const ionDot = getColorDotStyle(ionColor);
+                    const flameDot = getColorDotStyle(flame);
                     html += `<tr class="${rowClass}">`;
                     html += `<td class="metal-symbol">${data.symbol}</td>`;
                     html += `<td>${data.english}</td>`;
                     html += `<td>${data.chinese}</td>`;
-                    html += `<td><span class="color-dot" style="${metalDot}"></span>${data.metalColor}</td>`;
-                    html += `<td><span class="color-dot" style="${oxideDot}"></span>${data.oxideColor}</td>`;
-                    html += `<td><span class="color-dot" style="${ionDot}"></span>${data.ionColor}</td>`;
-                    html += `<td><span class="color-dot" style="${flameDot}"></span>${data.flame}</td>`;
+                    html += `<td><span class="color-dot" style="${metalDot}"></span>${metalColor}</td>`;
+                    html += `<td><span class="color-dot" style="${oxideDot}"></span>${oxideColor}</td>`;
+                    html += `<td><span class="color-dot" style="${ionDot}"></span>${ionColor}</td>`;
+                    html += `<td><span class="color-dot" style="${flameDot}"></span>${flame}</td>`;
                     html += `</tr>`;
                 });
                 modalRefBody.innerHTML = html;
@@ -3103,7 +3349,7 @@
             }
 
             // ============================================================
-            // checkAnswer - 最終檢查（產物 + 平衡 + 觀察）
+            // checkAnswer - 最終檢查
             // ============================================================
             function checkAnswer() {
                 if (isAnswered) {
@@ -3140,9 +3386,7 @@
                     return;
                 }
 
-                // ==========================================================
                 // 收集 userObs - 過濾空值
-                // ==========================================================
                 const userObs = [];
                 const flameVal = obsFlame.value;
                 if (flameVal && flameVal !== 'none') userObs.push(flameVal.trim());
@@ -3172,12 +3416,9 @@
                 selectedPpt.forEach(o => { if (o) userObs.push(o.trim()); });
                 selectedOther.forEach(o => { if (o) userObs.push(o.trim()); });
 
-                // 過濾掉空字串、undefined、null
                 const filteredUserObs = userObs.filter(o => o && o.length > 0);
-
                 const correctObs = (currentResult.obs || []).map(o => o.trim()).filter(o => o && o.length > 0);
 
-                // 使用 Set 去重
                 const userSet = new Set(filteredUserObs);
                 const correctSet = new Set(correctObs);
 
@@ -3214,7 +3455,6 @@
                     return;
                 }
 
-                // 全部正確
                 isAnswered = true;
                 spinBtn.disabled = false;
                 spinBtn.textContent = t('nextBtn');
@@ -3466,7 +3706,7 @@
 
             const initialLang = getUrlParameter('lang') || 'en';
             initApp(initialLang);
-            console.log('⚗️ 無機化學反應練習已啟動 (最終修正版)');
+            console.log('⚗️ 無機化學反應練習已啟動 (最終版)');
         })();
     </script>
 </body>
