@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>⚗️ 無機化學反應 · DSE 化學</title>
+    <title>⚗️ 化學練習 · DSE</title>
     <base href="./">
     <style>
         * {
@@ -128,7 +128,7 @@
             outline: none;
             cursor: pointer;
             padding: 2px 0;
-            max-width: 170px;
+            max-width: 200px;
         }
         .header-left select option {
             font-weight: 600;
@@ -226,6 +226,7 @@
             cursor: not-allowed;
         }
 
+        /* ===== 主內容區 ===== */
         .question-area {
             flex: 1;
             min-width: 0;
@@ -247,6 +248,100 @@
             display: flex;
         }
 
+        /* ===== 離子練習專用 ===== */
+        .ions-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 4px 0;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+        }
+        .ions-panel .ion-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px 8px;
+        }
+        .ions-panel .ion-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #4a5a7a;
+            min-width: 70px;
+        }
+        .ions-panel select {
+            border: 2px solid #d0d8e8;
+            border-radius: 30px;
+            padding: 3px 10px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            background: white;
+            color: #2a3a6a;
+            outline: none;
+            min-height: 28px;
+            min-width: 100px;
+            flex: 1;
+        }
+        .ions-panel .ion-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+        }
+        .ions-panel .ion-btn {
+            border: 2px solid #d0d8e8;
+            background: white;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 0.55rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s;
+            color: #2a3a6a;
+            min-height: 26px;
+            white-space: nowrap;
+        }
+        .ions-panel .ion-btn:hover:not(:disabled) {
+            background: #eef4fc;
+        }
+        .ions-panel .ion-btn.selected {
+            border-color: #4a6a9a;
+            background: #4a6a9a;
+            color: white;
+        }
+        .ions-panel .ion-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .ions-panel .ion-btn.correct {
+            border-color: #2ecc71;
+            background: #d4edda;
+            color: #155724;
+        }
+        .ions-panel .ion-btn.incorrect {
+            border-color: #e74c3c;
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .ions-panel .ion-result {
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+        }
+        .ions-panel .ion-result.success {
+            color: #155724;
+            background: #d4edda;
+        }
+        .ions-panel .ion-result.error {
+            color: #721c24;
+            background: #f8d7da;
+        }
+
+        /* ===== 反應練習共用 ===== */
         .split-panel {
             display: flex;
             gap: 4px;
@@ -353,6 +448,7 @@
             box-shadow: 0 4px 20px rgba(74, 106, 154, 0.3);
             min-height: 32px;
             white-space: nowrap;
+            min-width: 60px;
         }
         .top-row .btn-spin:hover:not(:disabled) {
             transform: scale(1.03);
@@ -924,8 +1020,8 @@
         }
 
         /* ================================================================
-           手機版專屬調整 (max-width: 768px) - 重新設計
-           ================================================================ */
+                   手機版專屬調整 (max-width: 768px)
+                   ================================================================ */
         @media (max-width: 768px) {
             .card {
                 padding: 0.3rem 0.4rem;
@@ -935,7 +1031,6 @@
                 overflow: hidden;
             }
 
-            /* 頂部導航精簡 */
             .header-left select {
                 font-size: 0.55rem;
                 max-width: 85px;
@@ -955,7 +1050,6 @@
                 padding: 1px 5px;
             }
 
-            /* 提示行 + 平衡開關 */
             .hint-row-wrap .hint-text {
                 font-size: 0.45rem;
             }
@@ -968,7 +1062,7 @@
                 height: 16px;
             }
 
-            /* ===== 抽題區：3項同一行 ===== */
+            /* 抽題區 - 手機版修正 */
             .top-row {
                 display: flex;
                 flex-wrap: nowrap;
@@ -990,8 +1084,9 @@
             }
             .top-row .btn-spin {
                 font-size: 0.7rem;
-                padding: 3px 10px;
-                min-height: 32px;
+                padding: 3px 8px;
+                min-height: 36px;
+                min-width: 56px;
                 flex-shrink: 0;
             }
             .top-row .operator-plus {
@@ -1002,7 +1097,6 @@
                 display: none;
             }
 
-            /* ===== 反應判斷：3項同一行 ===== */
             .q-row {
                 gap: 3px 4px;
             }
@@ -1029,7 +1123,6 @@
                 min-height: 30px;
                 flex: 0 1 auto;
             }
-            /* 反應判斷整行：標籤佔滿寬度，三個按鈕同一行 */
             .q-row:first-child {
                 display: flex;
                 flex-wrap: wrap;
@@ -1046,7 +1139,6 @@
                 flex: 0 1 auto;
             }
 
-            /* ===== 產物區：每行3個 ===== */
             .product-group .prod-btn {
                 font-size: 0.6rem;
                 padding: 5px 4px;
@@ -1070,7 +1162,6 @@
                 margin-top: 2px;
             }
 
-            /* ===== 平衡區 ===== */
             .balance-area .bal-title {
                 font-size: 0.5rem;
             }
@@ -1088,7 +1179,6 @@
                 padding: 0 4px;
             }
 
-            /* ===== 觀察區 ===== */
             .obs-section .obs-title {
                 font-size: 0.5rem;
             }
@@ -1125,11 +1215,9 @@
                 border-radius: 20px;
                 white-space: nowrap;
             }
-            /* 沉積物只有2個，各佔一半 */
             #obsRowDeposit .obs-btn {
                 flex: 1 0 calc(50% - 4px);
             }
-            /* 沉澱：藍綠棕 3個一行，白色單獨一行 */
             #obsRowPpt .obs-btn:nth-child(1),
             #obsRowPpt .obs-btn:nth-child(2),
             #obsRowPpt .obs-btn:nth-child(3) {
@@ -1138,7 +1226,6 @@
             #obsRowPpt .obs-btn:nth-child(4) {
                 flex: 1 0 calc(33.33% - 4px);
             }
-            /* 其他：氣泡浮起沉底 3個一行，停止溶解 2個一行 */
             #obsRowOther .obs-btn:nth-child(1),
             #obsRowOther .obs-btn:nth-child(2),
             #obsRowOther .obs-btn:nth-child(3) {
@@ -1149,7 +1236,6 @@
                 flex: 1 0 calc(50% - 4px);
             }
 
-            /* 顏色溫度子選單 */
             .color-temp-wrapper {
                 padding: 3px 6px;
                 width: 100%;
@@ -1168,14 +1254,12 @@
                 font-size: 0.5rem;
             }
 
-            /* 底部檢查按鈕 */
             .bottom-check-row .btn-check {
                 font-size: 0.7rem;
                 padding: 6px 20px;
                 min-height: 34px;
             }
 
-            /* ===== 回饋區 ===== */
             .feedback-area {
                 padding: 4px 10px;
                 font-size: 0.55rem;
@@ -1189,7 +1273,6 @@
                 padding-left: 16px;
             }
 
-            /* 係數彈窗 */
             .coeff-popup {
                 padding: 5px;
                 min-width: 100px;
@@ -1199,7 +1282,6 @@
                 padding: 6px 0;
             }
 
-            /* 活性序表格 */
             .ref-table {
                 font-size: 0.45rem;
             }
@@ -1225,7 +1307,6 @@
                 font-size: 0.8rem;
             }
 
-            /* 整體間距微調 */
             .split-left {
                 gap: 2px;
             }
@@ -1243,7 +1324,6 @@
                 padding: 4px 0 0 0;
             }
 
-            /* 讓內容充分利用高度 */
             .question-area {
                 overflow-y: auto;
             }
@@ -1253,6 +1333,30 @@
             .question-area::-webkit-scrollbar-thumb {
                 background: #c0c8d8;
                 border-radius: 10px;
+            }
+
+            /* 離子練習手機版 */
+            .ions-panel .ion-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .ions-panel .ion-label {
+                min-width: auto;
+                width: 100%;
+            }
+            .ions-panel select {
+                min-width: auto;
+                width: 100%;
+            }
+            .ions-panel .ion-btn-group {
+                justify-content: center;
+            }
+            .ions-panel .ion-btn {
+                font-size: 0.5rem;
+                padding: 2px 8px;
+                min-height: 24px;
+                flex: 1 0 calc(50% - 4px);
+                text-align: center;
             }
         }
 
@@ -1266,8 +1370,9 @@
             }
             .top-row .btn-spin {
                 font-size: 0.6rem;
-                padding: 2px 7px;
-                min-height: 28px;
+                padding: 2px 6px;
+                min-height: 32px;
+                min-width: 48px;
             }
             .q-options .opt-btn {
                 font-size: 0.55rem;
@@ -1348,8 +1453,8 @@
 
     <div class="welcome-screen" id="welcomeScreen">
         <div class="icon">⚗️</div>
-        <h1>Inorganic Reactions · Practice</h1>
-        <div class="sub" style="font-size:0.95rem; line-height:1.6;">Ch.11 Metals · Ch.14 Acids &amp; Bases · Ch.30 Redox</div>
+        <h1>Chemistry Practice · DSE</h1>
+        <div class="sub" style="font-size:0.95rem; line-height:1.6;">Inorganic Reactions · Ionic Compounds</div>
         <p style="color: #5a6a8a; margin-bottom: 24px; font-weight: 400;">
             Please select your language<br><span style="font-size: 0.9rem; opacity: 0.7;">請選擇您的語言</span>
         </p>
@@ -1364,8 +1469,8 @@
             <div class="header-top">
                 <div class="header-left">
                     <select id="practiceSelector">
+                        <option value="rxn">⚗️ 無機化學反應</option>
                         <option value="ions">🧪 離子與化合物 (Ch.7)</option>
-                        <option value="rxn" selected>⚗️ 無機化學反應</option>
                         <option value="home">🏠 返回目錄</option>
                     </select>
                     <div class="header-funcs">
@@ -1389,8 +1494,10 @@
         </div>
 
         <div class="question-area" id="questionArea">
+            <!-- ========================================================== -->
+            <!-- TAB 0: 無機化學反應練習 -->
+            <!-- ========================================================== -->
             <div class="tab-content active" id="tabContent0">
-                <!-- 提示行 + 平衡開關 -->
                 <div class="hint-row-wrap">
                     <span class="hint-text" id="hintText">
                         <span class="highlight">💡 按「抽題」開始！</span>
@@ -1404,7 +1511,6 @@
 
                 <div class="split-panel">
                     <div class="split-left">
-                        <!-- 抽題區 -->
                         <div class="top-row">
                             <div class="spin-box">
                                 <div class="label" id="metalLabel">⚙️ 金屬</div>
@@ -1419,7 +1525,6 @@
                         </div>
 
                         <div class="question-block" id="questionBlock">
-                            <!-- 反應判斷 -->
                             <div class="q-row">
                                 <span class="q-label" id="q1Label">📌 反應？</span>
                                 <div class="q-options" id="q1Options">
@@ -1429,12 +1534,11 @@
                                 <button class="btn-check" id="checkReactionBtn" disabled>✔ 檢查</button>
                             </div>
 
-                            <!-- 產物區 -->
                             <div class="q-row" id="productRow" style="display:none;">
                                 <span class="q-label" id="productLabel">📦 產物</span>
                                 <div class="product-group" id="productGroup">
-                                    <button class="prod-btn" data-prod="oxide">金屬氧化物</button>
-                                    <button class="prod-btn" data-prod="hydroxide">金屬氫氧化物</button>
+                                    <button class="prod-btn" data-prod="oxide">氧化物</button>
+                                    <button class="prod-btn" data-prod="hydroxide">氫氧化物</button>
                                     <button class="prod-btn" data-prod="salt">鹽</button>
                                     <button class="prod-btn" data-prod="hydrogen">氫氣</button>
                                     <button class="prod-btn" data-prod="metal">金屬</button>
@@ -1443,13 +1547,11 @@
                                 <span class="product-feedback" id="productFeedback"></span>
                             </div>
 
-                            <!-- 平衡區 -->
                             <div class="balance-area" id="balanceArea" style="display:none;">
                                 <div class="bal-title" id="balTitle">⚖️ 平衡方程式：</div>
                                 <div class="balance-row" id="balanceRow"></div>
                             </div>
 
-                            <!-- 觀察區 -->
                             <div class="obs-section" id="obsSection" style="display:none;">
                                 <div class="obs-title" id="obsTitle">🔍 觀察（可多選）</div>
 
@@ -1517,7 +1619,6 @@
                             </div>
                         </div>
 
-                        <!-- 回饋區 -->
                         <div class="feedback-area" id="feedback0">
                             <div class="fb-row">
                                 <span class="fb-icon">✏️</span>
@@ -1529,9 +1630,100 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ========================================================== -->
+            <!-- TAB 1: 離子與化合物練習 -->
+            <!-- ========================================================== -->
+            <div class="tab-content" id="tabContent1">
+                <div class="ions-panel" id="ionsPanel">
+                    <div style="font-size:0.7rem; font-weight:700; color:#4a5a7a; margin-bottom:4px;" id="ionsTitle">🧪 離子與化合物練習</div>
+
+                    <!-- 離子配對練習 -->
+                    <div class="ion-row">
+                        <span class="ion-label" id="ionQ1Label">📌 陽離子</span>
+                        <select id="ionCation">
+                            <option value="Na">Na⁺</option>
+                            <option value="K">K⁺</option>
+                            <option value="Ca">Ca²⁺</option>
+                            <option value="Mg">Mg²⁺</option>
+                            <option value="Al">Al³⁺</option>
+                            <option value="Zn">Zn²⁺</option>
+                            <option value="Fe2">Fe²⁺</option>
+                            <option value="Fe3">Fe³⁺</option>
+                            <option value="Cu">Cu²⁺</option>
+                            <option value="Ag">Ag⁺</option>
+                            <option value="NH4">NH₄⁺</option>
+                        </select>
+                        <span style="font-size:0.8rem; font-weight:700; color:#6a8aba;">+</span>
+                        <select id="ionAnion">
+                            <option value="Cl">Cl⁻</option>
+                            <option value="SO4">SO₄²⁻</option>
+                            <option value="NO3">NO₃⁻</option>
+                            <option value="CO3">CO₃²⁻</option>
+                            <option value="OH">OH⁻</option>
+                            <option value="PO4">PO₄³⁻</option>
+                            <option value="CH3COO">CH₃COO⁻</option>
+                        </select>
+                        <button class="btn-check" id="ionCheckBtn" style="font-size:0.6rem;">✔ 檢查</button>
+                    </div>
+
+                    <div class="ion-row">
+                        <span class="ion-label" id="ionQ2Label">📦 配對結果</span>
+                        <div class="ion-btn-group" id="ionOptions">
+                            <button class="ion-btn" data-ion="NaCl">NaCl</button>
+                            <button class="ion-btn" data-ion="NaOH">NaOH</button>
+                            <button class="ion-btn" data-ion="Na2CO3">Na₂CO₃</button>
+                            <button class="ion-btn" data-ion="NaNO3">NaNO₃</button>
+                            <button class="ion-btn" data-ion="Na2SO4">Na₂SO₄</button>
+                            <button class="ion-btn" data-ion="Na3PO4">Na₃PO₄</button>
+                            <button class="ion-btn" data-ion="KCl">KCl</button>
+                            <button class="ion-btn" data-ion="CaCO3">CaCO₃</button>
+                            <button class="ion-btn" data-ion="Mg(OH)2">Mg(OH)₂</button>
+                            <button class="ion-btn" data-ion="Al2(SO4)3">Al₂(SO₄)₃</button>
+                            <button class="ion-btn" data-ion="ZnCl2">ZnCl₂</button>
+                            <button class="ion-btn" data-ion="FeCl2">FeCl₂</button>
+                            <button class="ion-btn" data-ion="FeCl3">FeCl₃</button>
+                            <button class="ion-btn" data-ion="CuSO4">CuSO₄</button>
+                            <button class="ion-btn" data-ion="AgNO3">AgNO₃</button>
+                            <button class="ion-btn" data-ion="NH4Cl">NH₄Cl</button>
+                        </div>
+                    </div>
+
+                    <div class="ion-row">
+                        <span class="ion-label" id="ionQ3Label">📝 答案</span>
+                        <span class="ion-result" id="ionResult">選擇陽離子和陰離子後按「檢查」</span>
+                    </div>
+
+                    <div class="ion-row" style="margin-top:8px; border-top:2px dashed #d0d8e8; padding-top:8px;">
+                        <span class="ion-label" id="ionQ4Label">📊 化合物名稱</span>
+                        <select id="ionNameSelect" style="flex:2; min-width:120px;">
+                            <option value="">— 請選擇 —</option>
+                            <option value="NaCl">氯化鈉 / Sodium chloride</option>
+                            <option value="NaOH">氫氧化鈉 / Sodium hydroxide</option>
+                            <option value="Na2CO3">碳酸鈉 / Sodium carbonate</option>
+                            <option value="NaNO3">硝酸鈉 / Sodium nitrate</option>
+                            <option value="Na2SO4">硫酸鈉 / Sodium sulfate</option>
+                            <option value="Na3PO4">磷酸鈉 / Sodium phosphate</option>
+                            <option value="KCl">氯化鉀 / Potassium chloride</option>
+                            <option value="CaCO3">碳酸鈣 / Calcium carbonate</option>
+                            <option value="Mg(OH)2">氫氧化鎂 / Magnesium hydroxide</option>
+                            <option value="Al2(SO4)3">硫酸鋁 / Aluminium sulfate</option>
+                            <option value="ZnCl2">氯化鋅 / Zinc chloride</option>
+                            <option value="FeCl2">氯化亞鐵 / Iron(II) chloride</option>
+                            <option value="FeCl3">氯化鐵 / Iron(III) chloride</option>
+                            <option value="CuSO4">硫酸銅 / Copper(II) sulfate</option>
+                            <option value="AgNO3">硝酸銀 / Silver nitrate</option>
+                            <option value="NH4Cl">氯化銨 / Ammonium chloride</option>
+                        </select>
+                        <button class="btn-check" id="ionNameCheckBtn" style="font-size:0.6rem;">✔ 檢查</button>
+                        <span class="ion-result" id="ionNameResult" style="flex:1;"></span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- ===== 活性序模態框 ===== -->
     <div class="modal-overlay" id="metalSeriesModal">
         <div class="modal-box">
             <div class="modal-header">
@@ -1559,6 +1751,7 @@
         </div>
     </div>
 
+    <!-- ===== 係數彈窗 ===== -->
     <div class="coeff-popup" id="coeffPopup">
         <div class="grid" id="coeffGrid">
             <button data-val="1">1</button>
@@ -1585,22 +1778,39 @@
                 if (target === 'home') {
                     window.location.href = 'index.html?lang=' + lang;
                 } else if (target === 'ions') {
-                    window.location.href = 'ions.html?lang=' + lang;
+                    showIonsTab();
                 } else if (target === 'rxn') {
-                    window.location.href = 'rxn.html?lang=' + lang;
+                    showRxnTab();
                 }
+            }
+
+            function showRxnTab() {
+                document.getElementById('tabContent0').classList.add('active');
+                document.getElementById('tabContent1').classList.remove('active');
+                document.querySelectorAll('#chapterTabs .tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector('#chapterTabs .tab-btn[data-chapter="ch11"]').classList.add('active');
+                document.getElementById('practiceSelector').value = 'rxn';
+            }
+
+            function showIonsTab() {
+                document.getElementById('tabContent0').classList.remove('active');
+                document.getElementById('tabContent1').classList.add('active');
+                document.querySelectorAll('#chapterTabs .tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector('#chapterTabs .tab-btn[data-chapter="ch11"]').classList.add('active');
+                document.getElementById('practiceSelector').value = 'ions';
             }
 
             function updateSelector() {
                 const selector = document.getElementById('practiceSelector');
                 if (!selector) return;
                 const path = window.location.pathname;
-                if (path.includes('ions')) { selector.value = 'ions'; } else if (path.includes('rxn')) { selector.value =
-                        'rxn'; } else if (path.includes('index')) { selector.value = 'home'; }
+                if (path.includes('ions')) { selector.value = 'ions';
+                    showIonsTab(); } else if (path.includes('rxn')) { selector.value = 'rxn';
+                    showRxnTab(); } else if (path.includes('index')) { selector.value = 'home'; }
             }
 
             // ============================================================
-            // 資料庫 - 新增中文支援
+            // 資料庫 - 金屬
             // ============================================================
             const METALS = ['K', 'Na', 'Ba', 'Ca', 'Mg', 'Al', 'Zn', 'Fe', 'Sn', 'Pb', 'Cu', 'Hg', 'Ag', 'Pt', 'Au'];
 
@@ -2383,7 +2593,16 @@
                     reactionHint: '這個組合會產生反應，請記住正確答案。',
                     noReactionHint: '這個組合不會產生反應，請記住這個組合。',
                     eqCoeffHint: '請檢查方程式的係數是否正確。',
-                    obsExtraPrefix: '⚠️ 你多選了：'
+                    obsExtraPrefix: '⚠️ 你多選了：',
+                    ionsTitle: '🧪 離子與化合物練習',
+                    ionQ1: '📌 陽離子',
+                    ionQ2: '📦 配對結果',
+                    ionQ3: '📝 答案',
+                    ionQ4: '📊 化合物名稱',
+                    ionCheck: '✔ 檢查',
+                    ionSelect: '選擇陽離子和陰離子後按「檢查」',
+                    ionNamePlaceholder: '— 請選擇 —',
+                    ionNameCheck: '✔ 檢查'
                 },
                 en: {
                     spinBtn: '🎲 Spin',
@@ -2466,7 +2685,16 @@
                     reactionHint: 'This combination will react. Remember the correct answer.',
                     noReactionHint: 'This combination will not react. Remember this combination.',
                     eqCoeffHint: 'Check if the coefficients of the equation are correct.',
-                    obsExtraPrefix: '⚠️ You selected extra: '
+                    obsExtraPrefix: '⚠️ You selected extra: ',
+                    ionsTitle: '🧪 Ionic Compounds Practice',
+                    ionQ1: '📌 Cation',
+                    ionQ2: '📦 Result',
+                    ionQ3: '📝 Answer',
+                    ionQ4: '📊 Compound Name',
+                    ionCheck: '✔ Check',
+                    ionSelect: 'Select cation and anion, then press "Check"',
+                    ionNamePlaceholder: '— Please select —',
+                    ionNameCheck: '✔ Check'
                 }
             };
 
@@ -2541,6 +2769,7 @@
             const coeffPopup = document.getElementById('coeffPopup');
             const modalRefBody = document.getElementById('modalRefBody');
             const langBtns = document.querySelectorAll('.lang-btn');
+            const practiceSelector = document.getElementById('practiceSelector');
 
             // ============================================================
             // 工具函數
@@ -2954,6 +3183,25 @@
                 colorTempCold.options[0].text = '—';
                 colorTempCold.options[1].text = currentLang === 'zh' ? '⬜ 白色' : '⬜ White';
                 colorTempCold.options[2].text = currentLang === 'zh' ? '🟡 黃色' : '🟡 Yellow';
+
+                // 離子練習文字
+                document.getElementById('ionsTitle').textContent = t('ionsTitle');
+                document.getElementById('ionQ1Label').textContent = t('ionQ1');
+                document.getElementById('ionQ2Label').textContent = t('ionQ2');
+                document.getElementById('ionQ3Label').textContent = t('ionQ3');
+                document.getElementById('ionQ4Label').textContent = t('ionQ4');
+                document.getElementById('ionCheckBtn').textContent = t('ionCheck');
+                document.getElementById('ionNameCheckBtn').textContent = t('ionNameCheck');
+                const ionResult = document.getElementById('ionResult');
+                if (ionResult && !ionResult.textContent.includes('✅') && !ionResult.textContent.includes('❌')) {
+                    ionResult.textContent = t('ionSelect');
+                }
+                // 更新離子名稱下拉選單
+                const nameSelect = document.getElementById('ionNameSelect');
+                if (nameSelect) {
+                    const placeholder = t('ionNamePlaceholder');
+                    nameSelect.options[0].text = placeholder;
+                }
             }
 
             // ============================================================
@@ -3023,98 +3271,141 @@
             }
 
             // ============================================================
-            // 轉盤抽題
+            // 轉盤抽題 - 修正手機版卡死問題
             // ============================================================
             function spinWheel() {
-                if (isSpinning) return;
-                isAnswered = false;
-                selectedReaction = null;
-                selectedPpt = new Set();
-                selectedOther = new Set();
-                selectedDeposit = new Set();
-                selectedProducts = new Set();
-                productsCorrect = false;
-                showBalanceAndObs = false;
-                productCheckDone = false;
-                reactionChecked = false;
-                balanceArea.style.display = 'none';
-                productRow.style.display = 'none';
-                obsSection.style.display = 'none';
-                colorTempSub.style.display = 'none';
-                productFeedback.textContent = '';
-                productFeedback.className = 'product-feedback';
-                document.querySelectorAll('.prod-btn').forEach(b => { b.classList.remove('correct', 'incorrect'); });
-                isSpinning = true;
-                spinBtn.disabled = true;
-                checkReactionBtn.disabled = true;
-                checkBottomBtn.disabled = true;
-                nextStepBtn.disabled = true;
-                spinBtn.classList.add('spinning');
-                spinBtn.textContent = currentLang === 'zh' ? '🌀 旋轉中...' : '🌀 Spinning...';
-                document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
-                document.querySelectorAll('#productGroup .prod-btn').forEach(b => b.classList.remove('selected'));
-                document.querySelectorAll(
-                    '#obsPptGroup .obs-btn, #obsOtherGroup .obs-btn, #obsDepositGroup .obs-btn').forEach(b => b
-                    .classList.remove('selected'));
-                document.querySelectorAll(
-                    '#productGroup .prod-btn, #obsPptGroup .obs-btn, #obsOtherGroup .obs-btn, #obsDepositGroup .obs-btn'
-                    ).forEach(b => b.disabled = true);
-                document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
-                let count = 0;
-                const maxCount = 12 + Math.floor(Math.random() * 10);
-                const interval = setInterval(() => {
-                    const randomMetal = METALS[Math.floor(Math.random() * METALS.length)];
-                    const randomReagent = weightedReagents[Math.floor(Math.random() * weightedReagents.length)];
-                    metalDisplay.textContent = randomMetal;
-                    reagentDisplay.textContent = getReagentLabel(randomReagent);
-                    count++;
-                    if (count >= maxCount) {
-                        clearInterval(interval);
-                        let finalMetal, finalReagent;
-                        let attempts = 0;
-                        do {
-                            finalMetal = METALS[Math.floor(Math.random() * METALS.length)];
-                            finalReagent = weightedReagents[Math.floor(Math.random() * weightedReagents.length)];
-                            attempts++;
-                        } while (finalMetal === 'Hg' && finalReagent === 'AgNO3(aq)' && attempts < 50);
+    if (isSpinning) return;
 
-                        currentMetal = finalMetal;
-                        currentReagent = finalReagent;
-                        metalDisplay.textContent = finalMetal;
-                        const reagentLabel = getReagentLabel(finalReagent, finalMetal);
-                        reagentDisplay.textContent = reagentLabel;
-                        currentResult = REACTION_MAP[finalMetal]?.[finalReagent] || null;
-                        reactionQuestionMark.textContent = `→ ?`;
-                        document.querySelectorAll('.opt-btn').forEach(b => b.disabled = false);
-                        document.querySelectorAll(
-                            '#productGroup .prod-btn, #obsPptGroup .obs-btn, #obsOtherGroup .obs-btn, #obsDepositGroup .obs-btn'
-                            ).forEach(b => b.disabled = true);
-                        nextStepBtn.disabled = true;
-                        spinBtn.disabled = true;
-                        checkReactionBtn.disabled = true;
-                        checkBottomBtn.disabled = true;
-                        spinBtn.classList.remove('spinning');
-                        spinBtn.textContent = t('spinBtn');
-                        isSpinning = false;
-                        isAnswered = false;
-                        reactionChecked = false;
-                        obsSection.style.display = 'none';
-                        productRow.style.display = 'none';
-                        balanceArea.style.display = 'none';
-                        productFeedback.textContent = '';
-                        productFeedback.className = 'product-feedback';
-                        document.querySelectorAll('.prod-btn').forEach(b => { b.classList.remove('correct',
-                            'incorrect'); });
-                        obsRowFlame.style.display = 'flex';
-                        obsRowSolid.style.display = 'none';
-                        obsRowDeposit.style.display = 'none';
-                        obsRowPpt.style.display = 'none';
-                        obsRowOther.style.display = 'flex';
-                        updateObsOptions();
-                        setFeedback('✏️', t('fbSpin'), '', null);
-                    }
-                }, 80);
+    // 重置所有狀態
+    isAnswered = false;
+    selectedReaction = null;
+    selectedPpt = new Set();
+    selectedOther = new Set();
+    selectedDeposit = new Set();
+    selectedProducts = new Set();
+    productsCorrect = false;
+    showBalanceAndObs = false;
+    productCheckDone = false;
+    reactionChecked = false;
+    balanceArea.style.display = 'none';
+    productRow.style.display = 'none';
+    obsSection.style.display = 'none';
+    colorTempSub.style.display = 'none';
+    productFeedback.textContent = '';
+    productFeedback.className = 'product-feedback';
+    document.querySelectorAll('.prod-btn').forEach(b => { b.classList.remove('correct', 'incorrect'); });
+
+    isSpinning = true;
+    spinBtn.disabled = true;
+    spinBtn.classList.add('spinning');
+    spinBtn.textContent = currentLang === 'zh' ? '🌀 旋轉中...' : '🌀 Spinning...';
+
+    document.querySelectorAll('.opt-btn').forEach(b => {
+        b.classList.remove('selected');
+        b.disabled = true;
+    });
+    document.querySelectorAll('#productGroup .prod-btn').forEach(b => {
+        b.classList.remove('selected');
+        b.disabled = true;
+    });
+    document.querySelectorAll('#obsPptGroup .obs-btn, #obsOtherGroup .obs-btn, #obsDepositGroup .obs-btn').forEach(b => {
+        b.classList.remove('selected');
+        b.disabled = true;
+    });
+    checkReactionBtn.disabled = true;
+    checkBottomBtn.disabled = true;
+    nextStepBtn.disabled = true;
+
+    let step = 0;
+    const totalSteps = 8 + Math.floor(Math.random() * 6);
+
+    function doStep() {
+        const randomMetal = METALS[Math.floor(Math.random() * METALS.length)];
+        const randomReagent = weightedReagents[Math.floor(Math.random() * weightedReagents.length)];
+        metalDisplay.textContent = randomMetal;
+        reagentDisplay.textContent = getReagentLabel(randomReagent);
+        step++;
+
+        if (step < totalSteps) {
+            const delay = 60 + step * 15;
+            setTimeout(doStep, delay);
+        } else {
+            completeSpin();
+        }
+    }
+
+    function completeSpin() {
+        let finalMetal, finalReagent;
+        let attempts = 0;
+        do {
+            finalMetal = METALS[Math.floor(Math.random() * METALS.length)];
+            finalReagent = weightedReagents[Math.floor(Math.random() * weightedReagents.length)];
+            attempts++;
+        } while (finalMetal === 'Hg' && finalReagent === 'AgNO3(aq)' && attempts < 50);
+
+        currentMetal = finalMetal;
+        currentReagent = finalReagent;
+        metalDisplay.textContent = finalMetal;
+        reagentDisplay.textContent = getReagentLabel(finalReagent, finalMetal);
+        currentResult = REACTION_MAP[finalMetal]?.[finalReagent] || null;
+
+        // 安全設定 reactionQuestionMark
+        const qMark = document.getElementById('reactionQuestionMark');
+        if (qMark) {
+            qMark.textContent = '→ ?';
+        }
+
+        document.querySelectorAll('.opt-btn').forEach(b => b.disabled = false);
+        spinBtn.disabled = false;
+        spinBtn.classList.remove('spinning');
+        spinBtn.textContent = t('spinBtn');
+        isSpinning = false;
+
+        // 強制刷新
+        spinBtn.style.transform = 'scale(1)';
+        spinBtn.style.opacity = '1';
+
+        setFeedback('✏️', t('fbSpin'), '', null);
+        obsRowFlame.style.display = 'flex';
+        obsRowSolid.style.display = 'none';
+        obsRowDeposit.style.display = 'none';
+        obsRowPpt.style.display = 'none';
+        obsRowOther.style.display = 'flex';
+        updateObsOptions();
+    }
+
+    // 強制保護：4 秒後強制完成
+    const safetyTimer = setTimeout(function() {
+        if (isSpinning) {
+            const qMark = document.getElementById('reactionQuestionMark');
+            if (qMark) {
+                qMark.textContent = '→ ?';
             }
+            document.querySelectorAll('.opt-btn').forEach(b => b.disabled = false);
+            spinBtn.disabled = false;
+            spinBtn.classList.remove('spinning');
+            spinBtn.textContent = t('spinBtn');
+            isSpinning = false;
+            spinBtn.style.transform = 'scale(1)';
+            spinBtn.style.opacity = '1';
+            setFeedback('✏️', t('fbSpin'), '', null);
+            obsRowFlame.style.display = 'flex';
+            obsRowSolid.style.display = 'none';
+            obsRowDeposit.style.display = 'none';
+            obsRowPpt.style.display = 'none';
+            obsRowOther.style.display = 'flex';
+            updateObsOptions();
+        }
+    }, 4000);
+
+    doStep();
+
+    const originalComplete = completeSpin;
+    completeSpin = function() {
+        clearTimeout(safetyTimer);
+        originalComplete();
+    };
+}
 
             // ============================================================
             // 答題邏輯
@@ -3131,9 +3422,6 @@
                 if (detailEl) detailEl.innerHTML = detail || '';
             }
 
-            // ============================================================
-            // handleOptClick - 只記錄選擇，不展開任何區域
-            // ============================================================
             function handleOptClick(e) {
                 if (isAnswered || isSpinning) return;
                 const btn = e.currentTarget;
@@ -3163,9 +3451,6 @@
                     null);
             }
 
-            // ============================================================
-            // handleCheckReaction - 檢查反應狀態
-            // ============================================================
             function handleCheckReaction() {
                 if (isAnswered || isSpinning) return;
                 if (!selectedReaction) {
@@ -3230,9 +3515,6 @@
                     '✅ Reaction correct! Select products (select all), then click "Next Step"', '', 'success');
             }
 
-            // ============================================================
-            // handleProductClick
-            // ============================================================
             function handleProductClick(e) {
                 if (isAnswered || isSpinning) return;
                 if (selectedReaction === 'no' || !reactionChecked) return;
@@ -3250,9 +3532,6 @@
                 document.querySelectorAll('.prod-btn').forEach(b => { b.classList.remove('correct', 'incorrect'); });
             }
 
-            // ============================================================
-            // handleNextStep
-            // ============================================================
             function handleNextStep() {
                 if (isAnswered || isSpinning) return;
                 if (!reactionChecked || selectedReaction !== 'yes') {
@@ -3348,9 +3627,6 @@
                 }
             }
 
-            // ============================================================
-            // checkAnswer - 最終檢查
-            // ============================================================
             function checkAnswer() {
                 if (isAnswered) {
                     setFeedback('✅', t('fbCorrect'), '', 'success');
@@ -3386,7 +3662,6 @@
                     return;
                 }
 
-                // 收集 userObs - 過濾空值
                 const userObs = [];
                 const flameVal = obsFlame.value;
                 if (flameVal && flameVal !== 'none') userObs.push(flameVal.trim());
@@ -3517,6 +3792,166 @@
             }
 
             // ============================================================
+            // 離子練習邏輯
+            // ============================================================
+            const ION_MAP = {
+                'Na_Cl': 'NaCl',
+                'Na_SO4': 'Na2SO4',
+                'Na_NO3': 'NaNO3',
+                'Na_CO3': 'Na2CO3',
+                'Na_OH': 'NaOH',
+                'Na_PO4': 'Na3PO4',
+                'Na_CH3COO': 'CH3COONa',
+                'K_Cl': 'KCl',
+                'K_SO4': 'K2SO4',
+                'K_NO3': 'KNO3',
+                'K_CO3': 'K2CO3',
+                'K_OH': 'KOH',
+                'K_PO4': 'K3PO4',
+                'K_CH3COO': 'CH3COOK',
+                'Ca_Cl': 'CaCl2',
+                'Ca_SO4': 'CaSO4',
+                'Ca_NO3': 'Ca(NO3)2',
+                'Ca_CO3': 'CaCO3',
+                'Ca_OH': 'Ca(OH)2',
+                'Ca_PO4': 'Ca3(PO4)2',
+                'Ca_CH3COO': '(CH3COO)2Ca',
+                'Mg_Cl': 'MgCl2',
+                'Mg_SO4': 'MgSO4',
+                'Mg_NO3': 'Mg(NO3)2',
+                'Mg_CO3': 'MgCO3',
+                'Mg_OH': 'Mg(OH)2',
+                'Mg_PO4': 'Mg3(PO4)2',
+                'Mg_CH3COO': '(CH3COO)2Mg',
+                'Al_Cl': 'AlCl3',
+                'Al_SO4': 'Al2(SO4)3',
+                'Al_NO3': 'Al(NO3)3',
+                'Al_CO3': 'Al2(CO3)3',
+                'Al_OH': 'Al(OH)3',
+                'Al_PO4': 'AlPO4',
+                'Al_CH3COO': '(CH3COO)3Al',
+                'Zn_Cl': 'ZnCl2',
+                'Zn_SO4': 'ZnSO4',
+                'Zn_NO3': 'Zn(NO3)2',
+                'Zn_CO3': 'ZnCO3',
+                'Zn_OH': 'Zn(OH)2',
+                'Zn_PO4': 'Zn3(PO4)2',
+                'Zn_CH3COO': '(CH3COO)2Zn',
+                'Fe2_Cl': 'FeCl2',
+                'Fe2_SO4': 'FeSO4',
+                'Fe2_NO3': 'Fe(NO3)2',
+                'Fe2_CO3': 'FeCO3',
+                'Fe2_OH': 'Fe(OH)2',
+                'Fe2_PO4': 'Fe3(PO4)2',
+                'Fe2_CH3COO': '(CH3COO)2Fe',
+                'Fe3_Cl': 'FeCl3',
+                'Fe3_SO4': 'Fe2(SO4)3',
+                'Fe3_NO3': 'Fe(NO3)3',
+                'Fe3_CO3': 'Fe2(CO3)3',
+                'Fe3_OH': 'Fe(OH)3',
+                'Fe3_PO4': 'FePO4',
+                'Fe3_CH3COO': '(CH3COO)3Fe',
+                'Cu_Cl': 'CuCl2',
+                'Cu_SO4': 'CuSO4',
+                'Cu_NO3': 'Cu(NO3)2',
+                'Cu_CO3': 'CuCO3',
+                'Cu_OH': 'Cu(OH)2',
+                'Cu_PO4': 'Cu3(PO4)2',
+                'Cu_CH3COO': '(CH3COO)2Cu',
+                'Ag_Cl': 'AgCl',
+                'Ag_SO4': 'Ag2SO4',
+                'Ag_NO3': 'AgNO3',
+                'Ag_CO3': 'Ag2CO3',
+                'Ag_OH': 'AgOH',
+                'Ag_PO4': 'Ag3PO4',
+                'Ag_CH3COO': 'CH3COOAg',
+                'NH4_Cl': 'NH4Cl',
+                'NH4_SO4': '(NH4)2SO4',
+                'NH4_NO3': 'NH4NO3',
+                'NH4_CO3': '(NH4)2CO3',
+                'NH4_OH': 'NH4OH',
+                'NH4_PO4': '(NH4)3PO4',
+                'NH4_CH3COO': 'CH3COONH4'
+            };
+
+            function checkIonPair() {
+                const cation = document.getElementById('ionCation').value;
+                const anion = document.getElementById('ionAnion').value;
+                const key = cation + '_' + anion;
+                const correctFormula = ION_MAP[key];
+
+                if (!correctFormula) {
+                    document.getElementById('ionResult').textContent = '⚠️ ' + (currentLang === 'zh' ? '無法配對' :
+                        'Cannot pair');
+                    document.getElementById('ionResult').className = 'ion-result error';
+                    return;
+                }
+
+                // 檢查使用者是否選了正確的化合物按鈕
+                const selectedBtn = document.querySelector('#ionOptions .ion-btn.selected');
+                if (!selectedBtn) {
+                    document.getElementById('ionResult').textContent = '⚠️ ' + (currentLang === 'zh' ?
+                        '請從下方選擇配對結果' : 'Please select the result below');
+                    document.getElementById('ionResult').className = 'ion-result error';
+                    return;
+                }
+
+                const userFormula = selectedBtn.dataset.ion;
+                if (userFormula === correctFormula) {
+                    document.getElementById('ionResult').textContent = '✅ ' + (currentLang === 'zh' ? '正確！' :
+                        'Correct!');
+                    document.getElementById('ionResult').className = 'ion-result success';
+                    selectedBtn.classList.add('correct');
+                    selectedBtn.classList.remove('incorrect');
+                } else {
+                    document.getElementById('ionResult').textContent = '❌ ' + (currentLang === 'zh' ?
+                        `正確答案：${correctFormula}` : `Correct: ${correctFormula}`);
+                    document.getElementById('ionResult').className = 'ion-result error';
+                    selectedBtn.classList.add('incorrect');
+                    selectedBtn.classList.remove('correct');
+                }
+            }
+
+            function checkIonName() {
+                const selected = document.getElementById('ionNameSelect').value;
+                if (!selected) {
+                    document.getElementById('ionNameResult').textContent = '⚠️ ' + (currentLang === 'zh' ?
+                        '請選擇一個化合物' : 'Please select a compound');
+                    document.getElementById('ionNameResult').className = 'ion-result error';
+                    return;
+                }
+
+                // 檢查是否被選中
+                const btn = document.querySelector(`#ionOptions .ion-btn[data-ion="${selected}"]`);
+                if (btn && btn.classList.contains('selected')) {
+                    document.getElementById('ionNameResult').textContent = '✅ ' + (currentLang === 'zh' ?
+                        '已配對正確！' : 'Paired correctly!');
+                    document.getElementById('ionNameResult').className = 'ion-result success';
+                } else {
+                    document.getElementById('ionNameResult').textContent = '⚠️ ' + (currentLang === 'zh' ?
+                        '請先在「配對結果」中選擇對應的化學式' :
+                        'Please select the corresponding formula in "Result" first');
+                    document.getElementById('ionNameResult').className = 'ion-result error';
+                }
+            }
+
+            // 離子按鈕點擊事件
+            function handleIonBtnClick(e) {
+                const btn = e.currentTarget;
+                // 取消其他選中
+                document.querySelectorAll('#ionOptions .ion-btn').forEach(b => {
+                    b.classList.remove('selected');
+                    b.classList.remove('correct', 'incorrect');
+                });
+                btn.classList.add('selected');
+                // 清空之前的結果
+                document.getElementById('ionResult').textContent = '';
+                document.getElementById('ionResult').className = 'ion-result';
+                // 自動配對檢查
+                checkIonPair();
+            }
+
+            // ============================================================
             // 語言切換
             // ============================================================
             function setLanguage(lang) {
@@ -3524,6 +3959,8 @@
                 langBtns.forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
                 updateObsOptions();
                 renderReferenceTable();
+
+                // 切換頁籤文字
                 document.querySelectorAll('#chapterTabs .tab-btn').forEach(btn => {
                     const ch = btn.dataset.chapter;
                     if (ch === 'ch11') {
@@ -3536,19 +3973,22 @@
                             '⚡ Ch.30 Redox (Coming soon)';
                     }
                 });
+
                 document.getElementById('btnMetalSeries').textContent = currentLang === 'zh' ? '📊 活性序' :
                     '📊 Reactivity Series';
                 document.getElementById('btnOA_RA').textContent = currentLang === 'zh' ? '🧪 OA/RA 表' :
                     '🧪 OA/RA Table';
                 document.getElementById('btnReactionTable').textContent = currentLang === 'zh' ? '📋 反應總表' :
                     '📋 Reaction Table';
+
                 const selector = document.getElementById('practiceSelector');
                 if (selector) {
-                    selector.options[0].text = currentLang === 'zh' ? '🧪 離子與化合物 (Ch.7)' :
+                    selector.options[0].text = currentLang === 'zh' ? '⚗️ 無機化學反應' : '⚗️ Inorganic Reactions';
+                    selector.options[1].text = currentLang === 'zh' ? '🧪 離子與化合物 (Ch.7)' :
                         '🧪 Ionic Compounds (Ch.7)';
-                    selector.options[1].text = currentLang === 'zh' ? '⚗️ 無機化學反應' : '⚗️ Inorganic Reactions';
                     selector.options[2].text = currentLang === 'zh' ? '🏠 返回目錄' : '🏠 Home';
                 }
+
                 if (balanceArea.style.display !== 'none') {
                     renderBalanceEquation(currentMetal, currentReagent);
                 }
@@ -3582,9 +4022,11 @@
                 welcomeScreen.classList.add('hidden');
                 mainCard.classList.add('active');
                 langBtns.forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
-                document.getElementById('practiceSelector').addEventListener('change', function() {
+
+                practiceSelector.addEventListener('change', function() {
                     switchPractice(this.value);
                 });
+
                 spinBtn.addEventListener('click', function() {
                     if (isAnswered) { nextQuestion(); } else { spinWheel(); }
                 });
@@ -3592,12 +4034,17 @@
                 checkBottomBtn.addEventListener('click', checkAnswer);
                 nextStepBtn.addEventListener('click', handleNextStep);
 
+                // 反應選項
                 document.querySelectorAll('.opt-btn').forEach(b => {
                     b.addEventListener('click', handleOptClick);
                 });
+
+                // 產物選項
                 document.querySelectorAll('#productGroup .prod-btn').forEach(b => {
                     b.addEventListener('click', handleProductClick);
                 });
+
+                // 觀察按鈕
                 document.querySelectorAll('#obsDepositGroup .obs-btn').forEach(b => {
                     b.addEventListener('click', function() {
                         if (isAnswered || isSpinning || selectedReaction === 'no' || !reactionChecked) return;
@@ -3637,6 +4084,7 @@
                         }
                     });
                 });
+
                 obsSolid.addEventListener('change', function() {
                     if (this.value === 'color_temp') {
                         colorTempSub.style.display = 'inline-flex';
@@ -3644,6 +4092,7 @@
                         colorTempSub.style.display = 'none';
                     }
                 });
+
                 balanceCheckbox.addEventListener('change', function() {
                     balanceActive = this.checked;
                     if (!balanceActive) {
@@ -3654,6 +4103,8 @@
                     setFeedback('✏️', currentLang === 'zh' ? '平衡功能已' + (balanceActive ? '啟用' : '關閉') :
                         'Balance ' + (balanceActive ? 'enabled' : 'disabled'), '', null);
                 });
+
+                // 頁籤
                 document.querySelectorAll('#chapterTabs .tab-btn').forEach(btn => {
                     btn.addEventListener('click', function() {
                         if (this.disabled) return;
@@ -3662,6 +4113,8 @@
                         this.classList.add('active');
                     });
                 });
+
+                // 活性序按鈕
                 document.getElementById('btnMetalSeries').addEventListener('click', function() {
                     document.getElementById('metalSeriesModal').classList.add('active');
                     renderReferenceTable();
@@ -3672,14 +4125,45 @@
                 document.getElementById('metalSeriesModal').addEventListener('click', function(e) {
                     if (e.target === this) this.classList.remove('active');
                 });
+
+                // 語言切換
                 langBtns.forEach(b => {
                     b.addEventListener('click', () => setLanguage(b.dataset.lang));
                 });
+
+                // 歡迎頁面
                 welcomeZh.addEventListener('click', () => initApp('zh'));
                 welcomeEn.addEventListener('click', () => initApp('en'));
+
+                // 係數彈窗
                 setupCoeffPopup();
+
+                // 離子練習事件
+                document.getElementById('ionCheckBtn').addEventListener('click', checkIonPair);
+                document.getElementById('ionNameCheckBtn').addEventListener('click', checkIonName);
+                document.querySelectorAll('#ionOptions .ion-btn').forEach(b => {
+                    b.addEventListener('click', handleIonBtnClick);
+                });
+
+                // 切換到離子選項時自動更新
+                document.getElementById('ionCation').addEventListener('change', function() {
+                    document.querySelectorAll('#ionOptions .ion-btn').forEach(b => {
+                        b.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    document.getElementById('ionResult').textContent = '';
+                    document.getElementById('ionResult').className = 'ion-result';
+                });
+                document.getElementById('ionAnion').addEventListener('change', function() {
+                    document.querySelectorAll('#ionOptions .ion-btn').forEach(b => {
+                        b.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    document.getElementById('ionResult').textContent = '';
+                    document.getElementById('ionResult').className = 'ion-result';
+                });
+
                 setLanguage(lang);
                 setFeedback('✏️', t('fbSpin'), '', null);
+
                 metalDisplay.textContent = '—';
                 reagentDisplay.textContent = '—';
                 reactionQuestionMark.textContent = '→ ?';
@@ -3697,16 +4181,26 @@
                 obsRowDeposit.style.display = 'none';
                 obsRowPpt.style.display = 'none';
                 obsRowOther.style.display = 'flex';
-                const dissolveBtn = document.querySelector('#obsOtherGroup .obs-btn[data-obs="dissolve"]');
-                if (dissolveBtn) {
-                    dissolveBtn.style.display = 'inline-block';
-                }
+
+                // 確保離子練習初始顯示正確
+                document.getElementById('ionsTitle').textContent = t('ionsTitle');
+                document.getElementById('ionQ1Label').textContent = t('ionQ1');
+                document.getElementById('ionQ2Label').textContent = t('ionQ2');
+                document.getElementById('ionQ3Label').textContent = t('ionQ3');
+                document.getElementById('ionQ4Label').textContent = t('ionQ4');
+                document.getElementById('ionCheckBtn').textContent = t('ionCheck');
+                document.getElementById('ionNameCheckBtn').textContent = t('ionNameCheck');
+                document.getElementById('ionResult').textContent = t('ionSelect');
+
                 updateObsOptions();
+
+                // 默認顯示反應練習
+                showRxnTab();
             }
 
             const initialLang = getUrlParameter('lang') || 'en';
             initApp(initialLang);
-            console.log('⚗️ 無機化學反應練習已啟動 (最終版)');
+            console.log('⚗️ 化學練習已啟動 (最終完整版)');
         })();
     </script>
 </body>
