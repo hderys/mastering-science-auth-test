@@ -226,7 +226,6 @@
             cursor: not-allowed;
         }
 
-        /* ===== 主內容區 ===== */
         .question-area {
             flex: 1;
             min-width: 0;
@@ -248,7 +247,6 @@
             display: flex;
         }
 
-        /* ===== 離子練習專用 ===== */
         .ions-panel {
             display: flex;
             flex-direction: column;
@@ -341,7 +339,6 @@
             background: #f8d7da;
         }
 
-        /* ===== 反應練習共用 ===== */
         .split-panel {
             display: flex;
             gap: 4px;
@@ -490,12 +487,19 @@
             gap: 3px;
             flex-shrink: 0;
         }
-        .q-row {
+
+        /* ===== 反應區塊 - 可隱藏 ===== */
+        .reaction-row {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             gap: 3px 6px;
+            transition: all 0.2s;
         }
+        .reaction-row.hidden {
+            display: none !important;
+        }
+
         .q-label {
             font-size: 0.6rem;
             font-weight: 700;
@@ -654,11 +658,13 @@
             font-size: 0.55rem;
             font-weight: 700;
             color: #4a5a7a;
+            text-align: center;
         }
         .balance-row {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
+            justify-content: center;
             gap: 3px 5px;
             padding: 2px 0;
         }
@@ -1020,8 +1026,8 @@
         }
 
         /* ================================================================
-                   手機版專屬調整 (max-width: 768px)
-                   ================================================================ */
+           手機版專屬調整 (max-width: 768px)
+           ================================================================ */
         @media (max-width: 768px) {
             .card {
                 padding: 0.3rem 0.4rem;
@@ -1062,7 +1068,6 @@
                 height: 16px;
             }
 
-            /* 抽題區 - 手機版修正 */
             .top-row {
                 display: flex;
                 flex-wrap: nowrap;
@@ -1097,90 +1102,74 @@
                 display: none;
             }
 
-            .q-row {
+            /* ===== 反應區 - 字體增大 ===== */
+            .reaction-row {
                 gap: 3px 4px;
             }
-            .q-label {
-                font-size: 0.6rem;
+            .reaction-row .q-label {
+                font-size: 0.7rem;
                 min-width: 40px;
                 width: 100%;
             }
-            .q-options {
-                flex: 1;
-                display: flex;
-                gap: 3px;
-            }
-            .q-options .opt-btn {
-                font-size: 0.65rem;
-                padding: 4px 6px;
-                min-height: 30px;
+            .reaction-row .q-options .opt-btn {
+                font-size: 0.8rem;
+                padding: 4px 8px;
+                min-height: 32px;
                 flex: 1;
                 text-align: center;
             }
-            .btn-check {
-                font-size: 0.65rem;
-                padding: 4px 10px;
-                min-height: 30px;
-                flex: 0 1 auto;
-            }
-            .q-row:first-child {
-                display: flex;
-                flex-wrap: wrap;
-                align-items: center;
-            }
-            .q-row:first-child .q-label {
-                width: 100%;
-                margin-bottom: 2px;
-            }
-            .q-row:first-child .q-options {
-                flex: 2;
-            }
-            .q-row:first-child .btn-check {
+            .reaction-row .btn-check {
+                font-size: 0.75rem;
+                padding: 4px 12px;
+                min-height: 32px;
                 flex: 0 1 auto;
             }
 
+            /* ===== 產物區 - 字體增大 ===== */
             .product-group .prod-btn {
-                font-size: 0.6rem;
+                font-size: 0.7rem;
                 padding: 5px 4px;
-                min-height: 28px;
+                min-height: 30px;
                 flex: 1 0 calc(33.33% - 4px);
                 max-width: none;
                 border-radius: 20px;
             }
             .product-group .btn-next-step {
-                font-size: 0.6rem;
+                font-size: 0.7rem;
                 padding: 5px 8px;
-                min-height: 28px;
+                min-height: 30px;
                 flex: 1 0 calc(33.33% - 4px);
                 max-width: none;
                 text-align: center;
             }
             .product-feedback {
-                font-size: 0.5rem;
+                font-size: 0.6rem;
                 width: 100%;
                 margin-left: 0;
                 margin-top: 2px;
             }
 
+            /* ===== 平衡區 - 字體增大 + 置中 ===== */
             .balance-area .bal-title {
-                font-size: 0.5rem;
+                font-size: 0.6rem;
             }
             .balance-row .term {
-                font-size: 0.55rem;
+                font-size: 0.65rem;
             }
             .balance-row .arrow-symbol {
-                font-size: 0.55rem;
+                font-size: 0.65rem;
             }
             .balance-row .coeff-box {
-                min-width: 24px;
-                height: 24px;
-                line-height: 20px;
-                font-size: 0.55rem;
+                min-width: 26px;
+                height: 26px;
+                line-height: 22px;
+                font-size: 0.65rem;
                 padding: 0 4px;
             }
 
+            /* ===== 觀察區 - 字體增大 ===== */
             .obs-section .obs-title {
-                font-size: 0.5rem;
+                font-size: 0.6rem;
             }
             .obs-row {
                 display: flex;
@@ -1188,14 +1177,14 @@
                 gap: 3px 4px;
             }
             .obs-row .obs-label {
-                font-size: 0.5rem;
+                font-size: 0.6rem;
                 min-width: 32px;
                 width: 100%;
                 margin-bottom: 1px;
             }
             .obs-row select {
-                font-size: 0.5rem;
-                min-height: 28px;
+                font-size: 0.6rem;
+                min-height: 30px;
                 min-width: 60px;
                 padding: 2px 6px;
                 flex: 1 0 calc(50% - 4px);
@@ -1207,25 +1196,31 @@
                 width: 100%;
             }
             .obs-row .obs-btn {
-                font-size: 0.5rem;
+                font-size: 0.6rem;
                 padding: 4px 6px;
-                min-height: 28px;
+                min-height: 30px;
                 flex: 1 0 calc(33.33% - 4px);
                 text-align: center;
                 border-radius: 20px;
                 white-space: nowrap;
             }
+
+            /* ===== 沉澱：上2下2 ===== */
+            #obsRowPpt .obs-btn:nth-child(1),
+            #obsRowPpt .obs-btn:nth-child(2) {
+                flex: 1 0 calc(50% - 4px);
+            }
+            #obsRowPpt .obs-btn:nth-child(3),
+            #obsRowPpt .obs-btn:nth-child(4) {
+                flex: 1 0 calc(50% - 4px);
+            }
+
+            /* ===== 沉積物：2個各佔一半 ===== */
             #obsRowDeposit .obs-btn {
                 flex: 1 0 calc(50% - 4px);
             }
-            #obsRowPpt .obs-btn:nth-child(1),
-            #obsRowPpt .obs-btn:nth-child(2),
-            #obsRowPpt .obs-btn:nth-child(3) {
-                flex: 1 0 calc(33.33% - 4px);
-            }
-            #obsRowPpt .obs-btn:nth-child(4) {
-                flex: 1 0 calc(33.33% - 4px);
-            }
+
+            /* ===== 其他：氣泡浮起沉底 3個，停止溶解 2個 ===== */
             #obsRowOther .obs-btn:nth-child(1),
             #obsRowOther .obs-btn:nth-child(2),
             #obsRowOther .obs-btn:nth-child(3) {
@@ -1243,33 +1238,33 @@
             }
             .color-temp-wrapper select {
                 min-width: 50px;
-                font-size: 0.45rem;
-                min-height: 24px;
+                font-size: 0.5rem;
+                min-height: 26px;
                 flex: 1;
             }
             .color-temp-wrapper .temp-label {
-                font-size: 0.4rem;
+                font-size: 0.45rem;
             }
             .color-temp-wrapper .temp-arrow {
                 font-size: 0.5rem;
             }
 
             .bottom-check-row .btn-check {
-                font-size: 0.7rem;
+                font-size: 0.75rem;
                 padding: 6px 20px;
-                min-height: 34px;
+                min-height: 36px;
             }
 
             .feedback-area {
                 padding: 4px 10px;
-                font-size: 0.55rem;
-                min-height: 28px;
+                font-size: 0.6rem;
+                min-height: 30px;
             }
             .feedback-area .fb-text {
-                font-size: 0.55rem;
+                font-size: 0.6rem;
             }
             .feedback-area .fb-detail {
-                font-size: 0.5rem;
+                font-size: 0.55rem;
                 padding-left: 16px;
             }
 
@@ -1335,7 +1330,6 @@
                 border-radius: 10px;
             }
 
-            /* 離子練習手機版 */
             .ions-panel .ion-row {
                 flex-direction: column;
                 align-items: stretch;
@@ -1374,46 +1368,51 @@
                 min-height: 32px;
                 min-width: 48px;
             }
-            .q-options .opt-btn {
-                font-size: 0.55rem;
+
+            .reaction-row .q-options .opt-btn {
+                font-size: 0.7rem;
                 padding: 3px 4px;
-                min-height: 26px;
+                min-height: 28px;
             }
-            .btn-check {
-                font-size: 0.55rem;
-                padding: 3px 6px;
-                min-height: 26px;
+            .reaction-row .btn-check {
+                font-size: 0.65rem;
+                padding: 3px 8px;
+                min-height: 28px;
             }
+
             .product-group .prod-btn {
-                font-size: 0.5rem;
+                font-size: 0.6rem;
                 padding: 4px 2px;
-                min-height: 24px;
+                min-height: 26px;
                 flex: 1 0 calc(33.33% - 3px);
             }
             .product-group .btn-next-step {
-                font-size: 0.5rem;
+                font-size: 0.6rem;
                 padding: 4px 2px;
-                min-height: 24px;
+                min-height: 26px;
                 flex: 1 0 calc(33.33% - 3px);
             }
+
             .obs-row .obs-btn {
-                font-size: 0.4rem;
+                font-size: 0.5rem;
                 padding: 3px 4px;
-                min-height: 24px;
+                min-height: 26px;
             }
             .obs-row select {
-                font-size: 0.4rem;
-                min-height: 24px;
+                font-size: 0.5rem;
+                min-height: 26px;
                 min-width: 50px;
             }
+
             .color-temp-wrapper select {
                 min-width: 40px;
-                font-size: 0.35rem;
-                min-height: 20px;
+                font-size: 0.4rem;
+                min-height: 22px;
             }
             .color-temp-wrapper .temp-label {
-                font-size: 0.35rem;
+                font-size: 0.4rem;
             }
+
             .hint-row-wrap .hint-text {
                 font-size: 0.4rem;
             }
@@ -1425,23 +1424,26 @@
                 width: 14px;
                 height: 14px;
             }
+
             .feedback-area {
                 padding: 3px 8px;
-                font-size: 0.5rem;
-                min-height: 24px;
+                font-size: 0.55rem;
+                min-height: 26px;
             }
             .feedback-area .fb-text {
-                font-size: 0.5rem;
+                font-size: 0.55rem;
             }
             .feedback-area .fb-detail {
-                font-size: 0.45rem;
+                font-size: 0.5rem;
                 padding-left: 14px;
             }
+
             .bottom-check-row .btn-check {
-                font-size: 0.6rem;
+                font-size: 0.65rem;
                 padding: 4px 14px;
-                min-height: 30px;
+                min-height: 32px;
             }
+
             .q-label {
                 font-size: 0.5rem;
                 min-width: 32px;
@@ -1494,9 +1496,7 @@
         </div>
 
         <div class="question-area" id="questionArea">
-            <!-- ========================================================== -->
             <!-- TAB 0: 無機化學反應練習 -->
-            <!-- ========================================================== -->
             <div class="tab-content active" id="tabContent0">
                 <div class="hint-row-wrap">
                     <span class="hint-text" id="hintText">
@@ -1511,6 +1511,7 @@
 
                 <div class="split-panel">
                     <div class="split-left">
+                        <!-- 抽題區 -->
                         <div class="top-row">
                             <div class="spin-box">
                                 <div class="label" id="metalLabel">⚙️ 金屬</div>
@@ -1525,7 +1526,8 @@
                         </div>
 
                         <div class="question-block" id="questionBlock">
-                            <div class="q-row">
+                            <!-- 反應區塊 - 可隱藏 -->
+                            <div class="reaction-row" id="reactionRow">
                                 <span class="q-label" id="q1Label">📌 反應？</span>
                                 <div class="q-options" id="q1Options">
                                     <button class="opt-btn" data-value="yes" id="q1Yes">✅ 有反應</button>
@@ -1534,6 +1536,7 @@
                                 <button class="btn-check" id="checkReactionBtn" disabled>✔ 檢查</button>
                             </div>
 
+                            <!-- 產物區 -->
                             <div class="q-row" id="productRow" style="display:none;">
                                 <span class="q-label" id="productLabel">📦 產物</span>
                                 <div class="product-group" id="productGroup">
@@ -1547,11 +1550,13 @@
                                 <span class="product-feedback" id="productFeedback"></span>
                             </div>
 
+                            <!-- 平衡區 -->
                             <div class="balance-area" id="balanceArea" style="display:none;">
                                 <div class="bal-title" id="balTitle">⚖️ 平衡方程式：</div>
                                 <div class="balance-row" id="balanceRow"></div>
                             </div>
 
+                            <!-- 觀察區 -->
                             <div class="obs-section" id="obsSection" style="display:none;">
                                 <div class="obs-title" id="obsTitle">🔍 觀察（可多選）</div>
 
@@ -1587,29 +1592,29 @@
                                 <div class="obs-row" id="obsRowDeposit">
                                     <span class="obs-label" id="obsDepositLabel">🔄 固體沉積物</span>
                                     <div class="obs-btn-group" id="obsDepositGroup">
-                                        <button class="obs-btn" data-obs="deposit_brown">🟤 紅棕色</button>
-                                        <button class="obs-btn" data-obs="deposit_silver">⬜ 銀白色</button>
+                                        <button class="obs-btn" data-obs="deposit_brown">🟤 紅棕色沉積物</button>
+                                        <button class="obs-btn" data-obs="deposit_silver">⬜ 銀白色沉積物</button>
                                     </div>
                                 </div>
 
                                 <div class="obs-row" id="obsRowPpt">
                                     <span class="obs-label" id="obsPptLabel">🟦 沉澱</span>
                                     <div class="obs-btn-group" id="obsPptGroup">
-                                        <button class="obs-btn" data-obs="ppt_blue">🟦 藍色</button>
-                                        <button class="obs-btn" data-obs="ppt_green">🟩 綠色</button>
-                                        <button class="obs-btn" data-obs="ppt_brown">🟫 棕色</button>
-                                        <button class="obs-btn" data-obs="ppt_white">⬜ 白色</button>
+                                        <button class="obs-btn" data-obs="ppt_blue">🟦 藍色沉澱生成</button>
+                                        <button class="obs-btn" data-obs="ppt_green">🟩 綠色沉澱生成</button>
+                                        <button class="obs-btn" data-obs="ppt_brown">🟫 棕色沉澱生成</button>
+                                        <button class="obs-btn" data-obs="ppt_white">⬜ 白色沉澱生成</button>
                                     </div>
                                 </div>
 
                                 <div class="obs-row" id="obsRowOther">
                                     <span class="obs-label" id="obsOtherLabel">🔦 其他</span>
                                     <div class="obs-btn-group" id="obsOtherGroup">
-                                        <button class="obs-btn" data-obs="gas">💨 氣泡</button>
-                                        <button class="obs-btn" data-obs="float">🌊 浮起</button>
-                                        <button class="obs-btn" data-obs="sink">⬇️ 沉底</button>
-                                        <button class="obs-btn" data-obs="stop">⏹️ 停止</button>
-                                        <button class="obs-btn" data-obs="dissolve">🫠 溶解</button>
+                                        <button class="obs-btn" data-obs="gas">💨 有氣泡釋出</button>
+                                        <button class="obs-btn" data-obs="float">🌊 金屬浮起</button>
+                                        <button class="obs-btn" data-obs="sink">⬇️ 金屬沉底</button>
+                                        <button class="obs-btn" data-obs="stop">⏹️ 反應停止</button>
+                                        <button class="obs-btn" data-obs="dissolve">🫠 金屬溶解</button>
                                     </div>
                                 </div>
 
@@ -1631,14 +1636,11 @@
                 </div>
             </div>
 
-            <!-- ========================================================== -->
             <!-- TAB 1: 離子與化合物練習 -->
-            <!-- ========================================================== -->
             <div class="tab-content" id="tabContent1">
                 <div class="ions-panel" id="ionsPanel">
                     <div style="font-size:0.7rem; font-weight:700; color:#4a5a7a; margin-bottom:4px;" id="ionsTitle">🧪 離子與化合物練習</div>
 
-                    <!-- 離子配對練習 -->
                     <div class="ion-row">
                         <span class="ion-label" id="ionQ1Label">📌 陽離子</span>
                         <select id="ionCation">
@@ -1810,7 +1812,7 @@
             }
 
             // ============================================================
-            // 資料庫 - 金屬
+            // 資料庫
             // ============================================================
             const METALS = ['K', 'Na', 'Ba', 'Ca', 'Mg', 'Al', 'Zn', 'Fe', 'Sn', 'Pb', 'Cu', 'Hg', 'Ag', 'Pt', 'Au'];
 
@@ -2570,24 +2572,24 @@
                     sol_green: '🟩 溶液變淺綠色',
                     sol_blue: '🟦 溶液變藍色',
                     sol_fade: '🎨 溶液顏色變淡',
-                    solid_white: '⬜ 白色固體',
-                    solid_black: '⬛ 黑色固體',
-                    solid_brown: '🟤 紅棕色固體',
-                    solid_silver: '⬜ 銀白色固體',
-                    solid_red: '🔴 紅色固體',
-                    solid_yellow: '🟡 黃色固體',
+                    solid_white: '⬜ 白色固體生成',
+                    solid_black: '⬛ 黑色固體生成',
+                    solid_brown: '🟤 紅棕色固體生成',
+                    solid_silver: '⬜ 銀白色固體生成',
+                    solid_red: '🔴 紅色固體生成',
+                    solid_yellow: '🟡 黃色固體生成',
                     color_temp: '🌡️ 顏色隨溫度轉變',
-                    deposit_brown: '🟤 紅棕色沉積物',
-                    deposit_silver: '⬜ 銀白色沉積物',
-                    ppt_blue: '🟦 藍色沉澱',
-                    ppt_green: '🟩 綠色沉澱',
-                    ppt_brown: '🟫 棕色沉澱',
-                    ppt_white: '⬜ 白色沉澱',
-                    gas: '💨 氣泡',
-                    float: '🌊 浮起',
-                    sink: '⬇️ 沉底',
-                    stop: '⏹️ 停止',
-                    dissolve: '🫠 溶解',
+                    deposit_brown: '🟤 紅棕色沉積物生成',
+                    deposit_silver: '⬜ 銀白色沉積物生成',
+                    ppt_blue: '🟦 藍色沉澱生成',
+                    ppt_green: '🟩 綠色沉澱生成',
+                    ppt_brown: '🟫 棕色沉澱生成',
+                    ppt_white: '⬜ 白色沉澱生成',
+                    gas: '💨 有氣泡釋出',
+                    float: '🌊 金屬浮起',
+                    sink: '⬇️ 金屬沉底',
+                    stop: '⏹️ 反應停止',
+                    dissolve: '🫠 金屬溶解',
                     correctAnswer: '✅ 正確答案：',
                     hintText: '💡 ',
                     reactionHint: '這個組合會產生反應，請記住正確答案。',
@@ -2662,24 +2664,24 @@
                     sol_green: '🟩 Solution turned pale green',
                     sol_blue: '🟦 Solution turned blue',
                     sol_fade: '🎨 Solution faded',
-                    solid_white: '⬜ White solid',
-                    solid_black: '⬛ Black solid',
-                    solid_brown: '🟤 Reddish-brown solid',
-                    solid_silver: '⬜ Silvery solid',
-                    solid_red: '🔴 Red solid',
-                    solid_yellow: '🟡 Yellow solid',
+                    solid_white: '⬜ White solid formed',
+                    solid_black: '⬛ Black solid formed',
+                    solid_brown: '🟤 Reddish-brown solid formed',
+                    solid_silver: '⬜ Silvery solid formed',
+                    solid_red: '🔴 Red solid formed',
+                    solid_yellow: '🟡 Yellow solid formed',
                     color_temp: '🌡️ Colour changes with temperature',
-                    deposit_brown: '🟤 Reddish-brown deposit',
-                    deposit_silver: '⬜ Silvery deposit',
-                    ppt_blue: '🟦 Blue precipitate',
-                    ppt_green: '🟩 Green precipitate',
-                    ppt_brown: '🟫 Brown precipitate',
-                    ppt_white: '⬜ White precipitate',
-                    gas: '💨 Bubbles',
-                    float: '🌊 Floated',
-                    sink: '⬇️ Sank',
-                    stop: '⏹️ Stopped',
-                    dissolve: '🫠 Dissolved',
+                    deposit_brown: '🟤 Reddish-brown deposit formed',
+                    deposit_silver: '⬜ Silvery deposit formed',
+                    ppt_blue: '🟦 Blue precipitate formed',
+                    ppt_green: '🟩 Green precipitate formed',
+                    ppt_brown: '🟫 Brown precipitate formed',
+                    ppt_white: '⬜ White precipitate formed',
+                    gas: '💨 Bubbles released',
+                    float: '🌊 Metal floated',
+                    sink: '⬇️ Metal sank',
+                    stop: '⏹️ Reaction stopped',
+                    dissolve: '🫠 Metal dissolved',
                     correctAnswer: '✅ Correct answer: ',
                     hintText: '💡 ',
                     reactionHint: 'This combination will react. Remember the correct answer.',
@@ -2770,6 +2772,7 @@
             const modalRefBody = document.getElementById('modalRefBody');
             const langBtns = document.querySelectorAll('.lang-btn');
             const practiceSelector = document.getElementById('practiceSelector');
+            const reactionRow = document.getElementById('reactionRow');
 
             // ============================================================
             // 工具函數
@@ -2817,7 +2820,7 @@
             }
 
             // ============================================================
-            // 參考表格 - 支援中文
+            // 參考表格
             // ============================================================
             function renderReferenceTable() {
                 const metals = [...METALS];
@@ -3048,7 +3051,7 @@
             }
 
             // ============================================================
-            // 動態更新觀察選項
+            // 更新觀察選項
             // ============================================================
             function updateObsOptions() {
                 const flameOptions = [
@@ -3184,7 +3187,6 @@
                 colorTempCold.options[1].text = currentLang === 'zh' ? '⬜ 白色' : '⬜ White';
                 colorTempCold.options[2].text = currentLang === 'zh' ? '🟡 黃色' : '🟡 Yellow';
 
-                // 離子練習文字
                 document.getElementById('ionsTitle').textContent = t('ionsTitle');
                 document.getElementById('ionQ1Label').textContent = t('ionQ1');
                 document.getElementById('ionQ2Label').textContent = t('ionQ2');
@@ -3196,7 +3198,6 @@
                 if (ionResult && !ionResult.textContent.includes('✅') && !ionResult.textContent.includes('❌')) {
                     ionResult.textContent = t('ionSelect');
                 }
-                // 更新離子名稱下拉選單
                 const nameSelect = document.getElementById('ionNameSelect');
                 if (nameSelect) {
                     const placeholder = t('ionNamePlaceholder');
@@ -3271,141 +3272,144 @@
             }
 
             // ============================================================
-            // 轉盤抽題 - 修正手機版卡死問題
+            // 轉盤抽題
             // ============================================================
             function spinWheel() {
-    if (isSpinning) return;
+                if (isSpinning) return;
 
-    // 重置所有狀態
-    isAnswered = false;
-    selectedReaction = null;
-    selectedPpt = new Set();
-    selectedOther = new Set();
-    selectedDeposit = new Set();
-    selectedProducts = new Set();
-    productsCorrect = false;
-    showBalanceAndObs = false;
-    productCheckDone = false;
-    reactionChecked = false;
-    balanceArea.style.display = 'none';
-    productRow.style.display = 'none';
-    obsSection.style.display = 'none';
-    colorTempSub.style.display = 'none';
-    productFeedback.textContent = '';
-    productFeedback.className = 'product-feedback';
-    document.querySelectorAll('.prod-btn').forEach(b => { b.classList.remove('correct', 'incorrect'); });
+                // 重置所有狀態
+                isAnswered = false;
+                selectedReaction = null;
+                selectedPpt = new Set();
+                selectedOther = new Set();
+                selectedDeposit = new Set();
+                selectedProducts = new Set();
+                productsCorrect = false;
+                showBalanceAndObs = false;
+                productCheckDone = false;
+                reactionChecked = false;
+                balanceArea.style.display = 'none';
+                productRow.style.display = 'none';
+                obsSection.style.display = 'none';
+                colorTempSub.style.display = 'none';
+                productFeedback.textContent = '';
+                productFeedback.className = 'product-feedback';
+                document.querySelectorAll('.prod-btn').forEach(b => { b.classList.remove('correct', 'incorrect'); });
 
-    isSpinning = true;
-    spinBtn.disabled = true;
-    spinBtn.classList.add('spinning');
-    spinBtn.textContent = currentLang === 'zh' ? '🌀 旋轉中...' : '🌀 Spinning...';
+                // ★ 重新顯示反應區塊
+                if (reactionRow) {
+                    reactionRow.classList.remove('hidden');
+                }
 
-    document.querySelectorAll('.opt-btn').forEach(b => {
-        b.classList.remove('selected');
-        b.disabled = true;
-    });
-    document.querySelectorAll('#productGroup .prod-btn').forEach(b => {
-        b.classList.remove('selected');
-        b.disabled = true;
-    });
-    document.querySelectorAll('#obsPptGroup .obs-btn, #obsOtherGroup .obs-btn, #obsDepositGroup .obs-btn').forEach(b => {
-        b.classList.remove('selected');
-        b.disabled = true;
-    });
-    checkReactionBtn.disabled = true;
-    checkBottomBtn.disabled = true;
-    nextStepBtn.disabled = true;
+                isSpinning = true;
+                spinBtn.disabled = true;
+                spinBtn.classList.add('spinning');
+                spinBtn.textContent = currentLang === 'zh' ? '🌀 旋轉中...' : '🌀 Spinning...';
 
-    let step = 0;
-    const totalSteps = 8 + Math.floor(Math.random() * 6);
+                document.querySelectorAll('.opt-btn').forEach(b => {
+                    b.classList.remove('selected');
+                    b.disabled = true;
+                });
+                document.querySelectorAll('#productGroup .prod-btn').forEach(b => {
+                    b.classList.remove('selected');
+                    b.disabled = true;
+                });
+                document.querySelectorAll('#obsPptGroup .obs-btn, #obsOtherGroup .obs-btn, #obsDepositGroup .obs-btn')
+                    .forEach(b => {
+                        b.classList.remove('selected');
+                        b.disabled = true;
+                    });
+                checkReactionBtn.disabled = true;
+                checkBottomBtn.disabled = true;
+                nextStepBtn.disabled = true;
 
-    function doStep() {
-        const randomMetal = METALS[Math.floor(Math.random() * METALS.length)];
-        const randomReagent = weightedReagents[Math.floor(Math.random() * weightedReagents.length)];
-        metalDisplay.textContent = randomMetal;
-        reagentDisplay.textContent = getReagentLabel(randomReagent);
-        step++;
+                let step = 0;
+                const totalSteps = 8 + Math.floor(Math.random() * 6);
 
-        if (step < totalSteps) {
-            const delay = 60 + step * 15;
-            setTimeout(doStep, delay);
-        } else {
-            completeSpin();
-        }
-    }
+                function doStep() {
+                    const randomMetal = METALS[Math.floor(Math.random() * METALS.length)];
+                    const randomReagent = weightedReagents[Math.floor(Math.random() * weightedReagents.length)];
+                    metalDisplay.textContent = randomMetal;
+                    reagentDisplay.textContent = getReagentLabel(randomReagent);
+                    step++;
 
-    function completeSpin() {
-        let finalMetal, finalReagent;
-        let attempts = 0;
-        do {
-            finalMetal = METALS[Math.floor(Math.random() * METALS.length)];
-            finalReagent = weightedReagents[Math.floor(Math.random() * weightedReagents.length)];
-            attempts++;
-        } while (finalMetal === 'Hg' && finalReagent === 'AgNO3(aq)' && attempts < 50);
+                    if (step < totalSteps) {
+                        const delay = 60 + step * 15;
+                        setTimeout(doStep, delay);
+                    } else {
+                        completeSpin();
+                    }
+                }
 
-        currentMetal = finalMetal;
-        currentReagent = finalReagent;
-        metalDisplay.textContent = finalMetal;
-        reagentDisplay.textContent = getReagentLabel(finalReagent, finalMetal);
-        currentResult = REACTION_MAP[finalMetal]?.[finalReagent] || null;
+                function completeSpin() {
+                    let finalMetal, finalReagent;
+                    let attempts = 0;
+                    do {
+                        finalMetal = METALS[Math.floor(Math.random() * METALS.length)];
+                        finalReagent = weightedReagents[Math.floor(Math.random() * weightedReagents.length)];
+                        attempts++;
+                    } while (finalMetal === 'Hg' && finalReagent === 'AgNO3(aq)' && attempts < 50);
 
-        // 安全設定 reactionQuestionMark
-        const qMark = document.getElementById('reactionQuestionMark');
-        if (qMark) {
-            qMark.textContent = '→ ?';
-        }
+                    currentMetal = finalMetal;
+                    currentReagent = finalReagent;
+                    metalDisplay.textContent = finalMetal;
+                    reagentDisplay.textContent = getReagentLabel(finalReagent, finalMetal);
+                    currentResult = REACTION_MAP[finalMetal]?.[finalReagent] || null;
 
-        document.querySelectorAll('.opt-btn').forEach(b => b.disabled = false);
-        spinBtn.disabled = false;
-        spinBtn.classList.remove('spinning');
-        spinBtn.textContent = t('spinBtn');
-        isSpinning = false;
+                    const qMark = document.getElementById('reactionQuestionMark');
+                    if (qMark) {
+                        qMark.textContent = '→ ?';
+                    }
 
-        // 強制刷新
-        spinBtn.style.transform = 'scale(1)';
-        spinBtn.style.opacity = '1';
+                    document.querySelectorAll('.opt-btn').forEach(b => b.disabled = false);
+                    spinBtn.disabled = false;
+                    spinBtn.classList.remove('spinning');
+                    spinBtn.textContent = t('spinBtn');
+                    isSpinning = false;
 
-        setFeedback('✏️', t('fbSpin'), '', null);
-        obsRowFlame.style.display = 'flex';
-        obsRowSolid.style.display = 'none';
-        obsRowDeposit.style.display = 'none';
-        obsRowPpt.style.display = 'none';
-        obsRowOther.style.display = 'flex';
-        updateObsOptions();
-    }
+                    spinBtn.style.transform = 'scale(1)';
+                    spinBtn.style.opacity = '1';
 
-    // 強制保護：4 秒後強制完成
-    const safetyTimer = setTimeout(function() {
-        if (isSpinning) {
-            const qMark = document.getElementById('reactionQuestionMark');
-            if (qMark) {
-                qMark.textContent = '→ ?';
+                    setFeedback('✏️', t('fbSpin'), '', null);
+                    obsRowFlame.style.display = 'flex';
+                    obsRowSolid.style.display = 'none';
+                    obsRowDeposit.style.display = 'none';
+                    obsRowPpt.style.display = 'none';
+                    obsRowOther.style.display = 'flex';
+                    updateObsOptions();
+                }
+
+                const safetyTimer = setTimeout(function() {
+                    if (isSpinning) {
+                        const qMark = document.getElementById('reactionQuestionMark');
+                        if (qMark) {
+                            qMark.textContent = '→ ?';
+                        }
+                        document.querySelectorAll('.opt-btn').forEach(b => b.disabled = false);
+                        spinBtn.disabled = false;
+                        spinBtn.classList.remove('spinning');
+                        spinBtn.textContent = t('spinBtn');
+                        isSpinning = false;
+                        spinBtn.style.transform = 'scale(1)';
+                        spinBtn.style.opacity = '1';
+                        setFeedback('✏️', t('fbSpin'), '', null);
+                        obsRowFlame.style.display = 'flex';
+                        obsRowSolid.style.display = 'none';
+                        obsRowDeposit.style.display = 'none';
+                        obsRowPpt.style.display = 'none';
+                        obsRowOther.style.display = 'flex';
+                        updateObsOptions();
+                    }
+                }, 4000);
+
+                doStep();
+
+                const originalComplete = completeSpin;
+                completeSpin = function() {
+                    clearTimeout(safetyTimer);
+                    originalComplete();
+                };
             }
-            document.querySelectorAll('.opt-btn').forEach(b => b.disabled = false);
-            spinBtn.disabled = false;
-            spinBtn.classList.remove('spinning');
-            spinBtn.textContent = t('spinBtn');
-            isSpinning = false;
-            spinBtn.style.transform = 'scale(1)';
-            spinBtn.style.opacity = '1';
-            setFeedback('✏️', t('fbSpin'), '', null);
-            obsRowFlame.style.display = 'flex';
-            obsRowSolid.style.display = 'none';
-            obsRowDeposit.style.display = 'none';
-            obsRowPpt.style.display = 'none';
-            obsRowOther.style.display = 'flex';
-            updateObsOptions();
-        }
-    }, 4000);
-
-    doStep();
-
-    const originalComplete = completeSpin;
-    completeSpin = function() {
-        clearTimeout(safetyTimer);
-        originalComplete();
-    };
-}
 
             // ============================================================
             // 答題邏輯
@@ -3501,9 +3505,15 @@
                     checkBottomBtn.disabled = true;
                     nextStepBtn.disabled = true;
                     setFeedback('✅', t('fbNoReaction'), '', 'success');
+
+                    // ★ 隱藏反應區塊（答對無反應）
+                    if (reactionRow) {
+                        reactionRow.classList.add('hidden');
+                    }
                     return;
                 }
 
+                // 正確答案是「有反應」
                 productRow.style.display = 'flex';
                 document.querySelectorAll('#productGroup .prod-btn').forEach(b => {
                     b.disabled = false;
@@ -3513,6 +3523,11 @@
                 nextStepBtn.disabled = false;
                 setFeedback('✏️', currentLang === 'zh' ? '✅ 反應正確！請選擇產物（可複選），然後按「下一步」' :
                     '✅ Reaction correct! Select products (select all), then click "Next Step"', '', 'success');
+
+                // ★ 隱藏反應區塊（答對有反應）
+                if (reactionRow) {
+                    reactionRow.classList.add('hidden');
+                }
             }
 
             function handleProductClick(e) {
@@ -3887,7 +3902,6 @@
                     return;
                 }
 
-                // 檢查使用者是否選了正確的化合物按鈕
                 const selectedBtn = document.querySelector('#ionOptions .ion-btn.selected');
                 if (!selectedBtn) {
                     document.getElementById('ionResult').textContent = '⚠️ ' + (currentLang === 'zh' ?
@@ -3921,7 +3935,6 @@
                     return;
                 }
 
-                // 檢查是否被選中
                 const btn = document.querySelector(`#ionOptions .ion-btn[data-ion="${selected}"]`);
                 if (btn && btn.classList.contains('selected')) {
                     document.getElementById('ionNameResult').textContent = '✅ ' + (currentLang === 'zh' ?
@@ -3935,19 +3948,15 @@
                 }
             }
 
-            // 離子按鈕點擊事件
             function handleIonBtnClick(e) {
                 const btn = e.currentTarget;
-                // 取消其他選中
                 document.querySelectorAll('#ionOptions .ion-btn').forEach(b => {
                     b.classList.remove('selected');
                     b.classList.remove('correct', 'incorrect');
                 });
                 btn.classList.add('selected');
-                // 清空之前的結果
                 document.getElementById('ionResult').textContent = '';
                 document.getElementById('ionResult').className = 'ion-result';
-                // 自動配對檢查
                 checkIonPair();
             }
 
@@ -3960,7 +3969,6 @@
                 updateObsOptions();
                 renderReferenceTable();
 
-                // 切換頁籤文字
                 document.querySelectorAll('#chapterTabs .tab-btn').forEach(btn => {
                     const ch = btn.dataset.chapter;
                     if (ch === 'ch11') {
@@ -4034,17 +4042,14 @@
                 checkBottomBtn.addEventListener('click', checkAnswer);
                 nextStepBtn.addEventListener('click', handleNextStep);
 
-                // 反應選項
                 document.querySelectorAll('.opt-btn').forEach(b => {
                     b.addEventListener('click', handleOptClick);
                 });
 
-                // 產物選項
                 document.querySelectorAll('#productGroup .prod-btn').forEach(b => {
                     b.addEventListener('click', handleProductClick);
                 });
 
-                // 觀察按鈕
                 document.querySelectorAll('#obsDepositGroup .obs-btn').forEach(b => {
                     b.addEventListener('click', function() {
                         if (isAnswered || isSpinning || selectedReaction === 'no' || !reactionChecked) return;
@@ -4104,7 +4109,6 @@
                         'Balance ' + (balanceActive ? 'enabled' : 'disabled'), '', null);
                 });
 
-                // 頁籤
                 document.querySelectorAll('#chapterTabs .tab-btn').forEach(btn => {
                     btn.addEventListener('click', function() {
                         if (this.disabled) return;
@@ -4114,7 +4118,6 @@
                     });
                 });
 
-                // 活性序按鈕
                 document.getElementById('btnMetalSeries').addEventListener('click', function() {
                     document.getElementById('metalSeriesModal').classList.add('active');
                     renderReferenceTable();
@@ -4126,26 +4129,21 @@
                     if (e.target === this) this.classList.remove('active');
                 });
 
-                // 語言切換
                 langBtns.forEach(b => {
                     b.addEventListener('click', () => setLanguage(b.dataset.lang));
                 });
 
-                // 歡迎頁面
                 welcomeZh.addEventListener('click', () => initApp('zh'));
                 welcomeEn.addEventListener('click', () => initApp('en'));
 
-                // 係數彈窗
                 setupCoeffPopup();
 
-                // 離子練習事件
                 document.getElementById('ionCheckBtn').addEventListener('click', checkIonPair);
                 document.getElementById('ionNameCheckBtn').addEventListener('click', checkIonName);
                 document.querySelectorAll('#ionOptions .ion-btn').forEach(b => {
                     b.addEventListener('click', handleIonBtnClick);
                 });
 
-                // 切換到離子選項時自動更新
                 document.getElementById('ionCation').addEventListener('change', function() {
                     document.querySelectorAll('#ionOptions .ion-btn').forEach(b => {
                         b.classList.remove('selected', 'correct', 'incorrect');
@@ -4182,7 +4180,6 @@
                 obsRowPpt.style.display = 'none';
                 obsRowOther.style.display = 'flex';
 
-                // 確保離子練習初始顯示正確
                 document.getElementById('ionsTitle').textContent = t('ionsTitle');
                 document.getElementById('ionQ1Label').textContent = t('ionQ1');
                 document.getElementById('ionQ2Label').textContent = t('ionQ2');
@@ -4193,8 +4190,6 @@
                 document.getElementById('ionResult').textContent = t('ionSelect');
 
                 updateObsOptions();
-
-                // 默認顯示反應練習
                 showRxnTab();
             }
 
