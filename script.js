@@ -40,10 +40,6 @@ let startTime = null;
 let showOnlyWrong = false;
 let showAnswers = false;
 
-// 登入相關變量
-let loginAttempts = 0;
-const MAX_LOGIN_ATTEMPTS = 5;
-
 // Firebase 同步狀態
 let firestoreEnabled = false;
 
@@ -81,41 +77,6 @@ const ACHIEVEMENT_POINTS = {
 
 function showFirestoreStatus(text, bg, color) {
     updateStatusDot(text, bg, color);
-}
-
-function getAuthErrorMessage(e) {
-    const code = e.code;
-    const message = e.message;
-    let userMessage = '';
-    switch(code) {
-        case 'auth/user-not-found':
-            userMessage = '❌ 帳戶不存在！請向老師確認學號是否正確';
-            break;
-        case 'auth/wrong-password':
-            userMessage = '❌ 密碼錯誤！請確認密碼是否正確，或向老師索取新密碼';
-            break;
-        case 'auth/invalid-credential':
-            userMessage = '❌ 密碼錯誤！請確認密碼是否正確';
-            break;
-        case 'auth/too-many-requests':
-            userMessage = '❌ 登入嘗試過多，請稍後再試';
-            break;
-        case 'auth/network-request-failed':
-            userMessage = '❌ 網路連線失敗，請檢查網路後重試';
-            break;
-        case 'auth/user-disabled':
-            userMessage = '❌ 帳戶已被停用，請聯絡老師';
-            break;
-        case 'auth/email-already-in-use':
-            userMessage = '⚠️ 此學號已被其他帳戶使用';
-            break;
-        default:
-            userMessage = '❌ Auth 驗證失敗：' + message;
-            break;
-    }
-    console.log('🔍 完整錯誤碼:', code);
-    console.log('🔍 完整錯誤訊息:', message);
-    return userMessage;
 }
 
 function checkFirebase() {
@@ -517,15 +478,6 @@ async function updateUser(userId, data) {
     return null;
 }
 
-function generateRandomPassword() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-    let pwd = '';
-    for (let i = 0; i < 8; i++) {
-        pwd += chars[Math.floor(Math.random() * chars.length)];
-    }
-    return pwd;
-}
-
 function generateUserId(className) {
     const db = getUsers();
     const classUsers = db.users.filter(u => u.className === className);
@@ -536,15 +488,11 @@ function generateUserId(className) {
 async function createUser(name, className, phone, customUserId = null) {
     const db = getUsers();
     const userId = customUserId || generateUserId(className);
-    const initialPassword = generateRandomPassword();
     const user = {
         userId: userId,
         name: name,
         className: className,
         phone: phone,
-        initialPassword: initialPassword,
-        password: null,
-        isFirstLogin: true,
         isTeacher: false,
         managedClasses: [className],
         createdAt: new Date().toISOString(),
@@ -566,20 +514,6 @@ async function createUser(name, className, phone, customUserId = null) {
             console.log('✅ 用戶已存入 Firebase:', userId);
         } catch(e) {
             console.warn('⚠️ Firebase 儲存失敗:', e.message);
-        }
-    }
-    if (firestoreEnabled) {
-        const email = userId + '@mastering-science.com';
-        try {
-            await firebase.auth().createUserWithEmailAndPassword(email, initialPassword);
-            console.log('✅ Firebase Auth 帳戶已建立:', userId);
-        } catch (e) {
-            if (e.code === 'auth/email-already-in-use') {
-                console.log('ℹ️ Firebase Auth 帳戶已存在:', userId);
-            } else {
-                console.error('❌ Firebase Auth 建立失敗:', e.message);
-                throw new Error(`Auth 建立失敗: ${e.message}`);
-            }
         }
     }
     return user;
@@ -641,93 +575,205 @@ async function exitFullscreenMode() {
     document.getElementById('exitFullscreenBtn').style.display = 'none';
 }
 
-async function handleLogin(userId, password) {
-    clearLoginError();
-    let user = null;
-    updateStatusDot('connecting', '⏳ 連線中...', '#fef3c7', '#7c5a00');
-    try {
-        if (!firebase.auth().currentUser) {
-            const email = userId + '@mastering-science.com';
-            await firebase.auth().signInWithEmailAndPassword(email, password);
-            console.log('✅ Auth 登入成功');
-        } else {
-            const currentEmail = firebase.auth().currentUser?.email;
-            if (currentEmail && currentEmail !== userId + '@mastering-science.com') {
-                await firebase.auth().signOut();
-                const email = userId + '@mastering-science.com';
-                await firebase.auth().signInWithEmailAndPassword(email, password);
-                console.log('✅ 重新登入 Auth 成功');
+// ============================================================
+// 📝 自訂彈窗（取代 prompt）- 讓您可以正常輸入
+// ============================================================
+
+function showCustomPrompt() {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.id = 'customPromptOverlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999999;
+            animation: fadeIn 0.3s ease;
+        `;
+
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            background: white;
+            border-radius: 24px;
+            padding: 32px 28px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        `;
+
+        modal.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 2.5rem; margin-bottom: 4px;">👋</div>
+                <h2 style="color: #2e0f5a; font-size: 1.2rem; margin: 0;">歡迎！請填寫基本資料</h2>
+                <p style="color: #888; font-size: 0.85rem; margin: 4px 0 0 0;">這是您第一次登入，需要設定班級和電話</p>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">
+                    📚 班級 <span style="color: #dc2626;">*</span>
+                </label>
+                <input type="text" id="customClassName" placeholder="例如：3A、4B、VIP"
+                    style="width: 100%; padding: 10px 14px; border-radius: 12px; border: 2px solid #e0d6f5; font-size: 0.95rem; outline: none; transition: border-color 0.2s;"
+                    onfocus="this.style.borderColor='#4a1d8c'" onblur="this.style.borderColor='#e0d6f5'">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">
+                    📱 電話號碼 <span style="color: #dc2626;">*</span>
+                </label>
+                <input type="text" id="customPhone" placeholder="例如：91234567"
+                    style="width: 100%; padding: 10px 14px; border-radius: 12px; border: 2px solid #e0d6f5; font-size: 0.95rem; outline: none; transition: border-color 0.2s;"
+                    onfocus="this.style.borderColor='#4a1d8c'" onblur="this.style.borderColor='#e0d6f5'">
+            </div>
+
+            <div id="customPromptError" style="color: #dc2626; font-size: 0.85rem; margin-bottom: 12px; text-align: center; display: none;"></div>
+
+            <div style="display: flex; gap: 10px;">
+                <button id="customCancelBtn" style="
+                    flex: 1; padding: 10px 0; border: 2px solid #e0d6f5; border-radius: 40px;
+                    background: white; color: #666; font-size: 0.95rem; font-weight: 600;
+                    cursor: pointer; transition: background 0.2s;
+                " onmouseover="this.style.background='#f5f0ff'" onmouseout="this.style.background='white'">
+                    取消
+                </button>
+                <button id="customConfirmBtn" style="
+                    flex: 2; padding: 10px 0; border: none; border-radius: 40px;
+                    background: linear-gradient(135deg, #4a1d8c, #7c3aed); color: white;
+                    font-size: 0.95rem; font-weight: 600; cursor: pointer;
+                    transition: transform 0.15s, box-shadow 0.15s;
+                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    ✅ 確認
+                </button>
+            </div>
+        `;
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        const classNameInput = document.getElementById('customClassName');
+        const phoneInput = document.getElementById('customPhone');
+        const errorEl = document.getElementById('customPromptError');
+
+        setTimeout(() => classNameInput.focus(), 100);
+
+        document.getElementById('customConfirmBtn').addEventListener('click', function() {
+            const className = classNameInput.value.trim();
+            const phone = phoneInput.value.trim();
+
+            if (!className) {
+                errorEl.textContent = '⚠️ 請輸入班級名稱';
+                errorEl.style.display = 'block';
+                classNameInput.focus();
+                return;
             }
-        }
-        const authUser = firebase.auth().currentUser;
-        if (!authUser) {
-            updateStatusDot('offline', '❌ Auth 狀態異常', '#f8d7da', '#7f1d1d');
-            showLoginError('❌ 登入異常，請重新嘗試');
-            return;
-        }
-        console.log('✅ Auth 用戶:', authUser.uid);
-        updateStatusDot('connecting', '⏳ 讀取用戶資料...', '#fef3c7', '#7c5a00');
-    } catch(e) {
-        console.warn('⚠️ Auth 登入失敗:', e.code, e.message);
-        const errorMsg = getAuthErrorMessage(e);
-        updateStatusDot('offline', '❌ ' + errorMsg, '#f8d7da', '#7f1d1d');
-        showLoginError('❌ ' + errorMsg);
-        return;
-    }
+
+            if (!phone) {
+                errorEl.textContent = '⚠️ 請輸入電話號碼';
+                errorEl.style.display = 'block';
+                phoneInput.focus();
+                return;
+            }
+
+            overlay.remove();
+            resolve({ className: className, phone: phone });
+        });
+
+        document.getElementById('customCancelBtn').addEventListener('click', function() {
+            overlay.remove();
+            resolve(null);
+        });
+
+        classNameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                phoneInput.focus();
+            }
+        });
+
+        phoneInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('customConfirmBtn').click();
+            }
+        });
+
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                overlay.remove();
+                resolve(null);
+            }
+        });
+    });
+}
+
+// ============================================================
+// 🔐 Google 登入
+// ============================================================
+
+async function handleGoogleLogin() {
+    clearLoginError();
+    updateStatusDot('connecting', '⏳ 連線中...', '#fef3c7', '#7c5a00');
+    
     try {
-        const doc = await firebase.firestore().collection('users').doc(userId).get();
-        if (doc.exists) {
-            user = doc.data();
-            console.log('✅ 從 Firestore 找到用戶:', userId);
-            const db = getUsers();
-            const existing = db.users.find(u => u.userId === userId);
-            if (existing) Object.assign(existing, user);
-            else db.users.push(user);
-            saveUsers(db);
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        
+        const result = await firebase.auth().signInWithPopup(provider);
+        const user = result.user;
+        console.log('✅ Google 登入成功:', user.displayName, user.email);
+        
+        const userId = user.email;
+        let existingUser = findUser(userId);
+        
+        if (!existingUser) {
+            // 使用自訂彈窗取代 prompt()
+            const userInfo = await showCustomPrompt();
+            if (!userInfo) {
+                await firebase.auth().signOut();
+                updateStatusDot('offline', '❌ 登入取消', '#f8d7da', '#7f1d1d');
+                return;
+            }
+            
+            const className = userInfo.className;
+            const phone = userInfo.phone;
+            
+            const newUser = await createUser(
+                user.displayName || userId,
+                className,
+                phone,
+                userId
+            );
+            existingUser = newUser;
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            try {
+                await firebase.auth().currentUser.updateProfile({ displayName: user.displayName || userId });
+            } catch(e) { console.warn('⚠️ 更新 displayName 失敗:', e); }
+            
+            alert(`✅ 帳戶已建立！\n\n👤 ${newUser.name}\n🆔 ${newUser.userId}\n📚 ${newUser.className}\n\n以後您可以用 Google 帳戶直接登入！`);
+        }
+        
+        updateStatusDot('online', `✅ 歡迎 ${existingUser.name}！`, '#d4edda', '#065f46');
+        currentUser = existingUser;
+        
+        enterMainApp(currentUser);
+        
+    } catch (error) {
+        console.error('❌ Google 登入失敗:', error);
+        updateStatusDot('offline', '❌ 登入失敗', '#f8d7da', '#7f1d1d');
+        
+        if (error.code === 'auth/popup-closed-by-user') {
+            showLoginError('⚠️ 您關閉了登入視窗，請重新嘗試');
         } else {
-            console.log('⚠️ Firestore 無此用戶:', userId);
+            showLoginError('❌ Google 登入失敗：' + error.message);
         }
-    } catch(e) {
-        console.warn('⚠️ Firestore 讀取失敗:', e.message);
-    }
-    if (!user) {
-        user = findUser(userId);
-        if (user) console.log('✅ 從 localStorage 找到用戶:', userId);
-    }
-    if (!user) {
-        updateStatusDot('offline', '❌ 帳號不存在', '#f8d7da', '#7f1d1d');
-        showLoginError('❌ 帳號不存在，請確認登入 ID');
-        return;
-    }
-    const isValid = (user.password && user.password === password) || (user.isFirstLogin && user.initialPassword === password);
-    if (!isValid) {
-        loginAttempts++;
-        const remaining = MAX_LOGIN_ATTEMPTS - loginAttempts;
-        if (remaining <= 0) {
-            showLoginError('❌ 密碼錯誤次數過多，請稍後再試');
-            document.getElementById('loginBtn').disabled = true;
-            setTimeout(() => {
-                document.getElementById('loginBtn').disabled = false;
-                loginAttempts = 0;
-            }, 30000);
-            return;
-        }
-        updateStatusDot('offline', '❌ 密碼錯誤，剩餘 ' + remaining + ' 次', '#f8d7da', '#7f1d1d');
-        showLoginError(`❌ 密碼錯誤，剩餘嘗試次數：${remaining}`);
-        return;
-    }
-    updateStatusDot('online', '✅ 登入成功！', '#d4edda', '#065f46');
-    loginAttempts = 0;
-    currentUser = user;
-    if (document.getElementById('rememberMeCheckbox').checked) {
-        localStorage.setItem('ms_chem_login', JSON.stringify({ userId: userId, password: password }));
-    } else {
-        localStorage.removeItem('ms_chem_login');
-    }
-    if (user.isFirstLogin) {
-        openChangePasswordModal(true);
-    } else {
-        enterMainApp(user);
     }
 }
 
@@ -824,10 +870,6 @@ function updateUserLabel() {
                 👋 ${currentUser.name} (${currentUser.className}) ▼
             </button>
             <div class="user-menu-dropdown" id="userMenu">
-                <div class="user-menu-item" onclick="openChangePasswordModal(false); closeUserMenu();">
-                    🔑 修改密碼
-                </div>
-                <div class="user-menu-divider"></div>
                 <div class="user-menu-item logout" onclick="logout(); closeUserMenu();">
                     🚪 登出
                 </div>
@@ -843,286 +885,21 @@ function updateUserLabel() {
 function setupLogout() {}
 
 function logout() {
-    if (confirm('⚠️ 確定要登出嗎？\n\n登出後：\n✅ 您的學習進度、成就、錯題會完全保留\n❌ 下次登入需要重新輸入密碼\n\n如果您只是要關閉瀏覽器，可以直接關閉，不需要登出。')) {
+    if (confirm('⚠️ 確定要登出嗎？\n\n登出後：\n✅ 您的學習進度、成就、錯題會完全保留\n\n如果您只是要關閉瀏覽器，可以直接關閉，不需要登出。')) {
         currentUser = null;
-        localStorage.removeItem('ms_chem_login');
+        try { firebase.auth().signOut(); } catch(e) { console.warn('⚠️ Firebase 登出失敗:', e.message); }
         document.getElementById('loginScreen').style.display = 'block';
         document.getElementById('mainApp').style.display = 'none';
-        document.getElementById('loginPassword').value = '';
         document.getElementById('userLabel').innerHTML = '';
         clearLoginError();
-        document.getElementById('loginBtn').disabled = false;
-        loginAttempts = 0;
     }
 }
 
 function checkAutoLogin() {
-    const saved = localStorage.getItem('ms_chem_login');
-    if (saved) {
-        try {
-            const data = JSON.parse(saved);
-            if (data.userId && data.password) {
-                document.getElementById('loginUserId').value = data.userId;
-                document.getElementById('loginPassword').value = data.password;
-                const rememberMe = document.getElementById('rememberMeCheckbox');
-                if (rememberMe) rememberMe.checked = true;
-                setTimeout(async () => {
-                    await handleLogin(data.userId, data.password);
-                }, 300);
-                return true;
-            }
-        } catch(e) {}
-    }
+    // Google 登入由 Firebase Auth 管理，不需要自動填入
     return false;
 }
 
-document.getElementById('forgotPasswordLink')?.addEventListener('click', function() {
-    document.getElementById('forgotPasswordModal').classList.add('show');
-    document.getElementById('forgotUserId').value = '';
-    document.getElementById('forgotPhone').value = '';
-    document.getElementById('forgotMessage').innerHTML = '';
-    document.getElementById('forgotError').style.display = 'none';
-});
-
-document.getElementById('forgotSubmitBtn')?.addEventListener('click', function() {
-    const userId = document.getElementById('forgotUserId').value.trim();
-    const phone = document.getElementById('forgotPhone').value.trim();
-    const errEl = document.getElementById('forgotError');
-    const msgEl = document.getElementById('forgotMessage');
-    if (!userId || !phone) {
-        errEl.textContent = '⚠️ 請輸入學號和電話號碼';
-        errEl.style.display = 'block';
-        return;
-    }
-    const user = findUser(userId);
-    if (!user) {
-        errEl.textContent = '❌ 學號不存在';
-        errEl.style.display = 'block';
-        return;
-    }
-    if (user.phone !== phone) {
-        errEl.textContent = '❌ 電話號碼不正確';
-        errEl.style.display = 'block';
-        return;
-    }
-    errEl.style.display = 'none';
-    const newPwd = generateRandomPassword();
-    updateUser(userId, {
-        userId: userId,
-        initialPassword: newPwd,
-        password: null,
-        isFirstLogin: true
-    });
-    if (firestoreEnabled) {
-        const email = userId + '@mastering-science.com';
-        const fbUser = firebase.auth().currentUser;
-        if (fbUser) {
-            fbUser.updatePassword(newPwd)
-                .then(() => console.log('✅ Firebase Auth 密碼已更新（忘記密碼重設）'))
-                .catch((err) => {
-                    console.warn('⚠️ 直接更新失敗，嘗試重新登入:', err.message);
-                    const oldPwd = user.password || user.initialPassword;
-                    firebase.auth().signInWithEmailAndPassword(email, oldPwd)
-                        .then((cred) => {
-                            cred.user.updatePassword(newPwd)
-                                .then(() => console.log('✅ Firebase Auth 密碼已更新'))
-                                .catch(e => console.warn('⚠️ 更新失敗:', e.message));
-                        })
-                        .catch(() => {
-                            firebase.auth().createUserWithEmailAndPassword(email, newPwd)
-                                .then(() => console.log('✅ Firebase Auth 帳戶已建立'))
-                                .catch(e => console.warn('⚠️ Firebase Auth 建立失敗:', e.message));
-                        });
-                });
-        } else {
-            const oldPwd = user.password || user.initialPassword;
-            firebase.auth().signInWithEmailAndPassword(email, oldPwd)
-                .then((cred) => {
-                    cred.user.updatePassword(newPwd)
-                        .then(() => console.log('✅ Firebase Auth 密碼已更新'))
-                        .catch(e => console.warn('⚠️ 更新失敗:', e.message));
-                })
-                .catch(() => {
-                    firebase.auth().createUserWithEmailAndPassword(email, newPwd)
-                        .then(() => console.log('✅ Firebase Auth 帳戶已建立'))
-                        .catch(e => console.warn('⚠️ Firebase Auth 建立失敗:', e.message));
-                });
-        }
-    }
-    msgEl.innerHTML = `<div class="alert alert-success">✅ 驗證成功！新的初始密碼已設定：<br><strong style="font-size:20px; font-family:monospace;">${newPwd}</strong><br>請用這個密碼登入，然後修改密碼。</div>`;
-    setTimeout(() => {
-        closeModal('forgotPasswordModal');
-        document.getElementById('loginUserId').value = userId;
-        document.getElementById('loginPassword').value = '';
-    }, 3000);
-});
-
-function openChangePasswordModal(isFirstLogin = false) {
-    const modal = document.getElementById('changePasswordModal');
-    const title = document.getElementById('changePasswordTitle');
-    const desc = document.getElementById('changePasswordDesc');
-    const cancelBtn = document.getElementById('changePasswordCancelBtn');
-    const oldPwdGroup = document.getElementById('oldPasswordGroup');
-    if (isFirstLogin) {
-        title.textContent = '🔐 首次登入 - 設定密碼';
-        desc.textContent = '這是您第一次登入，請設定自己的密碼。';
-        cancelBtn.style.display = 'none';
-        if (oldPwdGroup) oldPwdGroup.style.display = 'none';
-    } else {
-        title.textContent = '🔑 修改密碼';
-        desc.textContent = '請輸入舊密碼和新密碼。';
-        cancelBtn.style.display = 'block';
-        if (oldPwdGroup) oldPwdGroup.style.display = 'block';
-    }
-    document.getElementById('oldPassword').value = '';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('confirmPassword').value = '';
-    document.getElementById('changePasswordMessage').innerHTML = '';
-    document.getElementById('changePasswordError').style.display = 'none';
-    modal.classList.add('show');
-}
-
-document.getElementById('changePasswordCancelBtn')?.addEventListener('click', function() {
-    closeModal('changePasswordModal');
-});
-
-document.getElementById('changePasswordBtn')?.addEventListener('click', function() {
-    const oldPwd = document.getElementById('oldPassword').value;
-    const newPwd = document.getElementById('newPassword').value;
-    const confirmPwd = document.getElementById('confirmPassword').value;
-    const errEl = document.getElementById('changePasswordError');
-    const msgEl = document.getElementById('changePasswordMessage');
-    if (newPwd.length < 6) {
-        errEl.textContent = '⚠️ 密碼至少 6 個字元';
-        errEl.style.display = 'block';
-        return;
-    }
-    if (newPwd !== confirmPwd) {
-        errEl.textContent = '❌ 兩次輸入的密碼不一致';
-        errEl.style.display = 'block';
-        return;
-    }
-    errEl.style.display = 'none';
-    if (!currentUser) {
-        errEl.textContent = '❌ 請先登入';
-        errEl.style.display = 'block';
-        return;
-    }
-    const userId = currentUser.id || currentUser.userId;
-    const isFirstLogin = currentUser.isFirstLogin;
-    if (!isFirstLogin) {
-        const validOldPwd = currentUser.password || currentUser.initialPassword;
-        if (oldPwd !== validOldPwd) {
-            errEl.textContent = '❌ 舊密碼不正確';
-            errEl.style.display = 'block';
-            return;
-        }
-    }
-    updateUser(userId, {
-        userId: userId,
-        password: newPwd,
-        isFirstLogin: false
-    });
-    if (firestoreEnabled) {
-        const fbUser = firebase.auth().currentUser;
-        const email = userId + '@mastering-science.com';
-        if (fbUser) {
-            fbUser.updatePassword(newPwd)
-                .then(() => console.log('✅ Firebase Auth 密碼已更新'))
-                .catch((err) => {
-                    console.warn('⚠️ 直接更新失敗，嘗試重新認證:', err.message);
-                    const oldPwdForLogin = currentUser.password || currentUser.initialPassword;
-                    firebase.auth().signInWithEmailAndPassword(email, oldPwdForLogin)
-                        .then((cred) => {
-                            cred.user.updatePassword(newPwd)
-                                .then(() => console.log('✅ Firebase Auth 密碼已更新'))
-                                .catch(e => console.warn('⚠️ 重新認證後更新仍失敗:', e.message));
-                        })
-                        .catch(e => console.warn('⚠️ 重新認證失敗:', e.message));
-                });
-        } else {
-            const oldPwdForLogin = currentUser.password || currentUser.initialPassword;
-            firebase.auth().signInWithEmailAndPassword(email, oldPwdForLogin)
-                .then((cred) => {
-                    cred.user.updatePassword(newPwd)
-                        .then(() => console.log('✅ Firebase Auth 密碼已更新'))
-                        .catch(e => console.warn('⚠️ 更新失敗:', e.message));
-                })
-                .catch(() => {
-                    firebase.auth().createUserWithEmailAndPassword(email, newPwd)
-                        .then(() => console.log('✅ Firebase Auth 帳戶已建立'))
-                        .catch(e => console.warn('⚠️ Firebase Auth 建立失敗:', e.message));
-                });
-        }
-    }
-    currentUser = findUser(userId);
-    updateUserLabel();
-    msgEl.innerHTML = `<div class="alert alert-success">✅ 密碼已成功修改！</div>`;
-    if (isFirstLogin) {
-        setTimeout(() => {
-            closeModal('changePasswordModal');
-            enterMainApp(currentUser);
-        }, 1000);
-    } else {
-        setTimeout(() => {
-            closeModal('changePasswordModal');
-            if (document.getElementById('loginScreen').style.display !== 'none') {
-                document.getElementById('loginUserId').value = userId;
-            }
-        }, 1500);
-    }
-});
-
-document.getElementById('oldPassword')?.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') document.getElementById('changePasswordBtn').click();
-});
-document.getElementById('newPassword')?.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') document.getElementById('changePasswordBtn').click();
-});
-document.getElementById('confirmPassword')?.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') document.getElementById('changePasswordBtn').click();
-});
-
-document.getElementById('togglePasswordBtn')?.addEventListener('click', function() {
-    const input = document.getElementById('loginPassword');
-    if (input.type === 'password') { input.type = 'text'; this.textContent = '🙈'; }
-    else { input.type = 'password'; this.textContent = '👁️'; }
-});
-
-document.getElementById('toggleOldPasswordBtn')?.addEventListener('click', function() {
-    const input = document.getElementById('oldPassword');
-    if (input.type === 'password') { input.type = 'text'; this.textContent = '🙈'; }
-    else { input.type = 'password'; this.textContent = '👁️'; }
-});
-
-document.getElementById('toggleNewPasswordBtn')?.addEventListener('click', function() {
-    const input = document.getElementById('newPassword');
-    if (input.type === 'password') { input.type = 'text'; this.textContent = '🙈'; }
-    else { input.type = 'password'; this.textContent = '👁️'; }
-});
-
-document.getElementById('toggleConfirmPasswordBtn')?.addEventListener('click', function() {
-    const input = document.getElementById('confirmPassword');
-    if (input.type === 'password') { input.type = 'text'; this.textContent = '🙈'; }
-    else { input.type = 'password'; this.textContent = '👁️'; }
-});
-
-document.getElementById('loginBtn')?.addEventListener('click', async function() {
-    const userId = document.getElementById('loginUserId').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-    if (!userId || !password) {
-        showLoginError('⚠️ 請輸入登入 ID 和密碼');
-        return;
-    }
-    await handleLogin(userId, password);
-});
-
-document.getElementById('loginPassword')?.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') document.getElementById('loginBtn').click();
-});
-document.getElementById('loginUserId')?.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') document.getElementById('loginBtn').click();
-});
 
 function showUnlockCard(title, message, date, points) {}
 
@@ -1156,7 +933,7 @@ function processAchievementQueue() {
     if (oldOverlay) oldOverlay.remove();
     const overlay = document.createElement('div');
     overlay.className = 'achievement-effect-overlay show';
-    // ===== 修復：正確區分章節成就與特殊成就 =====
+    // 正確區分章節成就與特殊成就
     const isChapterAchievement = /^\d+_\d+$/.test(item.name);
     let titleText = '';
     let borderColor = '';
@@ -3164,17 +2941,7 @@ async function saveClassSettings(className, settings) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const hasAutoLogin = checkAutoLogin();
     checkFirebase();
-    if (!hasAutoLogin) {
-        const saved = localStorage.getItem('ms_chem_login');
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                if (data.userId) document.getElementById('loginUserId').value = data.userId;
-            } catch(e) {}
-        }
-    }
     document.getElementById('diff-easy').addEventListener('click', () => { selectedDifficulty = 0; document.getElementById('diff-easy').classList.add('active'); document.getElementById('diff-medium').classList.remove('active'); document.getElementById('diff-hard').classList.remove('active'); isTrialMode = false; updateSettingsUnlockStatus(); });
     document.getElementById('diff-medium').addEventListener('click', () => { if (document.getElementById('diff-medium').disabled) return; selectedDifficulty = 1; document.getElementById('diff-easy').classList.remove('active'); document.getElementById('diff-medium').classList.add('active'); document.getElementById('diff-hard').classList.remove('active'); isTrialMode = false; updateSettingsUnlockStatus(); });
     document.getElementById('diff-hard').addEventListener('click', () => { if (document.getElementById('diff-hard').disabled) return; selectedDifficulty = 2; document.getElementById('diff-easy').classList.remove('active'); document.getElementById('diff-medium').classList.remove('active'); document.getElementById('diff-hard').classList.add('active'); isTrialMode = false; updateSettingsUnlockStatus(); });
@@ -3451,8 +3218,8 @@ async function renderSubtabProgress(className) {
             const stats = s.stats || { totalQuestionsAnswered: 0, totalCorrect: 0 };
             const total = stats.totalQuestionsAnswered || 0;
             const acc = total > 0 ? Math.round((stats.totalCorrect || 0) / total * 100) : 0;
-            const status = s.isFirstLogin ? '⏳ 尚未修改密碼' : '✅ 已修改密碼';
-            const statusColor = s.isFirstLogin ? '#f59e0b' : '#10b981';
+            const status = '🔑 Google 帳戶';
+            const statusColor = '#10b981';
             html += `
                 <tr>
                     <td>
@@ -3466,7 +3233,6 @@ async function renderSubtabProgress(className) {
                     <td style="font-weight:600; color:${acc >= 70 ? '#10b981' : (acc >= 40 ? '#f59e0b' : '#dc2626')};">${acc}%</td>
                     <td><span style="background:${statusColor}; color:white; padding:2px 12px; border-radius:12px; font-size:11px;">${status}</span></td>
                     <td>
-                        <button class="btn btn-small" onclick="resetStudentPassword('${s.userId}')" style="background:#7c3aed; padding:2px 8px; font-size:10px; color:white; border:none; border-radius:12px;">🔄</button>
                         <button class="btn btn-danger btn-small" onclick="deleteStudent('${s.userId}')" style="font-size:10px; padding:2px 8px;">🗑️</button>
                     </td>
                 </tr>
@@ -3495,7 +3261,7 @@ async function renderSubtabProgress(className) {
             const total = stats.totalQuestionsAnswered || 0;
             const acc = total > 0 ? Math.round((stats.totalCorrect || 0) / total * 100) : 0;
             const points = calculateTotalPoints(s.achievements || {});
-            const status = s.isFirstLogin ? '尚未修改密碼' : '已修改密碼';
+            const status = 'Google 帳戶';
             csv.push([s.name, s.userId, total, acc + '%', points, status]);
         }
         const blob = new Blob(["\uFEFF" + csv.map(r => r.join(",")).join("\n")], { type: "text/csv;charset=utf-8;" });
@@ -3786,14 +3552,7 @@ function bindTeacherEvents() {
                         <div style="text-align: left; line-height: 2.2; font-size: 15px;">
                             <div>👤 姓名：<strong>${newUser.name}</strong></div>
                             <div>🆔 學號：<strong style="font-size: 20px; color: #4a1d8c;">${newUser.userId}</strong></div>
-                            <div>
-                                🔑 密碼：
-                                <span style="font-family: monospace; font-size: 20px; background: #f0f0f0; padding: 2px 12px; border-radius: 6px; display: inline-block;">${newUser.initialPassword}</span>
-                                <button onclick="navigator.clipboard?.writeText('${newUser.initialPassword}').then(() => alert('✅ 密碼已複製！')).catch(() => alert('⚠️ 請手動複製'))" style="
-                                    background: #4a1d8c; color: white; border: none; 
-                                    padding: 2px 14px; border-radius: 20px; cursor: pointer; font-size: 13px;
-                                ">📋 複製</button>
-                            </div>
+                            <div>📚 班級：<strong>${newUser.className}</strong></div>
                             <div style="margin-top:4px;">
                                 🔗 登入網址：
                                 <span style="font-size: 13px; color: #4a1d8c; word-break: break-all;">${loginUrl}</span>
@@ -3803,7 +3562,7 @@ function bindTeacherEvents() {
                                 ">📋 複製</button>
                             </div>
                         </div>
-                        <div style="font-size: 13px; color: #f59e0b; margin: 8px 0;">⚠️ 學生第一次登入時會要求修改密碼</div>
+                        <div style="font-size: 13px; color: #f59e0b; margin: 8px 0;">🔑 學生使用自己的 Google 帳戶登入即可開始練習</div>
                         <button onclick="document.getElementById('createSuccessModal').remove()" style="
                             background: #4a1d8c; color: white; border: none; 
                             padding: 10px 40px; border-radius: 40px; font-size: 16px; cursor: pointer; font-weight: 600;
@@ -3833,52 +3592,6 @@ function bindTeacherEvents() {
     });
 }
 
-function showStudentPassword(userId) {
-    const user = findUser(userId);
-    if (!user) {
-        alert('❌ 找不到該學生');
-        return;
-    }
-    const password = user.initialPassword || '（已修改密碼）';
-    
-    const modalHtml = `
-        <div id="passwordModal" style="
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center;
-            z-index: 10000;
-        ">
-            <div style="
-                background: white; border-radius: 24px; padding: 32px; 
-                max-width: 420px; width: 90%; text-align: center;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            ">
-                <div style="font-size: 36px; margin-bottom: 8px;">🔑</div>
-                <h2 style="color: #2e0f5a; margin-bottom: 4px;">學生初始密碼</h2>
-                <div style="color: #888; font-size: 14px; margin-bottom: 16px;">${user.name}（${user.userId}）</div>
-                <div style="
-                    font-family: monospace; font-size: 24px; 
-                    background: #f0f0f0; padding: 12px 20px; border-radius: 8px;
-                    display: inline-block; margin-bottom: 16px;
-                    letter-spacing: 2px;
-                ">${password}</div>
-                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                    <button onclick="navigator.clipboard?.writeText('${password}').then(() => alert('✅ 密碼已複製！')).catch(() => alert('⚠️ 請手動複製'))" style="
-                        background: #4a1d8c; color: white; border: none; 
-                        padding: 8px 24px; border-radius: 40px; font-size: 14px; cursor: pointer;
-                    ">📋 複製密碼</button>
-                    <button onclick="document.getElementById('passwordModal').remove()" style="
-                        background: white; color: #666; border: 1px solid #ddd; 
-                        padding: 8px 24px; border-radius: 40px; font-size: 14px; cursor: pointer;
-                    ">關閉</button>
-                </div>
-                <div style="font-size: 12px; color: #f59e0b; margin-top: 12px;">⚠️ 如果學生已修改過密碼，這個密碼可能已經無效</div>
-            </div>
-        </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-}
-
-// ===== 修復：openEditNameModal（優先從 Firestore 讀取） =====
 async function openEditNameModal(userId) {
     let user = null;
     
@@ -4214,180 +3927,6 @@ async function deleteStudent(userId) {
     } catch (e) {
         console.error('❌ 刪除失敗:', e);
         alert(`❌ 刪除失敗：${e.message}`);
-    }
-}
-
-// ===== 修復：resetStudentPassword（優先從 Firestore 讀取） =====
-async function resetStudentPassword(userId) {
-    // 先從 Firestore 讀取
-    let user = null;
-    if (firestoreEnabled) {
-        try {
-            const cloudData = await loadFromFirestore('users', userId);
-            if (cloudData) user = cloudData;
-        } catch(e) {
-            console.warn('⚠️ Firestore 讀取失敗:', e);
-        }
-    }
-    if (!user) user = findUser(userId);
-    if (!user) {
-        alert('❌ 找不到該學生');
-        return;
-    }
-    
-    if (!confirm(`⚠️ 確定要重置「${user.name}」（${user.userId}）的密碼嗎？\n\n重置後學生需要使用新密碼登入，並在首次登入時修改密碼。`)) return;
-    
-    const newPwd = generateRandomPassword();
-    
-    const result = await updateUser(userId, {
-        userId: userId,
-        initialPassword: newPwd,
-        password: null,
-        isFirstLogin: true
-    });
-    
-    if (!result) {
-        alert('❌ 重置失敗，請稍後再試');
-        return;
-    }
-    
-    if (firestoreEnabled) {
-        const email = userId + '@mastering-science.com';
-        const fbUser = firebase.auth().currentUser;
-        
-        if (fbUser) {
-            try {
-                await fbUser.updatePassword(newPwd);
-                console.log('✅ Firebase Auth 密碼已更新');
-            } catch (err) {
-                console.warn('⚠️ 直接更新失敗，嘗試重新登入:', err.message);
-                const oldPwd = user.password || user.initialPassword;
-                try {
-                    const cred = await firebase.auth().signInWithEmailAndPassword(email, oldPwd);
-                    await cred.user.updatePassword(newPwd);
-                    console.log('✅ Firebase Auth 密碼已更新');
-                } catch (e) {
-                    console.warn('⚠️ 重新登入失敗，嘗試建立帳戶:', e.message);
-                    try {
-                        await firebase.auth().createUserWithEmailAndPassword(email, newPwd);
-                        console.log('✅ Firebase Auth 帳戶已建立');
-                    } catch (err2) {
-                        console.warn('⚠️ Firebase Auth 建立失敗:', err2.message);
-                    }
-                }
-            }
-        } else {
-            const oldPwd = user.password || user.initialPassword;
-            try {
-                const cred = await firebase.auth().signInWithEmailAndPassword(email, oldPwd);
-                await cred.user.updatePassword(newPwd);
-                console.log('✅ Firebase Auth 密碼已更新');
-            } catch (e) {
-                console.warn('⚠️ 登入失敗，嘗試建立帳戶:', e.message);
-                try {
-                    await firebase.auth().createUserWithEmailAndPassword(email, newPwd);
-                    console.log('✅ Firebase Auth 帳戶已建立');
-                } catch (err2) {
-                    console.warn('⚠️ Firebase Auth 建立失敗:', err2.message);
-                }
-            }
-        }
-    }
-    
-    const modalHtml = `
-        <div id="resetPasswordModal" style="
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center;
-            z-index: 10000;
-        ">
-            <div style="
-                background: white; border-radius: 24px; padding: 32px; 
-                max-width: 420px; width: 90%; text-align: center;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            ">
-                <div style="font-size: 48px; margin-bottom: 8px;">✅</div>
-                <h2 style="color: #065f46; margin-bottom: 8px;">密碼已重置！</h2>
-                <div style="text-align: left; line-height: 2; font-size: 15px;">
-                    <div>👤 姓名：<strong>${user.name}</strong></div>
-                    <div>🆔 學號：<strong>${user.userId}</strong></div>
-                    <div>
-                        🔑 新密碼：
-                        <span style="font-family: monospace; font-size: 20px; background: #f0f0f0; padding: 2px 12px; border-radius: 6px; display: inline-block;">${newPwd}</span>
-                        <button onclick="navigator.clipboard?.writeText('${newPwd}').then(() => alert('✅ 密碼已複製！')).catch(() => alert('⚠️ 請手動複製'))" style="
-                            background: #4a1d8c; color: white; border: none; 
-                            padding: 2px 14px; border-radius: 20px; cursor: pointer; font-size: 13px;
-                        ">📋 複製</button>
-                    </div>
-                </div>
-                <div style="font-size: 13px; color: #f59e0b; margin: 8px 0;">⚠️ 學生下次登入時會被要求修改密碼</div>
-                <button onclick="document.getElementById('resetPasswordModal').remove()" style="
-                    background: #4a1d8c; color: white; border: none; 
-                    padding: 10px 40px; border-radius: 40px; font-size: 16px; cursor: pointer; font-weight: 600;
-                ">我知道了</button>
-            </div>
-        </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    
-    renderTeacherPanel();
-}
-
-async function forceFixStudentLogin(userId) {
-    const user = findUser(userId);
-    if (!user) {
-        alert('❌ 找不到該學生');
-        return;
-    }
-    
-    if (!confirm(`🔧 確定要修復「${user.name}」（${user.userId}）的登入問題嗎？\n\n系統將會：\n1. 檢查 Firebase Auth 帳戶是否存在\n2. 如果不存在，用初始密碼建立\n3. 如果已存在但密碼不同步，強制更新為初始密碼\n\n這樣學生就可以用初始密碼登入了。`)) {
-        return;
-    }
-    
-    const email = userId + '@mastering-science.com';
-    const initialPwd = user.initialPassword;
-    
-    try {
-        try {
-            await firebase.auth().signInWithEmailAndPassword(email, initialPwd);
-            alert(`✅ 帳戶正常！學生可以用初始密碼登入。\n\n👤 ${user.name}（${user.userId}）\n🔑 初始密碼：${initialPwd}`);
-            return;
-        } catch (e) {
-            if (firebase.auth().currentUser) {
-                await firebase.auth().signOut();
-                await new Promise(resolve => setTimeout(resolve, 500));
-            }
-            
-            if (e.code === 'auth/user-not-found') {
-                await firebase.auth().createUserWithEmailAndPassword(email, initialPwd);
-                alert(`✅ Firebase Auth 帳戶已建立！\n\n👤 ${user.name}（${user.userId}）\n🔑 初始密碼：${initialPwd}\n\n請學生用此密碼登入。`);
-                return;
-            } else if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
-                try {
-                    await firebase.auth().signInWithEmailAndPassword(email, initialPwd);
-                    alert(`✅ 帳戶已修復！學生可以用初始密碼登入。\n\n👤 ${user.name}（${user.userId}）\n🔑 初始密碼：${initialPwd}`);
-                    return;
-                } catch (loginErr) {
-                    const oldPwd = user.password || user.initialPassword;
-                    try {
-                        await firebase.auth().signInWithEmailAndPassword(email, oldPwd);
-                        const fbUser = firebase.auth().currentUser;
-                        if (fbUser) {
-                            await fbUser.updatePassword(initialPwd);
-                            alert(`✅ Firebase Auth 密碼已修復！\n\n👤 ${user.name}（${user.userId}）\n🔑 初始密碼：${initialPwd}\n\n請學生用此密碼登入。`);
-                        }
-                        return;
-                    } catch (finalErr) {
-                        alert(`⚠️ 無法自動修復 ${user.name} 的 Auth 帳戶。\n\n請在 Firebase Console 中手動重設密碼：\n1. 前往 Firebase Console → Authentication\n2. 找到 ${email}\n3. 點擊「重設密碼」\n4. 設定新密碼為：${initialPwd}\n\n完成後學生即可用此密碼登入。`);
-                        return;
-                    }
-                }
-            } else {
-                throw e;
-            }
-        }
-    } catch (e) {
-        console.error('❌ 修復失敗:', e);
-        alert(`❌ 修復失敗：${e.message}\n\n請在 Firebase Console 中手動處理。`);
     }
 }
 
