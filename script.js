@@ -485,16 +485,16 @@ function generateUserId(className) {
     return String(num).padStart(6, '0');
 }
 
-async function createUser(name, className, phone, customUserId = null) {
+async function createUser(name, className, studentId, customUserId = null, isTeacher = false) {
     const db = getUsers();
     const userId = customUserId || generateUserId(className);
     const user = {
         userId: userId,
         name: name,
         className: className,
-        phone: phone,
-        isTeacher: false,
-        managedClasses: [className],
+        studentId: studentId,
+        isTeacher: isTeacher,
+        managedClasses: isTeacher ? [className] : [],
         createdAt: new Date().toISOString(),
         latestStatus: {},
         allAttempts: [],
@@ -612,23 +612,32 @@ function showCustomPrompt() {
             <div style="text-align: center; margin-bottom: 20px;">
                 <div style="font-size: 2.5rem; margin-bottom: 4px;">👋</div>
                 <h2 style="color: #2e0f5a; font-size: 1.2rem; margin: 0;">歡迎！請填寫基本資料</h2>
-                <p style="color: #888; font-size: 0.85rem; margin: 4px 0 0 0;">這是您第一次登入，需要設定班級和電話</p>
+                <p style="color: #888; font-size: 0.85rem; margin: 4px 0 0 0;">這是您第一次登入，請填寫姓名、班別和學號</p>
             </div>
 
             <div style="margin-bottom: 14px;">
                 <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">
-                    📚 班級 <span style="color: #dc2626;">*</span>
+                    👤 姓名 <span style="color: #dc2626;">*</span>
                 </label>
-                <input type="text" id="customClassName" placeholder="例如：3A、4B、VIP"
+                <input type="text" id="customName" placeholder="例如：陳小明"
+                    style="width: 100%; padding: 10px 14px; border-radius: 12px; border: 2px solid #e0d6f5; font-size: 0.95rem; outline: none; transition: border-color 0.2s;"
+                    onfocus="this.style.borderColor='#4a1d8c'" onblur="this.style.borderColor='#e0d6f5'">
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">
+                    📚 班別 <span style="color: #dc2626;">*</span>
+                </label>
+                <input type="text" id="customClassName" placeholder="例如：3A、4B"
                     style="width: 100%; padding: 10px 14px; border-radius: 12px; border: 2px solid #e0d6f5; font-size: 0.95rem; outline: none; transition: border-color 0.2s;"
                     onfocus="this.style.borderColor='#4a1d8c'" onblur="this.style.borderColor='#e0d6f5'">
             </div>
 
             <div style="margin-bottom: 20px;">
                 <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">
-                    📱 電話號碼 <span style="color: #dc2626;">*</span>
+                    🆔 學號 <span style="color: #dc2626;">*</span>
                 </label>
-                <input type="text" id="customPhone" placeholder="例如：91234567"
+                <input type="text" id="customStudentId" placeholder="例如：20240001"
                     style="width: 100%; padding: 10px 14px; border-radius: 12px; border: 2px solid #e0d6f5; font-size: 0.95rem; outline: none; transition: border-color 0.2s;"
                     onfocus="this.style.borderColor='#4a1d8c'" onblur="this.style.borderColor='#e0d6f5'">
             </div>
@@ -657,32 +666,41 @@ function showCustomPrompt() {
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
+        const nameInput = document.getElementById('customName');
         const classNameInput = document.getElementById('customClassName');
-        const phoneInput = document.getElementById('customPhone');
+        const studentIdInput = document.getElementById('customStudentId');
         const errorEl = document.getElementById('customPromptError');
 
-        setTimeout(() => classNameInput.focus(), 100);
+        setTimeout(() => nameInput.focus(), 100);
 
         document.getElementById('customConfirmBtn').addEventListener('click', function() {
-            const className = classNameInput.value.trim();
-            const phone = phoneInput.value.trim();
+            const name = nameInput.value.trim();
+            const className = classNameInput.value.trim().toUpperCase();
+            const studentId = studentIdInput.value.trim();
+
+            if (!name) {
+                errorEl.textContent = '⚠️ 請輸入姓名';
+                errorEl.style.display = 'block';
+                nameInput.focus();
+                return;
+            }
 
             if (!className) {
-                errorEl.textContent = '⚠️ 請輸入班級名稱';
+                errorEl.textContent = '⚠️ 請輸入班別';
                 errorEl.style.display = 'block';
                 classNameInput.focus();
                 return;
             }
 
-            if (!phone) {
-                errorEl.textContent = '⚠️ 請輸入電話號碼';
+            if (!studentId) {
+                errorEl.textContent = '⚠️ 請輸入學號';
                 errorEl.style.display = 'block';
-                phoneInput.focus();
+                studentIdInput.focus();
                 return;
             }
 
             overlay.remove();
-            resolve({ className: className, phone: phone });
+            resolve({ name: name, className: className, studentId: studentId });
         });
 
         document.getElementById('customCancelBtn').addEventListener('click', function() {
@@ -690,14 +708,21 @@ function showCustomPrompt() {
             resolve(null);
         });
 
-        classNameInput.addEventListener('keypress', function(e) {
+        nameInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                phoneInput.focus();
+                classNameInput.focus();
             }
         });
 
-        phoneInput.addEventListener('keypress', function(e) {
+        classNameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                studentIdInput.focus();
+            }
+        });
+
+        studentIdInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 document.getElementById('customConfirmBtn').click();
@@ -717,6 +742,12 @@ function showCustomPrompt() {
 // 🔐 Google 登入
 // ============================================================
 
+function isTeacherEmail(email) {
+    if (!email) return false;
+    // 教師電郵：@gc.hebron.edu.hk 且前面為三個英文字母 + 一個數字（例如 chs1@gc.hebron.edu.hk）
+    return /^[a-zA-Z]{3}\d@gc\.hebron\.edu\.hk$/.test(email.trim());
+}
+
 async function handleGoogleLogin() {
     clearLoginError();
     updateStatusDot('connecting', '⏳ 連線中...', '#fef3c7', '#7c5a00');
@@ -730,6 +761,7 @@ async function handleGoogleLogin() {
         console.log('✅ Google 登入成功:', user.displayName, user.email);
         
         const userId = user.email;
+        const isTeacher = isTeacherEmail(userId);
         let existingUser = findUser(userId);
         
         if (!existingUser) {
@@ -741,23 +773,25 @@ async function handleGoogleLogin() {
                 return;
             }
             
+            const name = userInfo.name || user.displayName || userId;
             const className = userInfo.className;
-            const phone = userInfo.phone;
+            const studentId = userInfo.studentId;
             
             const newUser = await createUser(
-                user.displayName || userId,
+                name,
                 className,
-                phone,
-                userId
+                studentId,
+                userId,
+                isTeacher
             );
             existingUser = newUser;
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             try {
-                await firebase.auth().currentUser.updateProfile({ displayName: user.displayName || userId });
+                await firebase.auth().currentUser.updateProfile({ displayName: name });
             } catch(e) { console.warn('⚠️ 更新 displayName 失敗:', e); }
             
-            alert(`✅ 帳戶已建立！\n\n👤 ${newUser.name}\n🆔 ${newUser.userId}\n📚 ${newUser.className}\n\n以後您可以用 Google 帳戶直接登入！`);
+            alert(`✅ 帳戶已建立！\n\n👤 ${newUser.name}\n🆔 學號：${newUser.studentId || '-'}\n📚 班別：${newUser.className}\n\n以後您可以用 Google 帳戶直接登入！`);
         }
         
         updateStatusDot('online', `✅ 歡迎 ${existingUser.name}！`, '#d4edda', '#065f46');
@@ -3071,35 +3105,6 @@ async function renderTeacherPanel() {
             </div>
         </div>
         
-        <div class="card">
-            <div class="collapsible-header" onclick="toggleCollapsible('createStudentPanel')">
-                <span>📝 建立學生帳戶</span>
-                <span class="collapse-arrow" id="createStudentArrow">▼</span>
-            </div>
-            <div id="createStudentPanel" class="collapsible-content">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
-                    <div>
-                        <label style="font-size:12px; font-weight:500; color:#2e0f5a;">姓名</label>
-                        <input type="text" id="teacherNewName" placeholder="陳小明" style="width:100%; padding:6px 10px; border-radius:10px; border:2px solid #e0d6f5; font-size:13px; outline:none;">
-                    </div>
-                    <div>
-                        <label style="font-size:12px; font-weight:500; color:#2e0f5a;">學號（可自訂）</label>
-                        <input type="text" id="teacherNewId" placeholder="留空自動產生" style="width:100%; padding:6px 10px; border-radius:10px; border:2px solid #e0d6f5; font-size:13px; outline:none;">
-                    </div>
-                    <div>
-                        <label style="font-size:12px; font-weight:500; color:#2e0f5a;">班級</label>
-                        <input type="text" id="teacherNewClass" placeholder="3A" style="width:100%; padding:6px 10px; border-radius:10px; border:2px solid #e0d6f5; font-size:13px; outline:none;" value="${currentClass}">
-                    </div>
-                    <div>
-                        <label style="font-size:12px; font-weight:500; color:#2e0f5a;">電話號碼</label>
-                        <input type="text" id="teacherNewPhone" placeholder="91234567" style="width:100%; padding:6px 10px; border-radius:10px; border:2px solid #e0d6f5; font-size:13px; outline:none;">
-                    </div>
-                </div>
-                <button class="btn btn-primary" id="teacherCreateStudentBtn" style="padding:6px 16px; font-size:13px;">✅ 建立帳戶</button>
-                <div id="teacherCreateResult" class="mt-8"></div>
-            </div>
-        </div>
-        
         <div class="teacher-subtabs">
             <div class="subtab-tabs desktop-tabs">
                 <button class="sub-tab active" data-subtab="progress" onclick="switchSubtab('progress', '${currentClass}')">📊 全班進度</button>
@@ -3203,6 +3208,7 @@ async function renderSubtabProgress(className) {
                 <tr>
                     <th>姓名</th>
                     <th>學號</th>
+                    <th>班別</th>
                     <th>總題數</th>
                     <th>正確率</th>
                     <th>狀態</th>
@@ -3212,7 +3218,7 @@ async function renderSubtabProgress(className) {
             <tbody>`;
     
     if (students.length === 0) {
-        html += `<tr><td colspan="6" style="text-align:center; color:#999; padding:20px;">還沒有學生帳戶</td></tr>`;
+        html += `<tr><td colspan="7" style="text-align:center; color:#999; padding:20px;">還沒有學生帳戶</td></tr>`;
     } else {
         for (const s of students) {
             const stats = s.stats || { totalQuestionsAnswered: 0, totalCorrect: 0 };
@@ -3226,9 +3232,10 @@ async function renderSubtabProgress(className) {
                         <button class="btn-link" onclick="showStudentDetail('${s.userId}')" style="background:none; border:none; color:#4a1d8c; cursor:pointer; font-weight:600; font-size:0.85rem;">
                             ${s.name}
                         </button>
-                        <button class="btn-icon" onclick="openEditNameModal('${s.userId}')" style="font-size:12px;" title="修改姓名">✏️</button>
+                        <button class="btn-icon" onclick="openEditNameModal('${s.userId}')" style="font-size:12px;" title="編輯資料">✏️</button>
                     </td>
-                    <td>${s.userId}</td>
+                    <td>${s.studentId || '-'}</td>
+                    <td>${s.className || '-'}</td>
                     <td>${total}</td>
                     <td style="font-weight:600; color:${acc >= 70 ? '#10b981' : (acc >= 40 ? '#f59e0b' : '#dc2626')};">${acc}%</td>
                     <td><span style="background:${statusColor}; color:white; padding:2px 12px; border-radius:12px; font-size:11px;">${status}</span></td>
@@ -3516,68 +3523,6 @@ function bindTeacherEvents() {
         });
     });
     
-    document.getElementById('teacherCreateStudentBtn')?.addEventListener('click', async function() {
-        const customId = document.getElementById('teacherNewId').value.trim() || null;
-        const name = document.getElementById('teacherNewName').value.trim();
-        const className = document.getElementById('teacherNewClass').value.trim() || currentClass;
-        const phone = document.getElementById('teacherNewPhone').value.trim();
-        const resultEl = document.getElementById('teacherCreateResult');
-        
-        if (!name || !phone) {
-            resultEl.innerHTML = `<div class="alert alert-danger">⚠️ 請填寫姓名和電話號碼</div>`;
-            return;
-        }
-        
-        try {
-            const newUser = await createUser(name, className, phone, customId);
-            
-            document.getElementById('teacherNewId').value = '';
-            document.getElementById('teacherNewName').value = '';
-            document.getElementById('teacherNewPhone').value = '';
-            
-            const loginUrl = 'https://mastering-science-chem.pages.dev';
-            const modalHtml = `
-                <div id="createSuccessModal" style="
-                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                    background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center;
-                    z-index: 10000;
-                ">
-                    <div style="
-                        background: white; border-radius: 24px; padding: 32px; 
-                        max-width: 420px; width: 90%; text-align: center;
-                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                    ">
-                        <div style="font-size: 48px; margin-bottom: 8px;">✅</div>
-                        <h2 style="color: #065f46; margin-bottom: 12px;">帳戶已建立！</h2>
-                        <div style="text-align: left; line-height: 2.2; font-size: 15px;">
-                            <div>👤 姓名：<strong>${newUser.name}</strong></div>
-                            <div>🆔 學號：<strong style="font-size: 20px; color: #4a1d8c;">${newUser.userId}</strong></div>
-                            <div>📚 班級：<strong>${newUser.className}</strong></div>
-                            <div style="margin-top:4px;">
-                                🔗 登入網址：
-                                <span style="font-size: 13px; color: #4a1d8c; word-break: break-all;">${loginUrl}</span>
-                                <button onclick="navigator.clipboard?.writeText('${loginUrl}').then(() => alert('✅ 網址已複製！')).catch(() => alert('⚠️ 請手動複製'))" style="
-                                    background: #4a1d8c; color: white; border: none; 
-                                    padding: 2px 14px; border-radius: 20px; cursor: pointer; font-size: 13px;
-                                ">📋 複製</button>
-                            </div>
-                        </div>
-                        <div style="font-size: 13px; color: #f59e0b; margin: 8px 0;">🔑 學生使用自己的 Google 帳戶登入即可開始練習</div>
-                        <button onclick="document.getElementById('createSuccessModal').remove()" style="
-                            background: #4a1d8c; color: white; border: none; 
-                            padding: 10px 40px; border-radius: 40px; font-size: 16px; cursor: pointer; font-weight: 600;
-                        ">我知道了</button>
-                    </div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-            
-            renderTeacherPanel();
-        } catch (e) {
-            resultEl.innerHTML = `<div class="alert alert-danger">❌ 建立失敗：${e.message}</div>`;
-        }
-    });
-    
     document.getElementById('manageClassesBtn')?.addEventListener('click', function() {
         const currentClasses = currentUser.managedClasses || [currentUser.className];
         const input = prompt('請輸入您要管理的班級（用逗號分隔）：\n例如：3A,3B,3C', currentClasses.join(','));
@@ -3618,48 +3563,84 @@ async function openEditNameModal(userId) {
         alert('❌ 找不到該學生，請檢查 Firebase 連線狀態');
         return;
     }
-    
-    const newName = prompt(`修改「${user.name}」的姓名：`, user.name);
-    if (!newName || newName.trim() === '' || newName.trim() === user.name) return;
-    
-    const trimmedName = newName.trim();
-    
-    try {
-        // 更新 Firestore
-        await updateUser(userId, { name: trimmedName });
-        
-        // 如果修改的是當前登入用戶，更新 Auth displayName
-        if (firebase.auth().currentUser && firebase.auth().currentUser.uid === userId) {
-            try {
-                await firebase.auth().currentUser.updateProfile({ displayName: trimmedName });
-                console.log('✅ Auth displayName 已更新');
-            } catch (e) {
-                console.warn('⚠️ Auth displayName 更新失敗:', e.message);
+
+    // 自訂編輯彈窗：姓名 / 班別 / 學號
+    const overlay = document.createElement('div');
+    overlay.id = 'editUserOverlay';
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
+        z-index: 999999; animation: fadeIn 0.3s ease;
+    `;
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white; border-radius: 24px; padding: 32px 28px;
+        max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        animation: slideUp 0.3s ease;
+    `;
+    modal.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 2rem; margin-bottom: 4px;">✏️</div>
+            <h2 style="color: #2e0f5a; font-size: 1.2rem; margin: 0;">編輯學生資料</h2>
+            <p style="color: #888; font-size: 0.85rem; margin: 4px 0 0 0;">${user.userId}</p>
+        </div>
+        <div style="margin-bottom: 14px;">
+            <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">👤 姓名</label>
+            <input type="text" id="editUserName" value="${(user.name || '').replace(/"/g, '&quot;')}" style="width:100%; padding:10px 14px; border-radius:12px; border:2px solid #e0d6f5; font-size:0.95rem; outline:none;">
+        </div>
+        <div style="margin-bottom: 14px;">
+            <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">📚 班別</label>
+            <input type="text" id="editUserClass" value="${(user.className || '').replace(/"/g, '&quot;')}" style="width:100%; padding:10px 14px; border-radius:12px; border:2px solid #e0d6f5; font-size:0.95rem; outline:none;">
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">🆔 學號</label>
+            <input type="text" id="editUserStudentId" value="${(user.studentId || '').replace(/"/g, '&quot;')}" style="width:100%; padding:10px 14px; border-radius:12px; border:2px solid #e0d6f5; font-size:0.95rem; outline:none;">
+        </div>
+        <div id="editUserError" style="color:#dc2626; font-size:0.85rem; margin-bottom:12px; text-align:center; display:none;"></div>
+        <div style="display: flex; gap: 10px;">
+            <button id="editUserCancelBtn" style="flex:1; padding:10px 0; border:2px solid #e0d6f5; border-radius:40px; background:white; color:#666; font-size:0.95rem; font-weight:600; cursor:pointer;">取消</button>
+            <button id="editUserConfirmBtn" style="flex:2; padding:10px 0; border:none; border-radius:40px; background:linear-gradient(135deg,#4a1d8c,#7c3aed); color:white; font-size:0.95rem; font-weight:600; cursor:pointer;">✅ 儲存</button>
+        </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    const nameInput = document.getElementById('editUserName');
+    const classInput = document.getElementById('editUserClass');
+    const idInput = document.getElementById('editUserStudentId');
+    const errorEl = document.getElementById('editUserError');
+
+    document.getElementById('editUserCancelBtn').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+
+    document.getElementById('editUserConfirmBtn').addEventListener('click', async function() {
+        const newName = nameInput.value.trim();
+        const newClass = classInput.value.trim().toUpperCase();
+        const newStudentId = idInput.value.trim();
+        if (!newName || !newClass || !newStudentId) {
+            errorEl.textContent = '⚠️ 請填寫姓名、班別和學號';
+            errorEl.style.display = 'block';
+            return;
+        }
+        try {
+            await updateUser(userId, { name: newName, className: newClass, studentId: newStudentId });
+            if (firebase.auth().currentUser && firebase.auth().currentUser.uid === userId) {
+                try { await firebase.auth().currentUser.updateProfile({ displayName: newName }); }
+                catch(e) { console.warn('⚠️ Auth displayName 更新失敗:', e.message); }
             }
+            overlay.remove();
+            renderTeacherPanel();
+            if (currentUser && currentUser.userId === userId) {
+                currentUser = findUser(userId);
+                updateUserLabel();
+            }
+            alert(`✅ 已更新「${newName}」的資料`);
+        } catch (e) {
+            console.error('❌ 更新失敗:', e);
+            errorEl.textContent = '❌ 更新失敗：' + e.message;
+            errorEl.style.display = 'block';
         }
-        
-        // 更新 localStorage 中的獨立數據
-        const raw = localStorage.getItem(`ms_chem_${userId}`);
-        if (raw) {
-            try {
-                const data = JSON.parse(raw);
-                localStorage.setItem(`ms_chem_${userId}`, JSON.stringify(data));
-            } catch(e) {}
-        }
-        
-        // 重新渲染
-        renderTeacherPanel();
-        if (currentUser && currentUser.userId === userId) {
-            currentUser = findUser(userId);
-            updateUserLabel();
-        }
-        
-        alert(`✅ 已將「${user.name}」改名為「${trimmedName}」`);
-        
-    } catch (e) {
-        console.error('❌ 修改姓名失敗:', e);
-        alert(`❌ 修改失敗：${e.message}\n\n請稍後再試，或檢查 Firebase 連線狀態。`);
-    }
+    });
 }
 
 // ===== 修復：showStudentDetail（優先從 Firestore 讀取） =====
