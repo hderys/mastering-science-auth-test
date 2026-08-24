@@ -205,17 +205,16 @@ async function updateMigrationStatusInFirebase(code, status, newUserId) {
 async function loadAllStudentsFromFirebase(className) {
     console.log('📥 從 Firebase 讀取學生數據:', className);
     const db = getUsers();
-    const isTeacher = currentUser && currentUser.isTeacher;
     const isAll = className === '__all__';
-    // 教師可看所有學生；學生只看自己的班別
-    const localStudents = (isTeacher || isAll)
+    // 選「全部」時載入所有學生；選特定班別時只載入該班
+    const localStudents = isAll
         ? db.users.filter(u => !u.isTeacher)
         : db.users.filter(u => u.className === className && !u.isTeacher);
     console.log(`📊 localStorage: ${localStudents.length} 位學生`);
     if (!firestoreEnabled) return localStudents;
     try {
         let query = firebase.firestore().collection('users').where('isTeacher', '==', false);
-        if (!isTeacher && !isAll) query = query.where('className', '==', className);
+        if (!isAll) query = query.where('className', '==', className);
         const snapshot = await query.get();
         const firebaseStudents = [];
         snapshot.forEach(doc => firebaseStudents.push(doc.data()));
@@ -1469,8 +1468,20 @@ async function renderPractice() {
     const classSettings = await loadClassSettings(className) || {};
     const openChapters = classSettings.openChapters || [];
     const isTeacher = currentUser.isTeacher || false;
+    // 非學校電郵的訪客/試用者：只開放第一單元（Unit 1）
+    const userId = currentUser.userId || currentUser.id || '';
+    const isSchoolEmail = /@gc\.hebron\.edu\.hk$/.test(userId);
+    const isTrialUser = !isTeacher && !isSchoolEmail;
     let html = '';
+    if (isTrialUser) {
+        html += `<div class="card" style="background:#fff7ed; border-left:4px solid #f59e0b; margin-bottom:0.8rem;">
+            🎁 <b>試用模式</b>：您目前使用非學校電郵登入，僅開放第一單元。<br>
+            <span style="font-size:0.8rem; color:#888;">請使用學校電郵（@gc.hebron.edu.hk）登入以解鎖完整內容。</span>
+        </div>`;
+    }
     for (let unit in window.ALL_UNITS) {
+        // 試用者只顯示 Unit 1
+        if (isTrialUser && unit !== '1') continue;
         let unitObj = window.ALL_UNITS[unit], chapters = unitObj.chapters;
         if (Object.keys(chapters).length === 0) continue;
         let filteredChapters = {};
