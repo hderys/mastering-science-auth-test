@@ -205,11 +205,18 @@ async function updateMigrationStatusInFirebase(code, status, newUserId) {
 async function loadAllStudentsFromFirebase(className) {
     console.log('📥 從 Firebase 讀取學生數據:', className);
     const db = getUsers();
-    const localStudents = db.users.filter(u => u.className === className && !u.isTeacher);
+    const isTeacher = currentUser && currentUser.isTeacher;
+    const isAll = className === '__all__';
+    // 教師可看所有學生；學生只看自己的班別
+    const localStudents = (isTeacher || isAll)
+        ? db.users.filter(u => !u.isTeacher)
+        : db.users.filter(u => u.className === className && !u.isTeacher);
     console.log(`📊 localStorage: ${localStudents.length} 位學生`);
     if (!firestoreEnabled) return localStudents;
     try {
-        const snapshot = await firebase.firestore().collection('users').where('className', '==', className).where('isTeacher', '==', false).get();
+        let query = firebase.firestore().collection('users').where('isTeacher', '==', false);
+        if (!isTeacher && !isAll) query = query.where('className', '==', className);
+        const snapshot = await query.get();
         const firebaseStudents = [];
         snapshot.forEach(doc => firebaseStudents.push(doc.data()));
         console.log(`📊 Firebase: ${firebaseStudents.length} 位學生`);
@@ -485,16 +492,17 @@ function generateUserId(className) {
     return String(num).padStart(6, '0');
 }
 
-async function createUser(name, className, studentId, customUserId = null, isTeacher = false) {
+async function createUser(name, className, studentId, customUserId = null, isTeacher = false, teacherCode = null) {
     const db = getUsers();
     const userId = customUserId || generateUserId(className);
     const user = {
         userId: userId,
         name: name,
-        className: className,
-        studentId: studentId,
+        className: className || '',
+        studentId: studentId || '',
+        teacherCode: isTeacher ? (teacherCode || name) : '',
         isTeacher: isTeacher,
-        managedClasses: isTeacher ? [className] : [],
+        managedClasses: [],
         createdAt: new Date().toISOString(),
         latestStatus: {},
         allAttempts: [],
@@ -692,6 +700,13 @@ function showCustomPrompt() {
                 return;
             }
 
+            if (!/^[1-9][0-9]?[A-Z]$/.test(className)) {
+                errorEl.textContent = '⚠️ 班別格式錯誤：請填「數字+字母」（例如 3A、4C、4D）';
+                errorEl.style.display = 'block';
+                classNameInput.focus();
+                return;
+            }
+
             if (!studentId) {
                 errorEl.textContent = '⚠️ 請輸入學號';
                 errorEl.style.display = 'block';
@@ -765,33 +780,54 @@ async function handleGoogleLogin() {
         let existingUser = findUser(userId);
         
         if (!existingUser) {
-            // 使用自訂彈窗取代 prompt()
-            const userInfo = await showCustomPrompt();
-            if (!userInfo) {
-                await firebase.auth().signOut();
-                updateStatusDot('offline', '❌ 登入取消', '#f8d7da', '#7f1d1d');
-                return;
-            }
-            
-            const name = userInfo.name || user.displayName || userId;
-            const className = userInfo.className;
-            const studentId = userInfo.studentId;
-            
-            const newUser = await createUser(
-                name,
-                className,
-                studentId,
-                userId,
-                isTeacher
-            );
-            existingUser = newUser;
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            let name, className = null, studentId = null;
 
-            try {
-                await firebase.auth().currentUser.updateProfile({ displayName: name });
-            } catch(e) { console.warn('⚠️ 更新 displayName 失敗:', e); }
-            
-            alert(`✅ 帳戶已建立！\n\n👤 ${newUser.name}\n🆔 學號：${newUser.studentId || '-'}\n📚 班別：${newUser.className}\n\n以後您可以用 Google 帳戶直接登入！`);
+            if (isTeacher) {
+                // 教師：不需填寫班別/學號，直接建立帳戶，code = email 前面部分（如 chs1）
+                const emailPrefix = userId.split('@')[0];
+                name = user.displayName || emailPrefix.toUpperCase();
+                const newUser = await createUser(
+                    name,
+                    className,
+                    studentId,
+                    userId,
+                    isTeacher,
+                    emailPrefix.toUpperCase()
+                );
+                existingUser = newUser;
+                try {
+                    await firebase.auth().currentUser.updateProfile({ displayName: name });
+                } catch(e) { console.warn('⚠️ 更新 displayName 失敗:', e); }
+                alert(`✅ 教師帳戶已建立！\n\n👤 ${newUser.name}\n🆔 教師代號：${newUser.teacherCode}\n\n您可以查看所有班級的學生。`);
+            } else {
+                // 學生：首次登入填寫姓名/班別/學號
+                const userInfo = await showCustomPrompt();
+                if (!userInfo) {
+                    await firebase.auth().signOut();
+                    updateStatusDot('offline', '❌ 登入取消', '#f8d7da', '#7f1d1d');
+                    return;
+                }
+                
+                name = userInfo.name || user.displayName || userId;
+                className = userInfo.className;
+                studentId = userInfo.studentId;
+                
+                const newUser = await createUser(
+                    name,
+                    className,
+                    studentId,
+                    userId,
+                    isTeacher
+                );
+                existingUser = newUser;
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                try {
+                    await firebase.auth().currentUser.updateProfile({ displayName: name });
+                } catch(e) { console.warn('⚠️ 更新 displayName 失敗:', e); }
+                
+                alert(`✅ 帳戶已建立！\n\n👤 ${newUser.name}\n🆔 學號：${newUser.studentId || '-'}\n📚 班別：${newUser.className}\n\n以後您可以用 Google 帳戶直接登入！`);
+            }
         }
         
         updateStatusDot('online', `✅ 歡迎 ${existingUser.name}！`, '#d4edda', '#065f46');
@@ -3079,11 +3115,14 @@ async function renderTeacherPanel() {
         return;
     }
     if (!currentUser.managedClasses) {
-        currentUser.managedClasses = [currentUser.className];
+        currentUser.managedClasses = [];
         updateUser(currentUser.userId, { managedClasses: currentUser.managedClasses });
     }
-    const managedClasses = currentUser.managedClasses || [currentUser.className];
-    if (!currentClass) currentClass = currentUser.currentClass || currentUser.className;
+    // 教師的班級選項：全部 + 各班（動態從學生資料收集）
+    const allStudentsForClass = await loadAllStudentsFromFirebase('__all__');
+    const classOptions = ['__all__', ...new Set(allStudentsForClass.map(s => s.className).filter(Boolean))];
+    if (!currentClass) currentClass = '__all__';
+    const classLabel = c => c === '__all__' ? '全部班級' : c;
     let html = `
         <div class="card teacher-settings">
             <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
@@ -3095,13 +3134,12 @@ async function renderTeacherPanel() {
                 <div style="display:flex; align-items:center; gap:6px;">
                     <label style="font-size:12px; font-weight:500; color:#2e0f5a;">📚 班級：</label>
                     <select id="teacherClassSelector" style="padding:4px 10px; border-radius:16px; border:2px solid #e0d6f5; font-size:13px; background:white;">
-                        ${managedClasses.map(c => `<option value="${c}" ${c === currentClass ? 'selected' : ''}>${c}</option>`).join('')}
+                        ${classOptions.map(c => `<option value="${c}" ${c === currentClass ? 'selected' : ''}>${classLabel(c)}</option>`).join('')}
                     </select>
-                    <button class="btn btn-small" id="manageClassesBtn" style="font-size:11px; padding:2px 10px;">切換班級</button>
                 </div>
             </div>
             <div style="margin-top:6px; font-size:12px; color:#888;">
-                💡 管理班級：${managedClasses.join('、')}
+                💡 當前顯示：${classLabel(currentClass)}（章節開放設定需選取單一班別）
             </div>
         </div>
         
@@ -3414,6 +3452,14 @@ async function renderSubtabChapters(className) {
     const container = document.getElementById('subtab-chapters');
     if (!container) return;
     
+    if (className === '__all__') {
+        container.innerHTML = `<div class="card" style="text-align:center; color:#888; padding:24px;">
+            📖 章節開放設定是按班別管理的。<br><br>
+            請在上方「📚 班級」下拉選取<b>單一班別</b>（如 3A、4C、4D）再進行設定。
+        </div>`;
+        return;
+    }
+    
     const classSettings = await loadClassSettings(className) || {};
     const openChapters = classSettings.openChapters || [];
     
@@ -3522,19 +3568,6 @@ function bindTeacherEvents() {
             tab.setAttribute('onclick', `switchSubtab('${subtab}', '${newClass}')`);
         });
     });
-    
-    document.getElementById('manageClassesBtn')?.addEventListener('click', function() {
-        const currentClasses = currentUser.managedClasses || [currentUser.className];
-        const input = prompt('請輸入您要管理的班級（用逗號分隔）：\n例如：3A,3B,3C', currentClasses.join(','));
-        if (input !== null) {
-            const classes = input.split(',').map(s => s.trim()).filter(Boolean);
-            if (classes.length === 0) { alert('至少需要一個班級'); return; }
-            updateUser(currentUser.userId, { managedClasses: classes });
-            currentUser = findUser(currentUser.userId);
-            renderTeacherPanel();
-            alert('✅ 班級管理已更新！');
-        }
-    });
 }
 
 async function openEditNameModal(userId) {
@@ -3619,6 +3652,11 @@ async function openEditNameModal(userId) {
         const newStudentId = idInput.value.trim();
         if (!newName || !newClass || !newStudentId) {
             errorEl.textContent = '⚠️ 請填寫姓名、班別和學號';
+            errorEl.style.display = 'block';
+            return;
+        }
+        if (!/^[1-9][0-9]?[A-Z]$/.test(newClass)) {
+            errorEl.textContent = '⚠️ 班別格式錯誤：請填「數字+字母」（例如 3A、4C、4D）';
             errorEl.style.display = 'block';
             return;
         }
