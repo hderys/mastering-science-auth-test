@@ -2557,8 +2557,122 @@ async function renderTeacherAchievements(container) {
         { id: 'mistakeAvenger', name: '錯題復仇者', icon: '🧠' },
     ];
     
-    let html = `<div style="margin-bottom:0.8rem;">
-        <h3 style="margin:0;">🏆 全班成就統計</h3>
+    // 全班分數排名（老師看所有班級）
+    let podiumHtml = '', rankListHtml = '';
+    try {
+        const rankedStudents = [...allStudents].sort((a, b) => {
+            const aPoints = calculateTotalPoints(a.achievements || {});
+            const bPoints = calculateTotalPoints(b.achievements || {});
+            return bPoints - aPoints;
+        });
+        if (rankedStudents.length > 0) {
+            const rankedWithPoints = rankedStudents.map(s => ({ ...s, points: calculateTotalPoints(s.achievements || {}) }));
+            let rankedWithRank = [];
+            let currentRank = 1, currentPoints = null;
+            for (let i = 0; i < rankedWithPoints.length; i++) {
+                const s = rankedWithPoints[i];
+                if (currentPoints !== null && s.points < currentPoints) currentRank = i + 1;
+                currentPoints = s.points;
+                rankedWithRank.push({ ...s, rank: currentRank });
+            }
+            const rank1Students = rankedWithRank.filter(s => s.rank === 1);
+            let rank2Students = rankedWithRank.filter(s => s.rank === 2);
+            if (rank2Students.length === 0) {
+                const nextRank = rankedWithRank.find(s => s.rank > 1);
+                if (nextRank) rank2Students = rankedWithRank.filter(s => s.points === nextRank.points && s.rank > 1);
+            }
+            let rank3Students = rankedWithRank.filter(s => s.rank === 3);
+            if (rank3Students.length === 0) {
+                const usedRanks = new Set();
+                rank1Students.forEach(s => usedRanks.add(s.rank));
+                rank2Students.forEach(s => usedRanks.add(s.rank));
+                const nextRank = rankedWithRank.find(s => s.rank > 1 && !usedRanks.has(s.rank));
+                if (nextRank) {
+                    const nextPoints = nextRank.points;
+                    rank3Students = rankedWithRank.filter(s => s.points === nextPoints && s.rank > 1 && !usedRanks.has(s.rank));
+                    if (rank3Students.length === 0) {
+                        const anyNext = rankedWithRank.find(s => s.rank > 2);
+                        if (anyNext) rank3Students = rankedWithRank.filter(s => s.points === anyNext.points);
+                    }
+                }
+            }
+            const medalConfigs = [
+                { rank: 1, students: rank1Students, emoji: '🥇', cls: 'gold', height: '90px', crown: true },
+                { rank: 2, students: rank2Students, emoji: '🥈', cls: 'silver', height: '65px', crown: false },
+                { rank: 3, students: rank3Students, emoji: '🥉', cls: 'bronze', height: '40px', crown: false }
+            ];
+            const displayOrder = [1, 0, 2];
+            podiumHtml = `
+                <div class="podium-wrapper">
+                    <div class="podium-title"><strong>🏆</strong> · 全校榮譽榜</div>
+                    <div class="podium-container">
+            `;
+            for (const idx of displayOrder) {
+                const config = medalConfigs[idx];
+                const students = config.students;
+                const hasStudents = students && students.length > 0;
+                if (hasStudents) {
+                    const names = students.map(s => s.name).join('、');
+                    const count = students.length;
+                    const tieBadge = count > 1 ? ` x${count}` : '';
+                    const points = students[0].points;
+                    const crownHtml = config.crown ? `<div class="crown">👑</div>` : `<div class="crown" style="opacity:0;">&nbsp;</div>`;
+                    podiumHtml += `
+                        <div class="podium-item">
+                            ${crownHtml}
+                            <div class="name">${names}</div>
+                            <div class="points">${points} 分${tieBadge}</div>
+                            <div class="podium-base">
+                                <div class="podium-step ${config.cls}" style="min-height:${config.height};">
+                                    <span class="step-label">${config.emoji}${tieBadge}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const crownHtml = config.crown ? `<div class="crown" style="opacity:0;">&nbsp;</div>` : `<div class="crown" style="opacity:0;">&nbsp;</div>`;
+                    podiumHtml += `
+                        <div class="podium-item">
+                            ${crownHtml}
+                            <div class="name">—</div>
+                            <div class="points">—</div>
+                            <div class="podium-base">
+                                <div class="podium-step ${config.cls}" style="min-height:${config.height}; opacity:0.3;">
+                                    <span class="step-label">${config.emoji}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            podiumHtml += `</div></div>`;
+            
+            // 完整排名列表
+            rankListHtml = `
+                <div class="card" style="padding:0.8rem; margin-top:0.6rem;">
+                    <div style="font-weight:700; color:#2e0f5a; margin-bottom:0.5rem;">📊 全部學生積分榜</div>
+                    <div style="overflow-x:auto;">`;
+            let listRank = 1, prevPoints = null;
+            rankedWithPoints.forEach((s, index) => {
+                const points = s.points;
+                if (prevPoints !== null && points < prevPoints) listRank = index + 1;
+                prevPoints = points;
+                const medal = listRank <= 3 ? ['🥇', '🥈', '🥉'][listRank - 1] : `${listRank}`;
+                rankListHtml += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; border-bottom:1px solid #f0edf8; border-radius:8px;">
+                        <span style="font-size:0.85rem;">${medal} ${s.name} <span style="color:#999; font-size:0.7rem;">(${s.className || '-'})</span></span>
+                        <span style="font-size:0.85rem; font-weight:600; color:#2e0f5a;">${points} 分</span>
+                    </div>
+                `;
+            });
+            rankListHtml += `</div></div>`;
+        }
+    } catch(e) { console.warn('⚠️ 載入積分榜失敗:', e); }
+    
+    let html = podiumHtml;
+    if (rankListHtml) html += rankListHtml;
+    html += `<div style="margin:0.8rem 0 0.5rem 0;">
+        <h3 style="margin:0; color:#2e0f5a;">🏆 全班成就統計</h3>
         <p style="color:#888; font-size:0.8rem; margin:4px 0 0 0;">所有學生的成就解鎖情況（點擊可查看名單）</p>
     </div>
     <div class="card" style="padding:0.8rem;">
