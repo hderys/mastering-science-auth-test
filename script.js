@@ -36,6 +36,40 @@ let isSingleQuestionMode = false;
 let singleQuestionSource = null;
 let startTime = null;
 
+// ==================== 更多資源：影片資料 ====================
+// 格式：{ unit: 單元編號, chapter: 章節編號, id: YouTube影片ID, title: 標題 }
+const RESOURCE_VIDEOS = [
+    // —— Chapter 5（Atomic Structure 原子結構）——
+    { unit: '2', chapter: '5', id: '5ahHnpszqj0', title: 'Chapter 5.1 Classifying Elements' },
+    { unit: '2', chapter: '5', id: 'vPWh2U8Se-I', title: 'Chapter 5.2 Atom and its symbol' },
+    { unit: '2', chapter: '5', id: 'STvZBVIVZHE', title: 'Chapter 5.3 Structure of an atom' },
+    { unit: '2', chapter: '5', id: 'AYtVbAQPJE8', title: 'Chapter 5.4 Relations of protons, neutrons and electrons' },
+    { unit: '2', chapter: '5', id: 'CNPZ-dLHAAI', title: 'Chapter 5.5&5.6 Isotopes and Relative atomic mass' },
+    { unit: '2', chapter: '5', id: 'ymmQ_EBJVdo', title: 'Chapter 5.7 Electronic arrangement and electron diagram' },
+    // —— Chapter 6（Periodic Table 週期表）——
+    { unit: '2', chapter: '6', id: 'nAj-iAz81eQ', title: 'Chapter 6.1&6.2 Introduction to Periodic Table' },
+    { unit: '2', chapter: '6', id: '2Ni3-DpKM2Y', title: 'Chapter 6.3&6.4 Trends of Group I, II, VII and 0' },
+    // —— Chapter 7（Ionic Bond and Metallic Bond 離子鍵和金屬鍵）——
+    { unit: '2', chapter: '7', id: '4-8_JjKH0pQ', title: 'Chapter 7 Background of ionic bond' },
+    { unit: '2', chapter: '7', id: 'm977S-hDBno', title: 'Chapter 7.1 Electrolytes and Bondings' },
+    { unit: '2', chapter: '7', id: 'aXFYM__bwwI', title: 'Chapter 7.2&7.3a Formation and name of ions' },
+    { unit: '2', chapter: '7', id: '-hwooRnMgYY', title: 'Chapter 7.3b Names of Cations' },
+    { unit: '2', chapter: '7', id: '7ajrhM2MBoE', title: 'Chapter 7.3c Names of Anions' },
+    { unit: '2', chapter: '7', id: 'aVXD1PwswrE', title: 'Chapter 7.4&7.5a Forming Ionic Bond' },
+    { unit: '2', chapter: '7', id: 'irbOACUg4vA', title: 'Chapter 7.5b&7.6a Color and Formula of Salt' },
+    { unit: '2', chapter: '7', id: 'q7YEiMVoX2E', title: 'Chapter 7.6b&7.7 Migration of ions and Metallic Bond' },
+    // —— Chapter 8（Covalent Bond 共價鍵）——
+    { unit: '2', chapter: '8', id: '0SlWQX3swdI', title: 'Chapter 8.1&8.2a Atomicity and Covalent Bonds in Elements' },
+    { unit: '2', chapter: '8', id: 'U4TWhCInj7k', title: 'Chapter 8.2b Covalent Bonds in Compounds' },
+    { unit: '2', chapter: '8', id: '_7KifYKi1fA', title: 'Chapter 8.3 Dative Covalent Bond' },
+    { unit: '2', chapter: '8', id: 'zkbL1he0KMc', title: 'Chapter 8.4-8.6 Formula, name and relative molecular mass' },
+    // —— Chapter 9（Structures and Properties 物質的結構和性質）——
+    { unit: '2', chapter: '9', id: 'WbcKYCdjAGo', title: 'Chapter 9.1&9.2 Simple Molecular Structure' },
+    { unit: '2', chapter: '9', id: '2SJib2pD-Jc', title: 'Chapter 9.3 Giant Covalent Structure' },
+    { unit: '2', chapter: '9', id: 'jOb6QOZ4FEo', title: 'Chapter 9.4&9.5 Giant Ionic Structure and Giant Metallic Structure' },
+    { unit: '2', chapter: '9', id: 'pobEsk2WZmo', title: 'Chapter 9.6-9.9 Summary and Applications of Structures' },
+];
+
 // 成績總表控制變量
 let showOnlyWrong = false;
 let showAnswers = false;
@@ -868,6 +902,7 @@ function setupTabs() {
         learning: document.getElementById('learningPanel'),
         pinned: document.getElementById('pinnedPanel'),
         achievements: document.getElementById('achievementsPanel'),
+        resources: document.getElementById('resourcesPanel'),
         teacher: document.getElementById('teacherPanel')
     };
     const subTabs = document.querySelectorAll('.learning-subtabs .sub-tab');
@@ -909,6 +944,7 @@ function setupTabs() {
             }
             if (target === 'pinned') renderPinned();
             if (target === 'achievements') renderAchievements();
+            if (target === 'resources') renderResources();
             if (target === 'teacher') renderTeacherPanel();
         };
         tab.addEventListener('click', tab._clickHandler);
@@ -2155,6 +2191,50 @@ function attachRemoveEvents() {
     }));
 }
 
+// ===== 更多資源：依章節分類顯示影片 =====
+function renderResources() {
+    const container = document.getElementById('resourcesPanel');
+    if (!container) return;
+    
+    // 依章節分組
+    const groups = {};
+    for (const v of RESOURCE_VIDEOS) {
+        const key = `${v.unit}_${v.chapter}`;
+        if (!groups[key]) groups[key] = { unit: v.unit, chapter: v.chapter, videos: [] };
+        groups[key].videos.push(v);
+    }
+    
+    let html = `<div style="margin-bottom:0.8rem;">
+        <h3 style="margin:0;">📹 更多資源</h3>
+        <p style="color:#888; font-size:0.8rem; margin:4px 0 0 0;">老師製作的教學影片，按章節分類整理</p>
+    </div>`;
+    
+    const chapterKeys = Object.keys(groups);
+    if (chapterKeys.length === 0) {
+        html += `<div class="card" style="text-align:center; color:#999; padding:24px;">影片整理中，請稍後再來</div>`;
+    } else {
+        for (const key of chapterKeys) {
+            const g = groups[key];
+            const unitObj = window.ALL_UNITS[g.unit];
+            const chObj = unitObj ? unitObj.chapters[g.chapter] : null;
+            const chName = chObj ? chObj.name : `Chapter ${g.chapter}`;
+            html += `<div class="card" style="margin-bottom:0.7rem; padding:0.8rem;">
+                <div style="font-weight:700; color:#2e0f5a; margin-bottom:0.5rem; font-size:0.9rem;">📘 ${chName}</div>`;
+            for (const v of g.videos) {
+                const url = `https://www.youtube.com/watch?v=${v.id}`;
+                html += `<a href="${url}" target="_blank" rel="noopener" style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:12px; text-decoration:none; color:#333; transition:background 0.2s;" onmouseover="this.style.background='#f5f0fb'" onmouseout="this.style.background='transparent'">
+                    <span style="width:40px; height:40px; border-radius:10px; background:#dc2626; display:flex; align-items:center; justify-content:center; color:white; font-size:1rem; flex-shrink:0;">▶</span>
+                    <span style="font-size:0.82rem; flex:1;">${v.title}</span>
+                    <span style="color:#999; font-size:0.7rem;">YouTube ↗</span>
+                </a>`;
+            }
+            html += `</div>`;
+        }
+    }
+    
+    container.innerHTML = html;
+}
+
 async function renderAchievements() {
     let container = document.getElementById('achievementsPanel');
     let totalPoints = calculateTotalPoints(userData.achievements);
@@ -2312,7 +2392,7 @@ async function renderAchievements() {
             { id: 'trial', name: '試煉完成', icon: '⚔️', unlocked: ach.trial?.unlocked || false, date: ach.trial?.date || null, needHint: '需試煉模式80%', points: ACHIEVEMENT_POINTS.trial, order: 4 }
         ];
         for (let t of types) {
-            let entry = { unitName: item.unitName, chapterName: item.chapterName, chapterNum: item.chapterNum, name: t.name, icon: t.icon, unlocked: t.unlocked, date: t.date, needHint: t.needHint, points: t.points, order: t.order };
+            let entry = { unitName: item.unitName, chapterName: item.chapterName, chapterNum: item.chapterNum, name: t.name, icon: t.icon, unlocked: t.unlocked, date: t.date, needHint: t.needHint, points: t.points, order: t.order, achKey: key, achType: t.id };
             if (t.unlocked) unlockedChapters.push(entry);
             else lockedChapters.push(entry);
         }
@@ -2382,7 +2462,7 @@ async function renderAchievements() {
         html += `<h3 style="margin-top:0.5rem;">🎯 特殊成就</h3>`;
         for (let ach of unlockedSpecials) {
             let pointsDisplay = ach.points > 0 ? `🏆 +${ach.points}` : '';
-            html += `<div class="achievement-item unlocked"><div class="achievement-row"><div><span class="achievement-badge">${ach.icon}</span> <strong>${ach.name}</strong></div><div class="achievement-date">${ach.date} ${pointsDisplay}</div></div><div class="achievement-desc">${ach.desc}</div>`;
+            html += `<div class="achievement-item unlocked" style="cursor:pointer;" onclick="showAchievementEarners('${ach.id}', '${ach.name}')" title="點擊查看誰已獲得此成就"><div class="achievement-row"><div><span class="achievement-badge">${ach.icon}</span> <strong>${ach.name}</strong> <span style="font-size:0.6rem; color:#999;">（點擊看獲取者）</span></div><div class="achievement-date">${ach.date} ${pointsDisplay}</div></div><div class="achievement-desc">${ach.desc}</div>`;
             if (ach.showProgress) {
                 let percentProgress = Math.min(100, Math.round(ach.progress / ach.target * 100));
                 html += `<div class="progress-small"><div class="progress-small-fill" style="width:${percentProgress}%;"></div></div><div class="achievement-desc">${ach.progress}/${ach.target}</div>`;
@@ -2408,7 +2488,7 @@ async function renderAchievements() {
         for (let ach of unlockedChapters) {
             if (ach.unitName !== currentUnit) { currentUnit = ach.unitName; html += `<div style="margin-top:0.5rem; font-weight:bold;">${currentUnit}</div>`; }
             let pointsDisplay = ach.points > 0 ? `🏆 +${ach.points}` : '';
-            html += `<div class="achievement-item unlocked"><div class="achievement-row"><div><span class="achievement-badge">${ach.icon}</span> ${ach.chapterName} - ${ach.name}</div><div class="achievement-date">${ach.date} ${pointsDisplay}</div></div></div>`;
+            html += `<div class="achievement-item unlocked" style="cursor:pointer;" onclick="showAchievementEarners('${ach.achKey}_${ach.achType}', '${ach.chapterName} - ${ach.name}')" title="點擊查看誰已獲得此成就"><div class="achievement-row"><div><span class="achievement-badge">${ach.icon}</span> ${ach.chapterName} - ${ach.name} <span style="font-size:0.6rem; color:#999;">（點擊看獲取者）</span></div><div class="achievement-date">${ach.date} ${pointsDisplay}</div></div></div>`;
         }
     }
     if (lockedChapters.length > 0) {
@@ -2425,6 +2505,58 @@ async function renderAchievements() {
     }
     html += `</div>`;
     container.innerHTML = html;
+}
+
+// ===== 查看誰已獲得某成就（學生只看同班，老師看全部） =====
+async function showAchievementEarners(achKey, displayName) {
+    const isTeacher = currentUser && currentUser.isTeacher;
+    // 載入所有學生（學生載入同班，老師載入全部）
+    const students = await loadAllStudentsFromFirebase(isTeacher ? '__all__' : (currentUser.className || '__all__'));
+    
+    // 取得所有學生（含當前使用者資料，確保從 Firestore 讀最新）
+    const earners = [];
+    for (const s of students) {
+        const ach = (s.achievements || {})[achKey];
+        if (ach && ach.unlocked) {
+            earners.push({ name: s.name || s.userId, userId: s.userId, date: ach.date || '' });
+        }
+    }
+    // 當前使用者自己的成就（若在列表外）
+    const selfAch = (userData.achievements || {})[achKey];
+    if (selfAch && selfAch.unlocked && !earners.find(e => e.userId === currentUser.userId)) {
+        earners.push({ name: currentUser.name, userId: currentUser.userId, date: selfAch.date || '' });
+    }
+    earners.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:999999; animation:fadeIn 0.3s ease;`;
+    const modal = document.createElement('div');
+    modal.style.cssText = `background:white; border-radius:24px; padding:28px 24px; max-width:420px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation:slideUp 0.3s ease;`;
+    let listHtml = '';
+    if (earners.length === 0) {
+        listHtml = `<div style="text-align:center; color:#999; padding:16px;">暫時沒有其他人獲得此成就</div>`;
+    } else {
+        listHtml = `<table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+            <thead><tr><th style="text-align:left; padding:6px; border-bottom:2px solid #4a1d8c;">👤 姓名</th><th style="text-align:left; padding:6px; border-bottom:2px solid #4a1d8c;">📅 日期</th></tr></thead>
+            <tbody>`;
+        for (const e of earners) {
+            listHtml += `<tr><td style="padding:6px; border-bottom:1px solid #f0edf8;">${e.name}${e.userId === currentUser.userId ? ' <span style="font-size:0.6rem; background:#4a1d8c; color:white; padding:1px 8px; border-radius:12px;">我</span>' : ''}</td><td style="padding:6px; border-bottom:1px solid #f0edf8;">${e.date || '-'}</td></tr>`;
+        }
+        listHtml += `</tbody></table>`;
+    }
+    modal.innerHTML = `
+        <div style="text-align:center; margin-bottom:16px;">
+            <div style="font-size:2rem; margin-bottom:4px;">🏆</div>
+            <h2 style="color:#2e0f5a; font-size:1.1rem; margin:0;">「${displayName}」</h2>
+            <p style="color:#888; font-size:0.85rem; margin:4px 0 0 0;">共 ${earners.length} 人已獲得</p>
+        </div>
+        ${listHtml}
+        <button id="achEarnersCloseBtn" style="margin-top:16px; width:100%; padding:10px 0; border:none; border-radius:40px; background:#4a1d8c; color:white; font-size:0.95rem; font-weight:600; cursor:pointer;">關閉</button>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+    document.getElementById('achEarnersCloseBtn').addEventListener('click', () => overlay.remove());
 }
 
 function startPracticeWithSettings() {
@@ -3166,7 +3298,7 @@ async function renderTeacherPanel() {
         <div class="teacher-subtabs">
             <div class="subtab-tabs desktop-tabs">
                 <button class="sub-tab active" data-subtab="progress" onclick="switchSubtab('progress', '${currentClass}')">📊 全班進度</button>
-                <button class="sub-tab" data-subtab="bychapter" onclick="switchSubtab('bychapter', '${currentClass}')">📖 BY章節</button>
+                <button class="sub-tab" data-subtab="bychapter" onclick="switchSubtab('bychapter', '${currentClass}')">📊 章節進度</button>
                 <button class="sub-tab" data-subtab="wrong" onclick="switchSubtab('wrong', '${currentClass}')">❌ 錯題統計</button>
                 <button class="sub-tab" data-subtab="rank" onclick="switchSubtab('rank', '${currentClass}')">🏆 排名</button>
                 <button class="sub-tab" data-subtab="chapters" onclick="switchSubtab('chapters', '${currentClass}')">📖 章節管理</button>
@@ -3174,7 +3306,7 @@ async function renderTeacherPanel() {
             <div class="subtab-select-wrapper mobile-select">
                 <select id="subtabSelector" class="subtab-select" onchange="switchSubtab(this.value, '${currentClass}')">
                     <option value="progress">📊 全班進度</option>
-                    <option value="bychapter">📖 BY章節</option>
+                    <option value="bychapter">📊 章節進度</option>
                     <option value="wrong">❌ 錯題統計</option>
                     <option value="rank">🏆 排名</option>
                     <option value="chapters">📖 章節管理</option>
