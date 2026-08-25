@@ -1512,7 +1512,7 @@ async function renderPractice() {
     if (isTrialUser) {
         html += `<div class="card" style="background:#fff7ed; border-left:4px solid #f59e0b; margin-bottom:0.8rem;">
             🎁 <b>試用模式</b>：您目前使用非學校電郵登入，僅開放第一單元。<br>
-            <span style="font-size:0.8rem; color:#888;">請使用學校電郵（@gc.hebron.edu.hk）登入，或請老師在後台為您開通完整內容。</span>
+            <span style="font-size:0.8rem; color:#888;">請使用學校電郵登入，或請老師在後台為您開通完整內容。</span>
         </div>`;
     }
     for (let unit in window.ALL_UNITS) {
@@ -1555,7 +1555,7 @@ async function renderPractice() {
                     <div class="chapter-row">
                         <div class="progress-wrapper">
                             <div class="progress-bar-container"><div class="progress-bar-fill" style="width:${chMastery}%;"></div></div>
-                            <span class="mastery-text">${chMastery}%</span>
+                            <span class="mastery-text">完成度 ${chMastery}%</span>
                         </div>
                         <div class="chapter-actions">
                             <button class="btn btn-small practice-chapter" data-unit="${unit}" data-chapter="${ch}">✏️練習</button>
@@ -2206,7 +2206,26 @@ function renderResources() {
     
     let html = `<div style="margin-bottom:0.8rem;">
         <h3 style="margin:0;">📹 更多資源</h3>
-        <p style="color:#888; font-size:0.8rem; margin:4px 0 0 0;">老師製作的教學影片，按章節分類整理</p>
+        <p style="color:#888; font-size:0.8rem; margin:4px 0 0 0;">老師製作的教學影片與練習，按章節分類整理</p>
+    </div>
+    <div class="card" style="margin-bottom:0.8rem; padding:0.8rem;">
+        <div style="font-weight:700; color:#2e0f5a; margin-bottom:0.5rem; font-size:0.9rem;">🧪 網上互動練習</div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <a href="https://chemistry-kit.pages.dev/ions.html?lang=zh" target="_blank" rel="noopener" style="flex:1; min-width:180px; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:#f5f0fb; text-decoration:none; color:#333; border-left:4px solid #4a1d8c;">
+                <span style="font-size:1.3rem;">🧪</span>
+                <span style="font-size:0.85rem; font-weight:600;">離子與化合物<br><span style="font-weight:400; color:#888;">Ionic Compounds · Ch.7</span></span>
+                <span style="margin-left:auto; color:#4a1d8c; font-size:0.7rem;">前往 ↗</span>
+            </a>
+            <a href="https://chemistry-kit.pages.dev/rxn.html?lang=zh" target="_blank" rel="noopener" style="flex:1; min-width:180px; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:#f5f0fb; text-decoration:none; color:#333; border-left:4px solid #b45309;">
+                <span style="font-size:1.3rem;">⚙️</span>
+                <span style="font-size:0.85rem; font-weight:600;">金屬反應<br><span style="font-weight:400; color:#888;">Metal Reactions · Ch.11</span></span>
+                <span style="margin-left:auto; color:#b45309; font-size:0.7rem;">前往 ↗</span>
+            </a>
+        </div>
+    </div>`;
+    
+    html += `<div style="margin:0.8rem 0 0.5rem 0;">
+        <h4 style="margin:0; color:#2e0f5a;">📹 教學影片</h4>
     </div>`;
     
     const chapterKeys = Object.keys(groups);
@@ -2237,6 +2256,10 @@ function renderResources() {
 
 async function renderAchievements() {
     let container = document.getElementById('achievementsPanel');
+    // 老師：顯示全班成就統計
+    if (currentUser && currentUser.isTeacher) {
+        return renderTeacherAchievements(container);
+    }
     let totalPoints = calculateTotalPoints(userData.achievements);
     let rankInfo = await calculateClassRank(currentUser.id, totalPoints);
     let rankListHtml = '', podiumHtml = '';
@@ -2507,6 +2530,95 @@ async function renderAchievements() {
     container.innerHTML = html;
 }
 
+// ===== 老師：全班成就統計 =====
+async function renderTeacherAchievements(container) {
+    const allStudents = await loadAllStudentsFromFirebase('__all__');
+    const achDefs = [
+        { id: 'firstPractice', name: '初試啼聲', icon: '🎯' },
+        { id: 'tenQuestions', name: '十題達人', icon: '📝' },
+        { id: 'fiveHundred', name: '百題斬', icon: '⚔️' },
+        { id: 'thousand', name: '千題之王', icon: '👑' },
+        { id: 'perfectLesson', name: '完美一課', icon: '🌟' },
+        { id: 'dseComplete', name: 'DSE模擬完成', icon: '📝' },
+        { id: 'speedStar', name: '速度之星', icon: '⚡' },
+        { id: 'consecutive20', name: '連續答對王', icon: '🔥' },
+        { id: 'allChaptersMaster', name: '全科目制霸', icon: '🏆' },
+        { id: 'fiveStarStreak', name: '五星連珠', icon: '⭐' },
+        { id: 'mistakeEraser', name: '錯題剋星', icon: '🗑️' },
+        { id: 'collector', name: '收藏家', icon: '📚' },
+        { id: 'weekChallenge', name: '一週挑戰', icon: '📅' },
+        { id: 'firstTranslation', name: '初試譯聲', icon: '🗣️' },
+        { id: 'livingDictionary', name: '活字典', icon: '📖' },
+        { id: 'translationMaster', name: '翻譯大師', icon: '📚' },
+        { id: 'translationAdept', name: '譯之達人', icon: '🎯' },
+        { id: 'translationKing', name: '譯之王者', icon: '🎯' },
+        { id: 'swiftTranslator', name: '閃譯手', icon: '⚡' },
+        { id: 'perfectTranslation', name: '譯筆生花', icon: '📝' },
+        { id: 'mistakeAvenger', name: '錯題復仇者', icon: '🧠' },
+    ];
+    
+    let html = `<div style="margin-bottom:0.8rem;">
+        <h3 style="margin:0;">🏆 全班成就統計</h3>
+        <p style="color:#888; font-size:0.8rem; margin:4px 0 0 0;">所有學生的成就解鎖情況（點擊可查看名單）</p>
+    </div>
+    <div class="card" style="padding:0.8rem;">
+        <div style="font-weight:700; color:#2e0f5a; margin-bottom:0.5rem; font-size:0.9rem;">🎯 特殊成就</div>
+        <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
+            <thead><tr><th style="text-align:left; padding:6px; border-bottom:2px solid #4a1d8c;">成就</th><th style="padding:6px; border-bottom:2px solid #4a1d8c;">解鎖人數</th><th style="padding:6px; border-bottom:2px solid #4a1d8c;">進度</th></tr></thead>
+            <tbody>`;
+    for (const def of achDefs) {
+        let count = 0;
+        let maxPoints = 0;
+        for (const s of allStudents) {
+            const a = (s.achievements || {})[def.id];
+            if (a && a.unlocked) count++;
+            const p = (s.achievements || {})[def.id]?.progress || 0;
+            if (p > maxPoints) maxPoints = p;
+        }
+        const total = allStudents.length;
+        const pct = total > 0 ? Math.round(count / total * 100) : 0;
+        html += `<tr>
+            <td style="padding:7px; border-bottom:1px solid #f0edf8; cursor:pointer;" onclick="showAchievementEarners('${def.id}', '${def.name}')"><span style="margin-right:6px;">${def.icon}</span>${def.name} <span style="font-size:0.6rem; color:#999;">（點擊看獲取者）</span></td>
+            <td style="padding:7px; border-bottom:1px solid #f0edf8; text-align:center; font-weight:600; color:${count > 0 ? '#10b981' : '#999'};">${count}/${total}</td>
+            <td style="padding:7px; border-bottom:1px solid #f0edf8;"><div class="progress-bar-container" style="width:80px; height:6px; display:inline-block;"><div class="progress-bar-fill" style="width:${pct}%;"></div></div></td>
+        </tr>`;
+    }
+    html += `</tbody></table></div>`;
+    
+    // 章節成就
+    html += `<div class="card" style="padding:0.8rem; margin-top:0.6rem;">
+        <div style="font-weight:700; color:#2e0f5a; margin-bottom:0.5rem; font-size:0.9rem;">📖 章節成就</div>
+        <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
+            <thead><tr><th style="text-align:left; padding:6px; border-bottom:2px solid #4a1d8c;">章節成就</th><th style="padding:6px; border-bottom:2px solid #4a1d8c;">解鎖人數</th></tr></thead>
+            <tbody>`;
+    const chapterDefs = [];
+    for (let u in window.ALL_UNITS) {
+        const unitObj = window.ALL_UNITS[u];
+        for (let ch in unitObj.chapters) {
+            for (const t of ['star1', 'star3', 'star5', 'trial']) {
+                const names = { star1: '一星完成', star3: '三星解鎖', star5: '五星解鎖', trial: '試煉完成' };
+                const icons = { star1: '✅', star3: '🔥', star5: '💎', trial: '⚔️' };
+                chapterDefs.push({ key: `${u}_${ch}_${t}`, name: `${unitObj.chapters[ch].name} · ${names[t]}`, icon: icons[t] });
+            }
+        }
+    }
+    for (const def of chapterDefs) {
+        let count = 0;
+        for (const s of allStudents) {
+            const a = (s.achievements || {})[def.key];
+            if (a && a.unlocked) count++;
+        }
+        const displayName = def.name.replace(/'/g, "\\'");
+        html += `<tr>
+            <td style="padding:6px; border-bottom:1px solid #f0edf8; cursor:pointer;" onclick="showAchievementEarners('${def.key}', '${displayName}')"><span style="margin-right:6px;">${def.icon}</span>${def.name} <span style="font-size:0.6rem; color:#999;">（點擊看獲取者）</span></td>
+            <td style="padding:6px; border-bottom:1px solid #f0edf8; text-align:center; font-weight:600; color:${count > 0 ? '#10b981' : '#999'};">${count}</td>
+        </tr>`;
+    }
+    html += `</tbody></table></div>`;
+    
+    container.innerHTML = html;
+}
+
 // ===== 查看誰已獲得某成就（學生只看同班，老師看全部） =====
 async function showAchievementEarners(achKey, displayName) {
     const isTeacher = currentUser && currentUser.isTeacher;
@@ -2515,14 +2627,24 @@ async function showAchievementEarners(achKey, displayName) {
     
     // 取得所有學生（含當前使用者資料，確保從 Firestore 讀最新）
     const earners = [];
+    // 支援兩種 key：特殊成就（id）與章節成就（unit_chapter.type）
+    const getAch = (stu) => {
+        const achStore = stu.achievements || {};
+        if (achKey.includes('_') && ['star1', 'star3', 'star5', 'trial'].some(t => achKey.endsWith('_' + t))) {
+            const baseKey = achKey.replace(/_(star1|star3|star5|trial)$/, '');
+            const type = achKey.slice(achKey.lastIndexOf('_') + 1);
+            return (achStore[baseKey] || {})[type] || null;
+        }
+        return achStore[achKey] || null;
+    };
     for (const s of students) {
-        const ach = (s.achievements || {})[achKey];
+        const ach = getAch(s);
         if (ach && ach.unlocked) {
             earners.push({ name: s.name || s.userId, userId: s.userId, date: ach.date || '' });
         }
     }
     // 當前使用者自己的成就（若在列表外）
-    const selfAch = (userData.achievements || {})[achKey];
+    const selfAch = getAch(userData);
     if (selfAch && selfAch.unlocked && !earners.find(e => e.userId === currentUser.userId)) {
         earners.push({ name: currentUser.name, userId: currentUser.userId, date: selfAch.date || '' });
     }
