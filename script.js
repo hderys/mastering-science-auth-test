@@ -499,6 +499,30 @@ function findUser(userId) {
     return db.users.find(u => u.userId === userId);
 }
 
+// 查找使用者：先查本機 localStorage，查不到時查 Firestore（跨裝置）
+async function findUserAcrossDevices(userId) {
+    const local = findUser(userId);
+    if (local) return local;
+    if (firestoreEnabled) {
+        try {
+            const doc = await firebase.firestore().collection('users').doc(userId).get();
+            if (doc.exists) {
+                const data = doc.data();
+                // 同步到本機 localStorage，下次登入即時識別
+                const db = getUsers();
+                if (!db.users.find(u => u.userId === userId)) {
+                    db.users.push({ userId: userId, name: data.name || userId, className: data.className || '', studentId: data.studentId || '', isTeacher: data.isTeacher || false, teacherCode: data.teacherCode || '' });
+                    saveUsers(db);
+                }
+                return db.users.find(u => u.userId === userId);
+            }
+        } catch(e) {
+            console.warn('⚠️ Firestore 查找使用者失敗:', e.message);
+        }
+    }
+    return null;
+}
+
 async function updateUser(userId, data) {
     const db = getUsers();
     const index = db.users.findIndex(u => u.userId === userId);
@@ -810,7 +834,7 @@ async function handleGoogleLogin() {
         
         const userId = user.email;
         const isTeacher = isTeacherEmail(userId);
-        let existingUser = findUser(userId);
+        let existingUser = await findUserAcrossDevices(userId);
         
         if (!existingUser) {
             let name, className = null, studentId = null;
@@ -2534,27 +2558,27 @@ async function renderAchievements() {
 async function renderTeacherAchievements(container) {
     const allStudents = await loadAllStudentsFromFirebase('__all__');
     const achDefs = [
-        { id: 'firstPractice', name: '初試啼聲', icon: '🎯' },
-        { id: 'tenQuestions', name: '十題達人', icon: '📝' },
-        { id: 'fiveHundred', name: '百題斬', icon: '⚔️' },
-        { id: 'thousand', name: '千題之王', icon: '👑' },
-        { id: 'perfectLesson', name: '完美一課', icon: '🌟' },
-        { id: 'dseComplete', name: 'DSE模擬完成', icon: '📝' },
-        { id: 'speedStar', name: '速度之星', icon: '⚡' },
-        { id: 'consecutive20', name: '連續答對王', icon: '🔥' },
-        { id: 'allChaptersMaster', name: '全科目制霸', icon: '🏆' },
-        { id: 'fiveStarStreak', name: '五星連珠', icon: '⭐' },
-        { id: 'mistakeEraser', name: '錯題剋星', icon: '🗑️' },
-        { id: 'collector', name: '收藏家', icon: '📚' },
-        { id: 'weekChallenge', name: '一週挑戰', icon: '📅' },
-        { id: 'firstTranslation', name: '初試譯聲', icon: '🗣️' },
-        { id: 'livingDictionary', name: '活字典', icon: '📖' },
-        { id: 'translationMaster', name: '翻譯大師', icon: '📚' },
-        { id: 'translationAdept', name: '譯之達人', icon: '🎯' },
-        { id: 'translationKing', name: '譯之王者', icon: '🎯' },
-        { id: 'swiftTranslator', name: '閃譯手', icon: '⚡' },
-        { id: 'perfectTranslation', name: '譯筆生花', icon: '📝' },
-        { id: 'mistakeAvenger', name: '錯題復仇者', icon: '🧠' },
+        { id: 'firstPractice', name: '初試啼聲', icon: '🎯', desc: '完成第一次練習' },
+        { id: 'tenQuestions', name: '十題達人', icon: '📝', desc: '累積完成100題' },
+        { id: 'fiveHundred', name: '百題斬', icon: '⚔️', desc: '累積完成500題' },
+        { id: 'thousand', name: '千題之王', icon: '👑', desc: '累積完成1000題' },
+        { id: 'perfectLesson', name: '完美一課', icon: '🌟', desc: '單次練習10題以上全對' },
+        { id: 'dseComplete', name: 'DSE模擬完成', icon: '📝', desc: '完成一次36題模式' },
+        { id: 'speedStar', name: '速度之星', icon: '⚡', desc: '提前50%時間完成練習且正確率≥70%' },
+        { id: 'consecutive20', name: '連續答對王', icon: '🔥', desc: '連續答對20題' },
+        { id: 'allChaptersMaster', name: '全科目制霸', icon: '🏆', desc: '所有章節完成度達80%' },
+        { id: 'fiveStarStreak', name: '五星連珠', icon: '⭐', desc: '連續5次練習正確率100%' },
+        { id: 'mistakeEraser', name: '錯題剋星', icon: '🗑️', desc: '從錯題本清除50道錯題' },
+        { id: 'collector', name: '收藏家', icon: '📚', desc: '收藏50道題目' },
+        { id: 'weekChallenge', name: '一週挑戰', icon: '📅', desc: '連續7天完成至少一次練習' },
+        { id: 'firstTranslation', name: '初試譯聲', icon: '🗣️', desc: '完成第 1 題翻譯題' },
+        { id: 'livingDictionary', name: '活字典', icon: '📖', desc: '累積完成 100 題翻譯題' },
+        { id: 'translationMaster', name: '翻譯大師', icon: '📚', desc: '累積完成 300 題翻譯題' },
+        { id: 'translationAdept', name: '譯之達人', icon: '🎯', desc: '翻譯題正確率 ≥ 80%（≥30 題）' },
+        { id: 'translationKing', name: '譯之王者', icon: '🎯', desc: '翻譯題正確率 ≥ 90%（≥50 題）' },
+        { id: 'swiftTranslator', name: '閃譯手', icon: '⚡', desc: '30 秒內連續答對 10 題翻譯題' },
+        { id: 'perfectTranslation', name: '譯筆生花', icon: '📝', desc: '單次練習 10 題翻譯題全對' },
+        { id: 'mistakeAvenger', name: '錯題復仇者', icon: '🧠', desc: '同一道錯題，第 2 次做對' },
     ];
     
     // 全班分數排名（老師看所有班級）
@@ -2692,7 +2716,7 @@ async function renderTeacherAchievements(container) {
         const total = allStudents.length;
         const pct = total > 0 ? Math.round(count / total * 100) : 0;
         html += `<tr>
-            <td style="padding:7px; border-bottom:1px solid #f0edf8; cursor:pointer;" onclick="showAchievementEarners('${def.id}', '${def.name}')"><span style="margin-right:6px;">${def.icon}</span>${def.name} <span style="font-size:0.6rem; color:#999;">（點擊看獲取者）</span></td>
+            <td style="padding:7px; border-bottom:1px solid #f0edf8; cursor:pointer;" onclick="showAchievementEarners('${def.id}', '${def.name}')"><span style="margin-right:6px;">${def.icon}</span><strong>${def.name}</strong> <span style="font-size:0.6rem; color:#999;">（點擊看獲取者）</span><br><span style="font-size:0.7rem; color:#888;">${def.desc}</span></td>
             <td style="padding:7px; border-bottom:1px solid #f0edf8; text-align:center; font-weight:600; color:${count > 0 ? '#10b981' : '#999'};">${count}/${total}</td>
             <td style="padding:7px; border-bottom:1px solid #f0edf8;"><div class="progress-bar-container" style="width:80px; height:6px; display:inline-block;"><div class="progress-bar-fill" style="width:${pct}%;"></div></div></td>
         </tr>`;
