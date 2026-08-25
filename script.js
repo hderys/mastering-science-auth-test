@@ -1468,15 +1468,15 @@ async function renderPractice() {
     const classSettings = await loadClassSettings(className) || {};
     const openChapters = classSettings.openChapters || [];
     const isTeacher = currentUser.isTeacher || false;
-    // 非學校電郵的訪客/試用者：只開放第一單元（Unit 1）
+    // 非學校電郵的訪客/試用者：只開放第一單元（Unit 1），除非已被老師批准
     const userId = currentUser.userId || currentUser.id || '';
     const isSchoolEmail = /@gc\.hebron\.edu\.hk$/.test(userId);
-    const isTrialUser = !isTeacher && !isSchoolEmail;
+    const isTrialUser = !isTeacher && !isSchoolEmail && !currentUser.approved;
     let html = '';
     if (isTrialUser) {
         html += `<div class="card" style="background:#fff7ed; border-left:4px solid #f59e0b; margin-bottom:0.8rem;">
             🎁 <b>試用模式</b>：您目前使用非學校電郵登入，僅開放第一單元。<br>
-            <span style="font-size:0.8rem; color:#888;">請使用學校電郵（@gc.hebron.edu.hk）登入以解鎖完整內容。</span>
+            <span style="font-size:0.8rem; color:#888;">請使用學校電郵（@gc.hebron.edu.hk）登入，或請老師在後台為您開通完整內容。</span>
         </div>`;
     }
     for (let unit in window.ALL_UNITS) {
@@ -1499,9 +1499,16 @@ async function renderPractice() {
             </div>
             <div class="mastery-wrapper">
                 <div class="progress-bar-container"><div class="progress-bar-fill" style="width:${mastery}%;"></div></div>
-                <span class="mastery-text">完成度 ${mastery}%</span>
-                <button class="btn btn-small unit-test-btn" data-unit="${unit}" style="background:var(--deep-purple-light); padding:0.15rem 0.5rem; font-size:0.7rem;">📝 單元測驗</button>
-            </div>
+                <span class="mastery-text">完成度 ${mastery}%</span>`;
+        // 單元測驗：所有章節完成度 >50% 才可挑戰
+        const unitChs = Object.keys(filteredChapters);
+        let unitTestReady = unitChs.length > 0 && unitChs.every(ch => getChapterMastery(unit, ch) > 50);
+        if (unitTestReady) {
+            html += `<button class="btn btn-small unit-test-btn" data-unit="${unit}" style="background:var(--deep-purple-light); padding:0.15rem 0.5rem; font-size:0.7rem;">📝 單元測驗</button>`;
+        } else {
+            html += `<button class="btn btn-small unit-test-btn" data-unit="${unit}" disabled style="background:#ccc; padding:0.15rem 0.5rem; font-size:0.7rem; cursor:not-allowed; opacity:0.6;" title="所有章節完成度需超過 50% 才可挑戰單元測驗">📝 單元測驗 🔒</button>`;
+        }
+        html += `</div>
         </div><div class="chapters-container" id="chapters-${unit}">`;
         for (let ch in filteredChapters) {
             let chMastery = getChapterMastery(unit, ch), chTotal = getChapterTotalQuestions(unit, ch);
@@ -2722,10 +2729,12 @@ function checkDesktopAllQuestionsAnswered() {
     const submitBtn = document.getElementById('desktopSubmitBtn');
     if (!submitBtn) return;
     if (allAnswered && currentAnswers.length > 0) {
+        submitBtn.classList.add('ready');
         if (!blinkInterval) {
             blinkInterval = setInterval(() => { submitBtn.style.animation = 'blink 0.3s step-end infinite'; }, 100);
         }
     } else {
+        submitBtn.classList.remove('ready');
         if (blinkInterval) { clearInterval(blinkInterval); blinkInterval = null; submitBtn.style.animation = ''; }
     }
 }
@@ -3157,6 +3166,7 @@ async function renderTeacherPanel() {
         <div class="teacher-subtabs">
             <div class="subtab-tabs desktop-tabs">
                 <button class="sub-tab active" data-subtab="progress" onclick="switchSubtab('progress', '${currentClass}')">📊 全班進度</button>
+                <button class="sub-tab" data-subtab="bychapter" onclick="switchSubtab('bychapter', '${currentClass}')">📖 BY章節</button>
                 <button class="sub-tab" data-subtab="wrong" onclick="switchSubtab('wrong', '${currentClass}')">❌ 錯題統計</button>
                 <button class="sub-tab" data-subtab="rank" onclick="switchSubtab('rank', '${currentClass}')">🏆 排名</button>
                 <button class="sub-tab" data-subtab="chapters" onclick="switchSubtab('chapters', '${currentClass}')">📖 章節管理</button>
@@ -3164,6 +3174,7 @@ async function renderTeacherPanel() {
             <div class="subtab-select-wrapper mobile-select">
                 <select id="subtabSelector" class="subtab-select" onchange="switchSubtab(this.value, '${currentClass}')">
                     <option value="progress">📊 全班進度</option>
+                    <option value="bychapter">📖 BY章節</option>
                     <option value="wrong">❌ 錯題統計</option>
                     <option value="rank">🏆 排名</option>
                     <option value="chapters">📖 章節管理</option>
@@ -3172,6 +3183,7 @@ async function renderTeacherPanel() {
         </div>
         
         <div id="subtab-progress" class="subtab-content"></div>
+        <div id="subtab-bychapter" class="subtab-content" style="display:none;"></div>
         <div id="subtab-wrong" class="subtab-content" style="display:none;"></div>
         <div id="subtab-rank" class="subtab-content" style="display:none;"></div>
         <div id="subtab-chapters" class="subtab-content" style="display:none;"></div>
@@ -3199,6 +3211,7 @@ function renderSubtab(subtabId, className) {
     if (target) target.style.display = 'block';
     switch(subtabId) {
         case 'progress': renderSubtabProgress(className); break;
+        case 'bychapter': renderSubtabByChapter(className); break;
         case 'wrong': renderSubtabWrong(className); break;
         case 'rank': renderSubtabRank(className); break;
         case 'chapters': renderSubtabChapters(className); break;
@@ -3273,8 +3286,19 @@ async function renderSubtabProgress(className) {
             const stats = s.stats || { totalQuestionsAnswered: 0, totalCorrect: 0 };
             const total = stats.totalQuestionsAnswered || 0;
             const acc = total > 0 ? Math.round((stats.totalCorrect || 0) / total * 100) : 0;
-            const status = '🔑 Google 帳戶';
-            const statusColor = '#10b981';
+            const isNonSchool = !/@gc\.hebron\.edu\.hk$/.test(s.userId || '');
+            let status, statusColor, approveBtn = '';
+            if (isNonSchool && !s.approved) {
+                status = '🎁 試用中';
+                statusColor = '#f59e0b';
+                approveBtn = `<button class="btn btn-small" onclick="approveTrialUser('${s.userId}')" style="background:#10b981; padding:2px 8px; font-size:10px; color:white; border:none; border-radius:12px; margin-right:4px;">✅ 批准</button>`;
+            } else if (isNonSchool && s.approved) {
+                status = '✅ 已批准';
+                statusColor = '#10b981';
+            } else {
+                status = '🔑 Google 帳戶';
+                statusColor = '#10b981';
+            }
             html += `
                 <tr>
                     <td>
@@ -3289,6 +3313,7 @@ async function renderSubtabProgress(className) {
                     <td style="font-weight:600; color:${acc >= 70 ? '#10b981' : (acc >= 40 ? '#f59e0b' : '#dc2626')};">${acc}%</td>
                     <td><span style="background:${statusColor}; color:white; padding:2px 12px; border-radius:12px; font-size:11px;">${status}</span></td>
                     <td>
+                        ${approveBtn}
                         <button class="btn btn-danger btn-small" onclick="deleteStudent('${s.userId}')" style="font-size:10px; padding:2px 8px;">🗑️</button>
                     </td>
                 </tr>
@@ -3327,6 +3352,81 @@ async function renderSubtabProgress(className) {
         link.click();
         URL.revokeObjectURL(link.href);
     });
+}
+
+// ===== BY章節：一次看各學生在該章節的進度 =====
+async function renderSubtabByChapter(className) {
+    const container = document.getElementById('subtab-bychapter');
+    if (!container) return;
+    
+    const students = await loadAllStudentsFromFirebase(className);
+    if (students.length === 0) {
+        container.innerHTML = '<div class="card" style="text-align:center; color:#999; padding:20px;">沒有學生數據</div>';
+        return;
+    }
+    
+    // 收集所有章節（依單元）
+    const chapterList = [];
+    for (let u in window.ALL_UNITS) {
+        const unitObj = window.ALL_UNITS[u];
+        for (let ch in unitObj.chapters) {
+            const questions = unitObj.chapters[ch].questions || [];
+            const total = questions.length;
+            chapterList.push({ unit: u, chapter: ch, name: unitObj.chapters[ch].name, unitName: unitObj.name, total });
+        }
+    }
+    // 依章節編號排序
+    chapterList.sort((a, b) => parseInt(a.chapter) - parseInt(b.chapter));
+    
+    let html = `<h3 style="margin-bottom:8px;">📖 章節進度一覽（${className === '__all__' ? '全部班級' : className}）</h3>
+        <div style="font-size:13px; color:#666; margin-bottom:10px;">點擊章節標題可展開該章節所有學生的完成度</div>`;
+    
+    for (const chInfo of chapterList) {
+        if (chInfo.total === 0) continue;
+        // 計算每個學生在此章節的完成度
+        const rows = [];
+        for (const s of students) {
+            const latest = s.latestStatus || {};
+            let correct = 0;
+            for (const q of window.ALL_UNITS[chInfo.unit].chapters[chInfo.chapter].questions) {
+                if (latest[q.id] === true) correct++;
+            }
+            const pct = chInfo.total > 0 ? Math.round(correct / chInfo.total * 100) : 0;
+            rows.push({ name: s.name, userId: s.userId, pct, correct, total: chInfo.total });
+        }
+        // 依完成度排序
+        rows.sort((a, b) => b.pct - a.pct);
+        const avg = Math.round(rows.reduce((sum, r) => sum + r.pct, 0) / rows.length);
+        const barColor = avg >= 50 ? '#10b981' : (avg >= 30 ? '#f59e0b' : '#dc2626');
+        html += `
+            <div class="card" style="margin-bottom:0.6rem; padding:0.6rem;">
+                <div class="collapsible-header" onclick="toggleCollapsible('bc-${chInfo.unit}-${chInfo.chapter}')">
+                    <span style="font-weight:600; font-size:0.85rem;">📘 ${chInfo.name} <span style="color:#999; font-size:0.7rem;">(${chInfo.total} 題)</span></span>
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:0.7rem; color:#666;">平均 ${avg}%</span>
+                        <div class="progress-bar-container" style="width:70px;"><div class="progress-bar-fill" style="width:${avg}%; background:${barColor};"></div></div>
+                        <span class="collapse-arrow">▼</span>
+                    </span>
+                </div>
+                <div class="collapsible-content collapsed" id="bc-${chInfo.unit}-${chInfo.chapter}" style="padding-top:4px;">
+                    <table class="wrong-table" style="font-size:0.75rem;">
+                        <thead><tr><th>姓名</th><th>學號</th><th>完成度</th><th>進度條</th></tr></thead>
+                        <tbody>`;
+        for (const r of rows) {
+            const rowColor = r.pct >= 50 ? '#10b981' : (r.pct >= 30 ? '#f59e0b' : '#dc2626');
+            html += `<tr>
+                <td>${r.name}</td>
+                <td>${r.userId}</td>
+                <td style="font-weight:600; color:${rowColor};">${r.pct}% (${r.correct}/${r.total})</td>
+                <td style="width:120px;"><div class="progress-bar-container" style="width:100px; height:8px;"><div class="progress-bar-fill" style="width:${r.pct}%; background:${rowColor};"></div></div></td>
+            </tr>`;
+        }
+        html += `</tbody></table>
+                </div>
+            </div>`;
+    }
+    
+    container.innerHTML = html;
 }
 
 async function renderSubtabWrong(className) {
@@ -3907,6 +4007,19 @@ async function showStudentDetail(userId) {
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+// ===== 批准試用者開通完整內容 =====
+async function approveTrialUser(userId) {
+    if (!confirm(`⚠️ 確定要批准「${userId}」開通完整內容嗎？\n\n批准後該使用者可看到全部單元。`)) return;
+    try {
+        await updateUser(userId, { approved: true });
+        alert(`✅ 已批准「${userId}」開通完整內容！`);
+        renderTeacherPanel();
+    } catch (e) {
+        console.error('❌ 批准失敗:', e);
+        alert(`❌ 批准失敗：${e.message}`);
+    }
 }
 
 // ===== 修復：deleteStudent（優先從 Firestore 讀取） =====

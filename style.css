@@ -1577,7 +1577,7 @@ body {
         flex-shrink: 0;
     }
     #desktopQuizModal .sidebar-row-submit .btn-submit {
-        background: #10b981;
+        background: #9ca3af;
         color: white;
         border: none;
         border-radius: 30px;
@@ -1591,6 +1591,9 @@ body {
         text-align: center;
         line-height: 1.4;
         letter-spacing: 0.5px;
+    }
+    #desktopQuizModal .sidebar-row-submit .btn-submit.ready {
+        background: #10b981;
     }
     #desktopQuizModal .sidebar-row-submit .btn-submit:hover:not(:disabled) {
         background: #059669;
@@ -1754,8 +1757,8 @@ body {
         cursor: not-allowed;
     }
     #desktopQuizModal .sidebar-row-bottom .btn-next-lg {
-        background: rgba(255,255,255,0.15);
-        border: 1px solid rgba(255,255,255,0.2);
+        background: #10b981;
+        border: none;
         border-radius: 30px;
         padding: 4px 14px;
         font-size: 13px;
@@ -1769,7 +1772,7 @@ body {
         flex-shrink: 0;
     }
     #desktopQuizModal .sidebar-row-bottom .btn-next-lg:hover:not(:disabled) {
-        background: rgba(255,255,255,0.25);
+        background: #059669;
         transform: scale(1.03);
     }
     #desktopQuizModal .sidebar-row-bottom .btn-next-lg:disabled {
