@@ -255,7 +255,13 @@ async function loadAllStudentsFromFirebase(className) {
         console.log(`📊 Firebase: ${firebaseStudents.length} 位學生`);
         const merged = [...firebaseStudents];
         for (const s of localStudents) {
-            if (!merged.find(m => m.userId === s.userId)) merged.push(s);
+            const existing = merged.find(m => m.userId === s.userId);
+            if (!existing) {
+                merged.push(s);
+            } else {
+                // Firestore 缺 lastLogin 時，用 localStorage 的補上
+                if (!existing.lastLogin && s.lastLogin) existing.lastLogin = s.lastLogin;
+            }
         }
         return merged;
     } catch(e) {
@@ -286,6 +292,7 @@ function saveUserData() {
             translationStats: userData.translationStats || {},
             mistakeTracker: userData.mistakeTracker || {},
             chapterAccuracy: userData.chapterAccuracy || {},
+            lastLogin: currentUser.lastLogin || new Date().toISOString(),
             lastUpdated: new Date().toISOString()
         });
     }
@@ -4079,6 +4086,7 @@ async function renderSubtabWrong(className) {
 async function renderSubtabLastLogin(className) {
     const container = document.getElementById('subtab-lastlogin');
     if (!container) return;
+    if (!className) className = '__all__';
     const students = await loadAllStudentsFromFirebase(className);
     if (students.length === 0) {
         container.innerHTML = '<div class="card" style="text-align:center; color:#999; padding:20px;">沒有學生數據</div>';
