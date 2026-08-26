@@ -70,6 +70,29 @@ const RESOURCE_VIDEOS = [
     { unit: '2', chapter: '9', id: 'pobEsk2WZmo', title: 'Chapter 9.6-9.9 Summary and Applications of Structures' },
 ];
 
+// ==================== 語言工具（中文班 / 英文班） ====================
+function isZhUser() {
+    return currentUser && currentUser.language === 'zh';
+}
+// 取題目文字（依語言）
+function qText(q) {
+    if (isZhUser() && q.textZh) return q.textZh;
+    return q.text;
+}
+function qOptions(q) {
+    if (isZhUser() && q.optionsZh && q.optionsZh.length === 4) return q.optionsZh;
+    return q.options;
+}
+function qExplanation(q) {
+    if (isZhUser() && q.explanationZh) return q.explanationZh;
+    return q.explanation;
+}
+// 把題目轉成使用者語言版本（產生新物件）
+function localizeQuestion(q) {
+    if (!isZhUser() || !q) return q;
+    return { ...q, text: qText(q), options: qOptions(q), explanation: qExplanation(q) };
+}
+
 // 成績總表控制變量
 let showOnlyWrong = false;
 let showAnswers = false;
@@ -533,7 +556,7 @@ async function findUserAcrossDevices(userId) {
                 // 同步到本機 localStorage，下次登入即時識別
                 const db = getUsers();
                 if (!db.users.find(u => u.userId === userId)) {
-                    db.users.push({ userId: userId, name: data.name || userId, className: data.className || '', studentId: data.studentId || '', isTeacher: data.isTeacher || false, teacherCode: data.teacherCode || '' });
+                    db.users.push({ userId: userId, name: data.name || userId, className: data.className || '', studentId: data.studentId || '', language: data.language || 'en', isTeacher: data.isTeacher || false, teacherCode: data.teacherCode || '' });
                     saveUsers(db);
                 }
                 return db.users.find(u => u.userId === userId);
@@ -581,7 +604,7 @@ function generateUserId(className) {
     return String(num).padStart(6, '0');
 }
 
-async function createUser(name, className, studentId, customUserId = null, isTeacher = false, teacherCode = null) {
+async function createUser(name, className, studentId, customUserId = null, isTeacher = false, teacherCode = null, language = 'en') {
     const db = getUsers();
     const userId = customUserId || generateUserId(className);
     const user = {
@@ -589,6 +612,7 @@ async function createUser(name, className, studentId, customUserId = null, isTea
         name: name,
         className: className || '',
         studentId: studentId || '',
+        language: language || 'en',
         teacherCode: isTeacher ? (teacherCode || name) : '',
         isTeacher: isTeacher,
         managedClasses: [],
@@ -676,6 +700,44 @@ async function exitFullscreenMode() {
 // 📝 自訂彈窗（取代 prompt）- 讓您可以正常輸入
 // ============================================================
 
+// 教師首次登入：選擇檢視題目的語言
+function showLanguagePrompt() {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:999999; animation:fadeIn 0.3s ease;`;
+        const modal = document.createElement('div');
+        modal.style.cssText = `background:white; border-radius:24px; padding:32px 28px; max-width:380px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation:slideUp 0.3s ease;`;
+        modal.innerHTML = `
+            <div style="text-align:center; margin-bottom:20px;">
+                <div style="font-size:2.5rem; margin-bottom:4px;">🗣️</div>
+                <h2 style="color:#2e0f5a; font-size:1.2rem; margin:0;">選擇檢視題目的語言</h2>
+                <p style="color:#888; font-size:0.85rem; margin:4px 0 0 0;">老師您好！請選擇您檢視題目時的語言。</p>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:12px;">
+                <label style="flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:12px 0; border-radius:12px; border:2px solid #e0d6f5; cursor:pointer; font-size:0.95rem; font-weight:600; color:#2e0f5a; background:white;">
+                    <input type="radio" name="teacherLang" value="zh" style="accent-color:#4a1d8c;"> 🇭🇰 中文
+                </label>
+                <label style="flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:12px 0; border-radius:12px; border:2px solid #e0d6f5; cursor:pointer; font-size:0.95rem; font-weight:600; color:#2e0f5a; background:white;">
+                    <input type="radio" name="teacherLang" value="en" checked> 🇬🇧 英文
+                </label>
+            </div>
+            <div style="font-size:0.72rem; color:#f59e0b; margin-bottom:16px; text-align:center;">日後可在「老師後台 → 編輯個人資料」更改。</div>
+            <div style="display:flex; gap:10px;">
+                <button id="teacherLangCancel" style="flex:1; padding:10px 0; border:2px solid #e0d6f5; border-radius:40px; background:white; color:#666; font-size:0.95rem; font-weight:600; cursor:pointer;">取消</button>
+                <button id="teacherLangConfirm" style="flex:2; padding:10px 0; border:none; border-radius:40px; background:linear-gradient(135deg,#4a1d8c,#7c3aed); color:white; font-size:0.95rem; font-weight:600; cursor:pointer;">✅ 確認</button>
+            </div>
+        `;
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        document.getElementById('teacherLangConfirm').addEventListener('click', () => {
+            const lang = document.querySelector('input[name="teacherLang"]:checked');
+            overlay.remove();
+            resolve(lang ? lang.value : 'en');
+        });
+        document.getElementById('teacherLangCancel').addEventListener('click', () => { overlay.remove(); resolve('en'); });
+    });
+}
+
 function showCustomPrompt() {
     return new Promise((resolve) => {
         const overlay = document.createElement('div');
@@ -737,6 +799,23 @@ function showCustomPrompt() {
                 <input type="text" id="customStudentId" placeholder="例如：20240001"
                     style="width: 100%; padding: 10px 14px; border-radius: 12px; border: 2px solid #e0d6f5; font-size: 0.95rem; outline: none; transition: border-color 0.2s;"
                     onfocus="this.style.borderColor='#4a1d8c'" onblur="this.style.borderColor='#e0d6f5'">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">
+                    🗣️ 學習語言 <span style="color: #dc2626;">*</span>
+                </label>
+                <div style="display: flex; gap: 10px;">
+                    <label style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 0; border-radius: 12px; border: 2px solid #e0d6f5; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #2e0f5a; transition: all 0.2s; background: white;">
+                        <input type="radio" name="customLang" value="zh" style="accent-color: #4a1d8c;"> 🇭🇰 中文
+                    </label>
+                    <label style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 0; border-radius: 12px; border: 2px solid #e0d6f5; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #2e0f5a; transition: all 0.2s; background: white;">
+                        <input type="radio" name="customLang" value="en" checked> 🇬🇧 英文
+                    </label>
+                </div>
+                <div style="font-size: 0.72rem; color: #f59e0b; margin-top: 6px; text-align: center;">
+                    ⚠️ 請根據你所屬的班別（中文化學班 / 英文化學班）選擇。<br>一旦選定，日後無法自行更改（老師可於後台修改）。
+                </div>
             </div>
 
             <div id="customPromptError" style="color: #dc2626; font-size: 0.85rem; margin-bottom: 12px; text-align: center; display: none;"></div>
@@ -803,8 +882,11 @@ function showCustomPrompt() {
                 return;
             }
 
+            const langInput = document.querySelector('input[name="customLang"]:checked');
+            const language = langInput ? langInput.value : 'en';
+
             overlay.remove();
-            resolve({ name: name, className: className, studentId: studentId });
+            resolve({ name: name, className: className, studentId: studentId, language: language });
         });
 
         document.getElementById('customCancelBtn').addEventListener('click', function() {
@@ -872,16 +954,18 @@ async function handleGoogleLogin() {
             let name, className = null, studentId = null;
 
             if (isTeacher) {
-                // 教師：不需填寫班別/學號，直接建立帳戶，code = email 前面部分（如 chs1）
+                // 教師：不需填寫班別/學號，但選擇檢視題目語言
                 const emailPrefix = userId.split('@')[0];
                 name = user.displayName || emailPrefix.toUpperCase();
+                const teacherLang = await showLanguagePrompt();
                 const newUser = await createUser(
                     name,
                     className,
                     studentId,
                     userId,
                     isTeacher,
-                    emailPrefix.toUpperCase()
+                    emailPrefix.toUpperCase(),
+                    teacherLang
                 );
                 existingUser = newUser;
                 try {
@@ -900,13 +984,16 @@ async function handleGoogleLogin() {
                 name = userInfo.name || user.displayName || userId;
                 className = userInfo.className;
                 studentId = userInfo.studentId;
+                const language = userInfo.language || 'en';
                 
                 const newUser = await createUser(
                     name,
                     className,
                     studentId,
                     userId,
-                    isTeacher
+                    isTeacher,
+                    null,
+                    language
                 );
                 existingUser = newUser;
                 await new Promise(resolve => setTimeout(resolve, 1500));
@@ -1632,7 +1719,7 @@ async function renderPractice() {
                         </div>
                         <div class="chapter-actions">
                             <button class="btn btn-small practice-chapter" data-unit="${unit}" data-chapter="${ch}">✏️練習</button>
-                            <button class="btn btn-small translate-chapter" data-unit="${unit}" data-chapter="${ch}" title="只做本章翻譯題">🗣️翻譯</button>
+                            ${isZhUser() ? '' : `<button class="btn btn-small translate-chapter" data-unit="${unit}" data-chapter="${ch}" title="只做本章翻譯題">🗣️翻譯</button>`}
                             <button class="btn btn-danger btn-small clear-chapter" data-unit="${unit}" data-chapter="${ch}">🗑️重置</button>
                         </div>
                     </div>
@@ -1646,7 +1733,7 @@ async function renderPractice() {
                     </div>
                     <div class="chapter-actions">
                         <button class="btn btn-small practice-chapter" data-unit="${unit}" data-chapter="${ch}">✏️ 練習</button>
-                        <button class="btn btn-small translate-chapter" data-unit="${unit}" data-chapter="${ch}" title="只做本章翻譯題">🗣️ 翻譯</button>
+                        ${isZhUser() ? '' : `<button class="btn btn-small translate-chapter" data-unit="${unit}" data-chapter="${ch}" title="只做本章翻譯題">🗣️ 翻譯</button>`}
                         <button class="btn btn-danger btn-small clear-chapter" data-unit="${unit}" data-chapter="${ch}">🗑️ 重置</button>
                     </div>
                 </div>`;
@@ -1768,7 +1855,7 @@ function startUnitTest(unit) {
     selectedQuestions = shuffleArray(selectedQuestions);
     currentUnit = unit;
     currentChapter = null;
-    currentQuestions = selectedQuestions;
+    currentQuestions = selectedQuestions.map(q => localizeQuestion(q));
     currentOptionsMapping = currentQuestions.map(q => {
         if (q.sf === 0) {
             let letters = ['A', 'B', 'C', 'D'], map = {};
@@ -1857,7 +1944,7 @@ function startSingleQuestion(qid, source) {
     if (!foundQ) { alert('找不到該題目'); return; }
     currentUnit = foundUnit;
     currentChapter = foundChapter;
-    currentQuestions = [foundQ];
+    currentQuestions = [localizeQuestion(foundQ)];
     currentOptionsMapping = currentQuestions.map(q => {
         if (q.sf === 0) {
             let letters = ['A', 'B', 'C', 'D'], map = {};
@@ -2158,7 +2245,7 @@ function renderMyMistakes(targetPanel) {
         html += `<div class="mistake-chapter-group"><div class="mistake-chapter-header" onclick="toggleMistakeChapter('${ch}','my')"><span>📖 ${wrongByChapter[ch][0].chapterName}</span><span class="unit-toggle" id="my-toggle-${ch}">▶</span></div><div class="mistake-questions" id="my-${ch}">`;
         for (let q of wrongByChapter[ch]) {
             let isFav = userData.favorites.includes(q.id);
-            html += `<div class="mistake-question-item"><span>${q.text}</span><div>
+            html += `<div class="mistake-question-item"><span>${qText(q)}</span><div>
                 <button class="btn-icon star" data-qid="${q.id}" style="color:${isFav ? '#fbbf24' : '#ccc'}">★</button>
                 <button class="btn-icon redo-q" data-qid="${q.id}" data-source="myMistakes">🔄</button>
             </div></div>`;
@@ -2185,7 +2272,7 @@ function renderPastMistakes(targetPanel) {
         html += `<div class="mistake-chapter-group"><div class="mistake-chapter-header" onclick="toggleMistakeChapter('${ch}','past')"><span>📖 ${pastByChapter[ch][0].chapterName}</span><span class="unit-toggle" id="past-toggle-${ch}">▶</span></div><div class="mistake-questions" id="past-${ch}">`;
         for (let q of pastByChapter[ch]) {
             let isFav = userData.favorites.includes(q.id);
-            html += `<div class="mistake-question-item"><span>${q.text}</span><div>
+            html += `<div class="mistake-question-item"><span>${qText(q)}</span><div>
                 <button class="btn-icon star" data-qid="${q.id}" style="color:${isFav ? '#fbbf24' : '#ccc'}">★</button>
                 <button class="btn-icon redo-q" data-qid="${q.id}" data-source="pastMistakes">🔄</button>
                 <button class="btn-icon remove-q" data-qid="${q.id}" style="color:#dc2626;" title="移除該題">🗑️</button>
@@ -2206,7 +2293,7 @@ function renderPinned() {
     for (let qid of userData.favorites) {
         let found = null, chapterName = '';
         for (let u in window.ALL_UNITS) for (let c in window.ALL_UNITS[u].chapters) { let q = window.ALL_UNITS[u].chapters[c].questions.find(qq => qq.id === qid); if (q) { found = q; chapterName = window.ALL_UNITS[u].chapters[c].name; break; } }
-        if (found) html += `<div class="mistake-question-item"><span><strong>${chapterName}</strong> ${found.text}</span><div>
+        if (found) html += `<div class="mistake-question-item"><span><strong>${chapterName}</strong> ${qText(found)}</span><div>
             <button class="btn-icon redo-q" data-qid="${qid}" data-source="pinned">🔄</button>
             <button class="btn-icon remove-q" data-qid="${qid}" style="color:#dc2626;" title="移除該題">🗑️</button>
         </div></div>`;
@@ -2969,6 +3056,7 @@ async function showAchievementEarners(achKey, displayName) {
 
 // ===== 只做翻譯題練習 =====
 function startTranslatePractice(unit, chapter) {
+    if (isZhUser()) { alert('中文班不需翻譯練習'); return; }
     const allQuestions = [...(window.ALL_UNITS[unit]?.chapters[chapter]?.questions || [])];
     const translateQuestions = allQuestions.filter(q => q.difficulty === '🌐 Translate');
     if (translateQuestions.length === 0) {
@@ -2978,7 +3066,7 @@ function startTranslatePractice(unit, chapter) {
     let selectedQuestions = shuffleArray([...translateQuestions]);
     currentUnit = unit;
     currentChapter = chapter;
-    currentQuestions = selectedQuestions;
+    currentQuestions = selectedQuestions.map(q => localizeQuestion(q));
     currentOptionsMapping = currentQuestions.map(q => {
         if (q.sf === 0) {
             let letters = ['A', 'B', 'C', 'D'], map = {};
@@ -3022,7 +3110,7 @@ function startPracticeWithSettings() {
     selectedQuestions = shuffleArray(selectedQuestions);
     currentUnit = unit;
     currentChapter = chapter;
-    currentQuestions = selectedQuestions;
+    currentQuestions = selectedQuestions.map(q => localizeQuestion(q));
     currentOptionsMapping = currentQuestions.map(q => {
         if (q.sf === 0) {
             let letters = ['A', 'B', 'C', 'D'], map = {};
@@ -3686,7 +3774,7 @@ document.addEventListener('DOMContentLoaded', function() {
             window._singleRedoQid = null;
             let unit = pendingUnit, chapter = pendingChapter, allQs = [...window.ALL_UNITS[unit].chapters[chapter].questions], targetQ = allQs.find(q => q.id === qid);
             if (targetQ) {
-                currentUnit = unit; currentChapter = chapter; currentQuestions = [targetQ];
+                currentUnit = unit; currentChapter = chapter; currentQuestions = [localizeQuestion(targetQ)];
                 currentOptionsMapping = currentQuestions.map(q => { let letters = ['A', 'B', 'C', 'D'], map = {}; for (let i = 0; i < 4; i++) { let optText = q.options[i].substring(3); map[letters[i]] = optText; } return { letterToText: map, correctLetter: q.correct }; });
                 currentAnswers = new Array(1).fill(null); currentQIndex = 0; timeRemaining = 90; updateDesktopTimerDisplay();
                 if (timerInterval) clearInterval(timerInterval);
@@ -4370,6 +4458,17 @@ async function openEditNameModal(userId) {
             <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">🆔 學號</label>
             <input type="text" id="editUserStudentId" value="${(user.studentId || '').replace(/"/g, '&quot;')}" style="width:100%; padding:10px 14px; border-radius:12px; border:2px solid #e0d6f5; font-size:0.95rem; outline:none;">
         </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">🗣️ 學習語言</label>
+            <div style="display: flex; gap: 10px;">
+                <label style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 0; border-radius: 12px; border: 2px solid ${user.language === 'zh' ? '#4a1d8c' : '#e0d6f5'}; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #2e0f5a; background: ${user.language === 'zh' ? '#f5f0ff' : 'white'};">
+                    <input type="radio" name="editLang" value="zh" ${user.language === 'zh' ? 'checked' : ''} style="accent-color: #4a1d8c;"> 🇭🇰 中文
+                </label>
+                <label style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 0; border-radius: 12px; border: 2px solid ${user.language !== 'zh' ? '#4a1d8c' : '#e0d6f5'}; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #2e0f5a; background: ${user.language !== 'zh' ? '#f5f0ff' : 'white'};">
+                    <input type="radio" name="editLang" value="en" ${user.language !== 'zh' ? 'checked' : ''} style="accent-color: #4a1d8c;"> 🇬🇧 英文
+                </label>
+            </div>
+        </div>
         <div id="editUserError" style="color:#dc2626; font-size:0.85rem; margin-bottom:12px; text-align:center; display:none;"></div>
         <div style="display: flex; gap: 10px;">
             <button id="editUserCancelBtn" style="flex:1; padding:10px 0; border:2px solid #e0d6f5; border-radius:40px; background:white; color:#666; font-size:0.95rem; font-weight:600; cursor:pointer;">取消</button>
@@ -4402,7 +4501,9 @@ async function openEditNameModal(userId) {
             return;
         }
         try {
-            await updateUser(userId, { name: newName, className: newClass, studentId: newStudentId });
+            const langInput = document.querySelector('input[name="editLang"]:checked');
+            const newLang = langInput ? langInput.value : 'en';
+            await updateUser(userId, { name: newName, className: newClass, studentId: newStudentId, language: newLang });
             if (firebase.auth().currentUser && firebase.auth().currentUser.uid === userId) {
                 try { await firebase.auth().currentUser.updateProfile({ displayName: newName }); }
                 catch(e) { console.warn('⚠️ Auth displayName 更新失敗:', e.message); }
