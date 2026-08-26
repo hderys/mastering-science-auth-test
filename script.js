@@ -383,7 +383,7 @@ async function loadUserData() {
 function recordBatch(answers) {
     for (let a of answers) {
         userData.latestStatus[a.qid] = a.isCorrect;
-        userData.allAttempts.push({ qid: a.qid, isCorrect: a.isCorrect, timestamp: Date.now() });
+        userData.allAttempts.push({ qid: a.qid, isCorrect: a.isCorrect, timestamp: Date.now(), userLetter: a.userLetter || null });
     }
     saveUserData();
 }
@@ -947,6 +947,11 @@ function enterMainApp(user) {
     const teacherTab = document.getElementById('teacherTab');
     if (user.isTeacher) teacherTab.style.display = 'inline-block';
     else teacherTab.style.display = 'none';
+    // 分頁標籤命名：老師看「學生成就」，學生看「我的成就」
+    const practiceTab = document.querySelector('.tab[data-tab="practice"]');
+    if (practiceTab) practiceTab.textContent = '📖 每課練習';
+    const achTab = document.querySelector('.tab[data-tab="achievements"]');
+    if (achTab) achTab.textContent = user.isTeacher ? '🏆 學生成就' : '🏆 我的成就';
     updateUserLabel();
     loadUserData().then(() => {
         renderPractice();
@@ -2799,6 +2804,100 @@ async function renderTeacherAchievements(container) {
     container.innerHTML = html;
 }
 
+// ===== 顯示學生已獲得的成就 =====
+async function showStudentAchievements(userId) {
+    let studentData = null;
+    if (firestoreEnabled) {
+        try {
+            const cloudData = await loadFromFirestore('users', userId);
+            if (cloudData) studentData = cloudData;
+        } catch(e) { console.warn('⚠️ Firestore 讀取失敗:', e); }
+    }
+    if (!studentData) {
+        const localUser = findUser(userId);
+        if (localUser) studentData = { ...localUser };
+    }
+    if (!studentData) { alert('找不到該學生'); return; }
+    
+    const achievements = studentData.achievements || {};
+    const specialDefs = [
+        { id: 'firstPractice', name: '初試啼聲', icon: '🎯' },
+        { id: 'tenQuestions', name: '十題達人', icon: '📝' },
+        { id: 'fiveHundred', name: '百題斬', icon: '⚔️' },
+        { id: 'thousand', name: '千題之王', icon: '👑' },
+        { id: 'perfectLesson', name: '完美一課', icon: '🌟' },
+        { id: 'dseComplete', name: 'DSE模擬完成', icon: '📝' },
+        { id: 'speedStar', name: '速度之星', icon: '⚡' },
+        { id: 'consecutive20', name: '連續答對王', icon: '🔥' },
+        { id: 'allChaptersMaster', name: '全科目制霸', icon: '🏆' },
+        { id: 'fiveStarStreak', name: '五星連珠', icon: '⭐' },
+        { id: 'mistakeEraser', name: '錯題剋星', icon: '🗑️' },
+        { id: 'collector', name: '收藏家', icon: '📚' },
+        { id: 'weekChallenge', name: '一週挑戰', icon: '📅' },
+        { id: 'firstTranslation', name: '初試譯聲', icon: '🗣️' },
+        { id: 'livingDictionary', name: '活字典', icon: '📖' },
+        { id: 'translationMaster', name: '翻譯大師', icon: '📚' },
+        { id: 'translationAdept', name: '譯之達人', icon: '🎯' },
+        { id: 'translationKing', name: '譯之王者', icon: '🎯' },
+        { id: 'swiftTranslator', name: '閃譯手', icon: '⚡' },
+        { id: 'perfectTranslation', name: '譯筆生花', icon: '📝' },
+        { id: 'mistakeAvenger', name: '錯題復仇者', icon: '🧠' },
+    ];
+    
+    const unlockedSpecials = specialDefs.filter(d => achievements[d.id]?.unlocked);
+    const chapterDefs = [];
+    for (let u in window.ALL_UNITS) {
+        const unitObj = window.ALL_UNITS[u];
+        for (let ch in unitObj.chapters) {
+            const chAch = achievements[`${u}_${ch}`] || {};
+            for (const t of ['star1', 'star3', 'star5', 'trial']) {
+                if (chAch[t]?.unlocked) {
+                    const names = { star1: '一星完成', star3: '三星解鎖', star5: '五星解鎖', trial: '試煉完成' };
+                    const icons = { star1: '✅', star3: '🔥', star5: '💎', trial: '⚔️' };
+                    chapterDefs.push({ name: `${unitObj.chapters[ch].name} · ${names[t]}`, icon: icons[t], date: chAch[t].date || '' });
+                }
+            }
+        }
+    }
+    
+    const totalPoints = calculateTotalPoints(achievements);
+    let listHtml = '';
+    if (unlockedSpecials.length === 0 && chapterDefs.length === 0) {
+        listHtml = `<div style="text-align:center; color:#999; padding:16px;">此學生尚未獲得任何成就</div>`;
+    } else {
+        if (unlockedSpecials.length > 0) {
+            listHtml += `<div style="font-weight:700; color:#2e0f5a; margin:8px 0 4px 0; font-size:0.9rem;">🎯 特殊成就</div>`;
+            for (const d of unlockedSpecials) {
+                listHtml += `<div style="display:flex; justify-content:space-between; padding:6px 8px; border-bottom:1px solid #f0edf8; font-size:0.85rem;"><span>${d.icon} ${d.name}</span><span style="color:#999; font-size:0.75rem;">${achievements[d.id]?.date || ''}</span></div>`;
+            }
+        }
+        if (chapterDefs.length > 0) {
+            listHtml += `<div style="font-weight:700; color:#2e0f5a; margin:10px 0 4px 0; font-size:0.9rem;">📖 章節成就</div>`;
+            for (const d of chapterDefs) {
+                listHtml += `<div style="display:flex; justify-content:space-between; padding:6px 8px; border-bottom:1px solid #f0edf8; font-size:0.85rem;"><span>${d.icon} ${d.name}</span><span style="color:#999; font-size:0.75rem;">${d.date}</span></div>`;
+            }
+        }
+    }
+    
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:999999; animation:fadeIn 0.3s ease;`;
+    const modal = document.createElement('div');
+    modal.style.cssText = `background:white; border-radius:24px; padding:24px; max-width:480px; width:92%; max-height:82vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation:slideUp 0.3s ease;`;
+    modal.innerHTML = `
+        <div style="text-align:center; margin-bottom:10px;">
+            <div style="font-size:2rem;">🏆</div>
+            <h2 style="color:#2e0f5a; font-size:1.1rem; margin:0;">${studentData.name}</h2>
+            <p style="color:#888; font-size:0.8rem; margin:4px 0 0 0;">${studentData.className || ''} ${studentData.studentId || ''} · ${totalPoints} 分 · ${unlockedSpecials.length + chapterDefs.length} 個成就</p>
+        </div>
+        ${listHtml}
+        <button id="studentAchCloseBtn" style="margin-top:16px; width:100%; padding:10px 0; border:none; border-radius:40px; background:#4a1d8c; color:white; font-size:0.95rem; font-weight:600; cursor:pointer;">關閉</button>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+    document.getElementById('studentAchCloseBtn').addEventListener('click', () => overlay.remove());
+}
+
 // ===== 查看誰已獲得某成就（學生只看同班，老師看全部） =====
 async function showAchievementEarners(achKey, displayName) {
     const isTeacher = currentUser && currentUser.isTeacher;
@@ -2981,7 +3080,7 @@ function showExplainModal(question, userLetter, correctLetter, userText, correct
     let imageHtml = '';
     if (question.imageUrl) {
         imageHtml = `<div style="text-align:center; margin: 0.5rem 0;">
-            <img src="${question.imageUrl}" style="max-height:150px; max-width:100%; border-radius:8px; cursor:pointer;" onclick="document.getElementById('zoomImage').src='${question.imageUrl}'; document.getElementById('imageZoomModal').style.display='flex';">
+            <img src="${question.imageUrl}" class="quiz-image" onclick="document.getElementById('zoomImage').src='${question.imageUrl}'; document.getElementById('imageZoomModal').style.display='flex';">
             <div style="font-size:0.65rem; color:#999; margin-top:4px;">🖱️ 點擊圖片放大</div>
         </div>`;
     }
@@ -2992,7 +3091,8 @@ function showExplainModal(question, userLetter, correctLetter, userText, correct
             <div class="explain-image-container" style="margin: 12px 0; text-align: center;">
                 <img src="${question.explainImageUrl}" 
                      alt="圖解說明" 
-                     style="max-width:100%; max-height:200px; object-fit:contain; border-radius:8px; border:2px solid #e9e4f5; padding:4px; cursor:pointer; background:#ffffff;"
+                     class="quiz-image"
+                     style="max-height:200px; border:2px solid #e9e4f5;"
                      onclick="document.getElementById('zoomImage').src='${question.explainImageUrl}'; document.getElementById('imageZoomModal').style.display='flex';">
                 <span class="explain-image-label" style="font-size:0.7rem; color:#94a3b8; margin-top:4px; display:block;">📖 圖解說明（點擊放大）</span>
             </div>
@@ -3155,7 +3255,7 @@ function renderDesktopCurrentQuestion() {
     const imageArea = document.getElementById('desktopImageArea');
     const mainPanel = document.querySelector('.main-panel');
     if (hasImage && q.imageUrl) {
-        imageArea.innerHTML = `<img src="${q.imageUrl}" class="quiz-image" id="desktopImageThumb" style="max-height:110px; max-width:100%; object-fit:contain; cursor:pointer; border-radius:8px; border:1px solid #e9e4f5; padding:4px;">`;
+        imageArea.innerHTML = `<img src="${q.imageUrl}" class="quiz-image" id="desktopImageThumb">`;
         imageArea.style.display = 'block';
         if (mainPanel) mainPanel.classList.remove('no-image');
         document.getElementById('desktopImageThumb')?.addEventListener('click', () => {
@@ -3318,7 +3418,7 @@ function continueSubmitDesktopAll() {
         else consecutiveCorrect = 0;
         let userText = userLetter ? map.letterToText[userLetter] : '(未作答)', correctText = map.letterToText[map.correctLetter];
         results.push({ question: q, userLetter: userLetter || '?', correctLetter: map.correctLetter, userText, correctText, isCorrect, qid: q.id });
-        batch.push({ qid: q.id, isCorrect: isCorrect });
+        batch.push({ qid: q.id, isCorrect: isCorrect, userLetter: userLetter || null });
     }
     if (translationTotalInRun >= 10 && translationCorrectInRun === translationTotalInRun) {
         if (!userData.translationStats) userData.translationStats = { totalAttempted: 0, totalCorrect: 0, consecutiveCorrect: 0, maxConsecutive: 0, perfectRuns: 0, lastAttemptTime: 0, quickCorrectCount: 0 };
@@ -3647,7 +3747,8 @@ async function renderTeacherPanel() {
                 <button class="sub-tab active" data-subtab="progress" onclick="switchSubtab('progress', '${currentClass}')">📊 全班進度</button>
                 <button class="sub-tab" data-subtab="bychapter" onclick="switchSubtab('bychapter', '${currentClass}')">📊 章節進度</button>
                 <button class="sub-tab" data-subtab="wrong" onclick="switchSubtab('wrong', '${currentClass}')">❌ 錯題統計</button>
-                <button class="sub-tab" data-subtab="rank" onclick="switchSubtab('rank', '${currentClass}')">🏆 排名</button>
+                <button class="sub-tab" data-subtab="lastlogin" onclick="switchSubtab('lastlogin', '${currentClass}')">🕐 最後上線</button>
+                <button class="sub-tab" data-subtab="rank" onclick="switchSubtab('rank', '${currentClass}')">🏆 成就排名</button>
                 <button class="sub-tab" data-subtab="chapters" onclick="switchSubtab('chapters', '${currentClass}')">📖 章節管理</button>
             </div>
             <div class="subtab-select-wrapper mobile-select">
@@ -3655,7 +3756,8 @@ async function renderTeacherPanel() {
                     <option value="progress">📊 全班進度</option>
                     <option value="bychapter">📊 章節進度</option>
                     <option value="wrong">❌ 錯題統計</option>
-                    <option value="rank">🏆 排名</option>
+                    <option value="lastlogin">🕐 最後上線</option>
+                    <option value="rank">🏆 成就排名</option>
                     <option value="chapters">📖 章節管理</option>
                 </select>
             </div>
@@ -3664,6 +3766,7 @@ async function renderTeacherPanel() {
         <div id="subtab-progress" class="subtab-content"></div>
         <div id="subtab-bychapter" class="subtab-content" style="display:none;"></div>
         <div id="subtab-wrong" class="subtab-content" style="display:none;"></div>
+        <div id="subtab-lastlogin" class="subtab-content" style="display:none;"></div>
         <div id="subtab-rank" class="subtab-content" style="display:none;"></div>
         <div id="subtab-chapters" class="subtab-content" style="display:none;"></div>
     `;
@@ -3692,6 +3795,7 @@ function renderSubtab(subtabId, className) {
         case 'progress': renderSubtabProgress(className); break;
         case 'bychapter': renderSubtabByChapter(className); break;
         case 'wrong': renderSubtabWrong(className); break;
+        case 'lastlogin': renderSubtabLastLogin(className); break;
         case 'rank': renderSubtabRank(className); break;
         case 'chapters': renderSubtabChapters(className); break;
     }
@@ -3971,6 +4075,42 @@ async function renderSubtabWrong(className) {
     container.innerHTML = html;
 }
 
+// ===== 最後上線時間 =====
+async function renderSubtabLastLogin(className) {
+    const container = document.getElementById('subtab-lastlogin');
+    if (!container) return;
+    const students = await loadAllStudentsFromFirebase(className);
+    if (students.length === 0) {
+        container.innerHTML = '<div class="card" style="text-align:center; color:#999; padding:20px;">沒有學生數據</div>';
+        return;
+    }
+    // 依最後上線排序（無上線記錄排最後）
+    const sorted = [...students].sort((a, b) => {
+        const ta = a.lastLogin ? new Date(a.lastLogin).getTime() : -Infinity;
+        const tb = b.lastLogin ? new Date(b.lastLogin).getTime() : -Infinity;
+        return tb - ta;
+    });
+    let html = `<h3 style="margin-bottom:8px;">🕐 最後上線（${className === '__all__' ? '全部班級' : className}）</h3>
+        <div class="card" style="padding:0.8rem;">
+        <table class="wrong-table" style="font-size:0.8rem;">
+            <thead><tr><th>姓名</th><th>班別</th><th>學號</th><th>最後上線</th><th>上次至今</th></tr></thead>
+            <tbody>`;
+    for (const s of sorted) {
+        const lastLogin = s.lastLogin ? formatLastLogin(s.lastLogin) : '從未上線';
+        const color = s.lastLogin ? (Date.now() - new Date(s.lastLogin).getTime() < 86400000 ? '#10b981' : '#f59e0b') : '#999';
+        const detail = s.lastLogin ? format(new Date(s.lastLogin), 'yyyy-MM-dd HH:mm') : '-';
+        html += `<tr>
+            <td style="font-weight:600;">${s.name}</td>
+            <td>${s.className || '-'}</td>
+            <td>${s.studentId || '-'}</td>
+            <td><span style="font-weight:600; color:${color};">${lastLogin}</span></td>
+            <td style="color:#888; font-size:0.7rem;">${detail}</td>
+        </tr>`;
+    }
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
+}
+
 async function renderSubtabRank(className) {
     const container = document.getElementById('subtab-rank');
     if (!container) return;
@@ -4029,7 +4169,7 @@ async function renderSubtabRank(className) {
             html += `
                 <tr style="${rowStyle}">
                     <td>${medal}</td>
-                    <td>${s.name}${isCurrentUser ? ' 📍' : ''}</td>
+                    <td><button class="btn-link" onclick="showStudentAchievements('${s.userId}')" style="background:none; border:none; color:#4a1d8c; cursor:pointer; font-weight:600; font-size:0.85rem;">${s.name}${isCurrentUser ? ' 📍' : ''}</button></td>
                     <td style="font-weight:600; color:${isCurrentUser ? '#4a1d8c' : '#2e0f5a'};">${points}</td>
                     <td>${achievementCount}</td>
                 </tr>
@@ -4473,9 +4613,19 @@ async function showStudentDetail(userId) {
                     <h3 style="font-size:0.9rem; color:#2e0f5a; margin-bottom:6px;">❌ 錯題本 (${wrongQuestions.length} 題)</h3>
                     ${wrongQuestions.length === 0 ? '<div style="color:#999; font-size:0.7rem;">🎉 沒有錯題！</div>' : ''}
                     <div style="max-height:100px; overflow-y:auto; font-size:0.7rem;">
-                        ${wrongQuestions.slice(0, 5).map(q => `
-                            <div style="padding:2px 0; border-bottom:1px solid #f0edf8;">${q.text}</div>
-                        `).join('')}
+                        ${wrongQuestions.slice(0, 5).map(q => {
+                            // 找該題最後一次錯誤的答案
+                            const wrongAtts = (studentData.allAttempts || []).filter(a => a.qid === q.id && !a.isCorrect);
+                            const lastWrong = wrongAtts[wrongAtts.length - 1];
+                            let choseText = '';
+                            if (lastWrong && lastWrong.userLetter) {
+                                const letters = ['A', 'B', 'C', 'D'];
+                                const li = letters.indexOf(lastWrong.userLetter);
+                                if (li !== -1 && q.options[li]) choseText = `<div style="color:#dc2626; padding-left:6px;">✗ 選了 ${lastWrong.userLetter}：${q.options[li].replace(/^[A-D]\.\s*/, '')}</div>`;
+                                else choseText = `<div style="color:#dc2626; padding-left:6px;">✗ 選了 ${lastWrong.userLetter}</div>`;
+                            }
+                            return `<div style="padding:2px 0; border-bottom:1px solid #f0edf8;">${q.text}${choseText}</div>`;
+                        }).join('')}
                         ${wrongQuestions.length > 5 ? `<div style="color:#999; font-size:0.6rem;">+${wrongQuestions.length - 5} 更多錯題</div>` : ''}
                     </div>
                 </div>

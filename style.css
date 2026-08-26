@@ -287,6 +287,18 @@ body {
     align-items: center;
     z-index: 1000;
 }
+
+/* 做題圖片：依裝置尺寸自動縮放，不變形 */
+.quiz-image {
+    max-width: 100%;
+    max-height: 45vh;
+    object-fit: contain;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 1px solid #e9e4f5;
+    padding: 4px;
+    background: #ffffff;
+}
 .modal-content {
     background: white;
     width: 95%;
@@ -892,6 +904,9 @@ body {
         padding: 0.4rem; 
         max-height: 95vh;
         border-radius: 20px;
+    }
+    .quiz-image {
+        max-height: 30vh;
     }
     .settings-two-columns { 
         flex-direction: column; 
