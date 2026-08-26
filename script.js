@@ -96,7 +96,12 @@ function localizeQuestion(q) {
 function qUnitName(unit) {
     const u = window.ALL_UNITS[unit];
     if (!u) return unit;
-    if (isZhUser() && u.nameZh) return u.nameZh;
+    if (isZhUser() && u.nameZh) {
+        const cnNames = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二', '十三', '十四', '十五'];
+        const idx = parseInt(unit) - 1;
+        const prefix = (idx >= 0 && idx < cnNames.length) ? `第${cnNames[idx]}章 · ` : '';
+        return prefix + u.nameZh;
+    }
     return u.name;
 }
 // 章節名稱（依語言）
@@ -4517,13 +4522,27 @@ async function openEditNameModal(userId) {
     const idInput = document.getElementById('editUserStudentId');
     const errorEl = document.getElementById('editUserError');
 
+    // 語言選項：切換時即時更新 label 外框樣式
+    document.querySelectorAll('input[name="editLang"]').forEach(rb => {
+        rb.addEventListener('change', function() {
+            const lang = this.value;
+            const labels = modal.querySelectorAll('input[name="editLang"]');
+            labels.forEach(r => {
+                const lbl = r.closest('label');
+                const active = (r.value === lang);
+                lbl.style.borderColor = active ? '#4a1d8c' : '#e0d6f5';
+                lbl.style.background = active ? '#f5f0ff' : 'white';
+            });
+        });
+    });
+
     document.getElementById('editUserCancelBtn').addEventListener('click', () => overlay.remove());
     overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
 
     document.getElementById('editUserConfirmBtn').addEventListener('click', async function() {
         const newName = nameInput.value.trim();
-        const newClass = classInput.value.trim().toUpperCase();
-        const newStudentId = idInput.value.trim();
+        const newClass = classInput ? classInput.value.trim().toUpperCase() : '';
+        const newStudentId = idInput ? idInput.value.trim() : '';
         const isTeacherEdit = user.isTeacher || false;
         if (!newName) {
             errorEl.textContent = '⚠️ 請填寫姓名';
