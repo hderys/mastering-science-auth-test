@@ -4450,14 +4450,14 @@ async function openEditNameModal(userId) {
             <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">👤 姓名</label>
             <input type="text" id="editUserName" value="${(user.name || '').replace(/"/g, '&quot;')}" style="width:100%; padding:10px 14px; border-radius:12px; border:2px solid #e0d6f5; font-size:0.95rem; outline:none;">
         </div>
-        <div style="margin-bottom: 14px;">
+        ${user.isTeacher ? '' : `<div style="margin-bottom: 14px;">
             <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">📚 班別</label>
             <input type="text" id="editUserClass" value="${(user.className || '').replace(/"/g, '&quot;')}" style="width:100%; padding:10px 14px; border-radius:12px; border:2px solid #e0d6f5; font-size:0.95rem; outline:none;">
         </div>
         <div style="margin-bottom: 20px;">
             <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">🆔 學號</label>
             <input type="text" id="editUserStudentId" value="${(user.studentId || '').replace(/"/g, '&quot;')}" style="width:100%; padding:10px 14px; border-radius:12px; border:2px solid #e0d6f5; font-size:0.95rem; outline:none;">
-        </div>
+        </div>`}
         <div style="margin-bottom: 20px;">
             <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #2e0f5a; margin-bottom: 4px;">🗣️ 學習語言</label>
             <div style="display: flex; gap: 10px;">
@@ -4490,13 +4490,25 @@ async function openEditNameModal(userId) {
         const newName = nameInput.value.trim();
         const newClass = classInput.value.trim().toUpperCase();
         const newStudentId = idInput.value.trim();
-        if (!newName || !newClass || !newStudentId) {
-            errorEl.textContent = '⚠️ 請填寫姓名、班別和學號';
+        const isTeacherEdit = user.isTeacher || false;
+        if (!newName) {
+            errorEl.textContent = '⚠️ 請填寫姓名';
             errorEl.style.display = 'block';
             return;
         }
-        if (!/^[1-9][0-9]?[A-Z]$/.test(newClass)) {
+        // 老師豁免班別/學號
+        if (!isTeacherEdit && !newClass) {
+            errorEl.textContent = '⚠️ 請填寫班別';
+            errorEl.style.display = 'block';
+            return;
+        }
+        if (!isTeacherEdit && !/^[1-9][0-9]?[A-Z]$/.test(newClass)) {
             errorEl.textContent = '⚠️ 班別格式錯誤：請填「數字+字母」（例如 3A、4C、4D）';
+            errorEl.style.display = 'block';
+            return;
+        }
+        if (!isTeacherEdit && !newStudentId) {
+            errorEl.textContent = '⚠️ 請填寫學號';
             errorEl.style.display = 'block';
             return;
         }
