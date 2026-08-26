@@ -291,6 +291,21 @@ function saveUserData() {
     }
 }
 
+function formatLastLogin(isoStr) {
+    if (!isoStr) return '-';
+    const t = new Date(isoStr);
+    if (isNaN(t.getTime())) return '-';
+    const diff = Date.now() - t.getTime();
+    const min = Math.floor(diff / 60000);
+    if (min < 1) return '剛剛';
+    if (min < 60) return `${min} 分鐘前`;
+    const hrs = Math.floor(min / 60);
+    if (hrs < 24) return `${hrs} 小時前`;
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return `${days} 天前`;
+    return format(t, 'yyyy-MM-dd');
+}
+
 async function loadUserData() {
     if (!currentUser) return;
     const userId = currentUser.id || currentUser.userId;
@@ -538,6 +553,16 @@ async function updateUser(userId, data) {
             }
         }
         return db.users[index];
+    }
+    // 本機沒有該用戶：直接更新 Firestore（例如批准非學校電郵試用者）
+    if (firestoreEnabled) {
+        try {
+            await firebase.firestore().collection('users').doc(userId).set(data, { merge: true });
+            console.log('✅ 已直接更新 Firestore 用戶:', userId);
+            return { userId: userId, ...data };
+        } catch (e) {
+            console.warn('⚠️ Firebase 更新失敗:', e.message);
+        }
     }
     return null;
 }
@@ -889,6 +914,18 @@ async function handleGoogleLogin() {
         
         updateStatusDot('online', `✅ 歡迎 ${existingUser.name}！`, '#d4edda', '#065f46');
         currentUser = existingUser;
+        
+        // 記錄最後上線時間
+        try {
+            const nowISO = new Date().toISOString();
+            existingUser.lastLogin = nowISO;
+            const db = getUsers();
+            const idx = db.users.findIndex(u => u.userId === currentUser.userId);
+            if (idx !== -1) { db.users[idx].lastLogin = nowISO; saveUsers(db); }
+            if (firestoreEnabled) {
+                firebase.firestore().collection('users').doc(currentUser.userId).set({ lastLogin: nowISO }, { merge: true }).catch(e => console.warn('⚠️ 記錄上線時間失敗:', e.message));
+            }
+        } catch(e) { console.warn('⚠️ 記錄上線時間失敗:', e); }
         
         enterMainApp(currentUser);
         
@@ -1583,6 +1620,7 @@ async function renderPractice() {
                         </div>
                         <div class="chapter-actions">
                             <button class="btn btn-small practice-chapter" data-unit="${unit}" data-chapter="${ch}">✏️練習</button>
+                            <button class="btn btn-small translate-chapter" data-unit="${unit}" data-chapter="${ch}" title="只做本章翻譯題">🗣️翻譯</button>
                             <button class="btn btn-danger btn-small clear-chapter" data-unit="${unit}" data-chapter="${ch}">🗑️重置</button>
                         </div>
                     </div>
@@ -1596,6 +1634,7 @@ async function renderPractice() {
                     </div>
                     <div class="chapter-actions">
                         <button class="btn btn-small practice-chapter" data-unit="${unit}" data-chapter="${ch}">✏️ 練習</button>
+                        <button class="btn btn-small translate-chapter" data-unit="${unit}" data-chapter="${ch}" title="只做本章翻譯題">🗣️ 翻譯</button>
                         <button class="btn btn-danger btn-small clear-chapter" data-unit="${unit}" data-chapter="${ch}">🗑️ 重置</button>
                     </div>
                 </div>`;
@@ -1614,6 +1653,9 @@ async function renderPractice() {
     });
     document.querySelectorAll('.practice-chapter').forEach(btn => btn.addEventListener('click', (e) => {
         e.stopPropagation(); pendingUnit = btn.dataset.unit; pendingChapter = btn.dataset.chapter; isSingleQuestionMode = false; updateSettingsUnlockStatus(); showSettingsModal();
+    }));
+    document.querySelectorAll('.translate-chapter').forEach(btn => btn.addEventListener('click', (e) => {
+        e.stopPropagation(); startTranslatePractice(btn.dataset.unit, btn.dataset.chapter);
     }));
     document.querySelectorAll('.unit-test-btn').forEach(btn => btn.addEventListener('click', (e) => {
         e.stopPropagation(); const unit = btn.dataset.unit; showUnitTestConfirm(unit);
@@ -2819,6 +2861,51 @@ async function showAchievementEarners(achKey, displayName) {
     document.getElementById('achEarnersCloseBtn').addEventListener('click', () => overlay.remove());
 }
 
+// ===== 只做翻譯題練習 =====
+function startTranslatePractice(unit, chapter) {
+    const allQuestions = [...(window.ALL_UNITS[unit]?.chapters[chapter]?.questions || [])];
+    const translateQuestions = allQuestions.filter(q => q.difficulty === '🌐 Translate');
+    if (translateQuestions.length === 0) {
+        alert('本章沒有翻譯題');
+        return;
+    }
+    let selectedQuestions = shuffleArray([...translateQuestions]);
+    currentUnit = unit;
+    currentChapter = chapter;
+    currentQuestions = selectedQuestions;
+    currentOptionsMapping = currentQuestions.map(q => {
+        if (q.sf === 0) {
+            let letters = ['A', 'B', 'C', 'D'], map = {};
+            for (let i = 0; i < 4; i++) { let optText = q.options[i].substring(3); map[letters[i]] = optText; }
+            return { letterToText: map, correctLetter: q.correct };
+        } else {
+            let texts = q.options.map(opt => opt.replace(/^[A-D]\.\s*/, '')), shuffled = shuffleArray([...texts]), letters = ['A', 'B', 'C', 'D'], map = {};
+            for (let i = 0; i < 4; i++) map[letters[i]] = shuffled[i];
+            let correctText = q.options.find(opt => opt.startsWith(q.correct)).replace(/^[A-D]\.\s*/, ''), correctLetter = null;
+            for (let [l, t] of Object.entries(map)) if (t === correctText) { correctLetter = l; break; }
+            return { letterToText: map, correctLetter: correctLetter };
+        }
+    });
+    currentAnswers = new Array(selectedQuestions.length).fill(null);
+    currentQIndex = 0;
+    isSingleQuestionMode = false;
+    let timePerQuestion = 75;
+    timeRemaining = selectedQuestions.length * timePerQuestion;
+    updateDesktopTimerDisplay();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        if (timeRemaining <= 0) submitDesktopAll();
+        else { timeRemaining--; updateDesktopTimerDisplay(); }
+    }, 1000);
+    if (blinkInterval) { clearInterval(blinkInterval); blinkInterval = null; }
+    const submitBtn = document.getElementById('desktopSubmitBtn');
+    if (submitBtn) submitBtn.style.animation = '';
+    document.getElementById('settingsModal').style.display = 'none';
+    startTime = Date.now();
+    if (isIPhone() && !isLandscape()) { showIPhoneOrientationPrompt(); return; }
+    forceLandscapeAndFullscreen().then(() => { showDesktopQuizModal(); });
+}
+
 function startPracticeWithSettings() {
     let unit = pendingUnit, chapter = pendingChapter;
     let allQuestions = [...window.ALL_UNITS[unit].chapters[chapter].questions], total = allQuestions.length;
@@ -3665,6 +3752,7 @@ async function renderSubtabProgress(className) {
                     <th>班別</th>
                     <th>總題數</th>
                     <th>正確率</th>
+                    <th>最後上線</th>
                     <th>狀態</th>
                     <th>操作</th>
                 </tr>
@@ -3672,7 +3760,7 @@ async function renderSubtabProgress(className) {
             <tbody>`;
     
     if (students.length === 0) {
-        html += `<tr><td colspan="7" style="text-align:center; color:#999; padding:20px;">還沒有學生帳戶</td></tr>`;
+        html += `<tr><td colspan="8" style="text-align:center; color:#999; padding:20px;">還沒有學生帳戶</td></tr>`;
     } else {
         for (const s of students) {
             const stats = s.stats || { totalQuestionsAnswered: 0, totalCorrect: 0 };
@@ -3703,6 +3791,7 @@ async function renderSubtabProgress(className) {
                     <td>${s.className || '-'}</td>
                     <td>${total}</td>
                     <td style="font-weight:600; color:${acc >= 70 ? '#10b981' : (acc >= 40 ? '#f59e0b' : '#dc2626')};">${acc}%</td>
+                    <td style="font-size:0.75rem; color:#666;">${s.lastLogin ? formatLastLogin(s.lastLogin) : '-'}</td>
                     <td><span style="background:${statusColor}; color:white; padding:2px 12px; border-radius:12px; font-size:11px;">${status}</span></td>
                     <td>
                         ${approveBtn}
@@ -3784,7 +3873,7 @@ async function renderSubtabByChapter(className) {
                 if (latest[q.id] === true) correct++;
             }
             const pct = chInfo.total > 0 ? Math.round(correct / chInfo.total * 100) : 0;
-            rows.push({ name: s.name, userId: s.userId, pct, correct, total: chInfo.total });
+            rows.push({ name: s.name, userId: s.userId, pct, correct, total: chInfo.total, lastLogin: s.lastLogin });
         }
         // 依完成度排序
         rows.sort((a, b) => b.pct - a.pct);
@@ -3802,7 +3891,7 @@ async function renderSubtabByChapter(className) {
                 </div>
                 <div class="collapsible-content collapsed" id="bc-${chInfo.unit}-${chInfo.chapter}" style="padding-top:4px;">
                     <table class="wrong-table" style="font-size:0.75rem;">
-                        <thead><tr><th>姓名</th><th>學號</th><th>完成度</th><th>進度條</th></tr></thead>
+                        <thead><tr><th>姓名</th><th>學號</th><th>完成度</th><th>進度條</th><th>最後上線</th></tr></thead>
                         <tbody>`;
         for (const r of rows) {
             const rowColor = r.pct >= 50 ? '#10b981' : (r.pct >= 30 ? '#f59e0b' : '#dc2626');
@@ -3811,6 +3900,7 @@ async function renderSubtabByChapter(className) {
                 <td>${r.userId}</td>
                 <td style="font-weight:600; color:${rowColor};">${r.pct}% (${r.correct}/${r.total})</td>
                 <td style="width:120px;"><div class="progress-bar-container" style="width:100px; height:8px;"><div class="progress-bar-fill" style="width:${r.pct}%; background:${rowColor};"></div></div></td>
+                <td style="font-size:0.7rem; color:#666;">${r.lastLogin ? formatLastLogin(r.lastLogin) : '-'}</td>
             </tr>`;
         }
         html += `</tbody></table>
