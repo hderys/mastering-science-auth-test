@@ -4558,9 +4558,12 @@ async function openEditNameModal(userId) {
             renderTeacherPanel();
             if (currentUser && currentUser.userId === userId) {
                 currentUser = findUser(userId);
+                if (!currentUser) currentUser = { userId: userId, name: newName, language: newLang };
                 updateUserLabel();
+                // 語言改變時重新渲染練習頁（反映中英文章節名/難易度）
+                renderPractice();
             }
-            alert(`✅ 已更新「${newName}」的資料`);
+            alert(`✅ 已更新「${newName}」的資料（語言：${newLang === 'zh' ? '中文' : '英文'}）`);
         } catch (e) {
             console.error('❌ 更新失敗:', e);
             errorEl.textContent = '❌ 更新失敗：' + e.message;
