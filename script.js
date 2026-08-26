@@ -92,6 +92,36 @@ function localizeQuestion(q) {
     if (!isZhUser() || !q) return q;
     return { ...q, text: qText(q), options: qOptions(q), explanation: qExplanation(q) };
 }
+// 單元名稱（依語言）
+function qUnitName(unit) {
+    const u = window.ALL_UNITS[unit];
+    if (!u) return unit;
+    if (isZhUser() && u.nameZh) return u.nameZh;
+    return u.name;
+}
+// 章節名稱（依語言）
+function qChapterName(unit, ch) {
+    const u = window.ALL_UNITS[unit];
+    const c = u ? u.chapters[ch] : null;
+    if (!c) return ch;
+    if (isZhUser() && c.nameZh) return c.nameZh;
+    return c.name;
+}
+// 難易度顯示名稱（中文班：基礎/進階/挑戰；英文班：1星/3星/5星）
+function diffLabel(diff, stars) {
+    if (!isZhUser()) return stars;
+    if (diff === 0) return '基礎';
+    if (diff === 1) return '進階';
+    return '挑戰';
+}
+// 做題右上角難易度標籤（中文班：基礎/進階/挑戰）
+function diffLabelByDifficulty(difficulty) {
+    if (!isZhUser()) return difficulty;
+    if (difficulty.includes('Basic')) return '基礎';
+    if (difficulty.includes('Advanced')) return '進階';
+    if (difficulty.includes('Challenge')) return '挑戰';
+    return difficulty;
+}
 
 // 成績總表控制變量
 let showOnlyWrong = false;
@@ -1687,7 +1717,7 @@ async function renderPractice() {
         }
         if (Object.keys(filteredChapters).length === 0) continue;
         let mastery = getUnitMastery(unit);
-        let unitNameForDisplay = isMobile() ? unitObj.name.replace(/（[^）]*）/, '') : unitObj.name;
+        let unitNameForDisplay = isZhUser() ? qUnitName(unit) : (isMobile() ? unitObj.name.replace(/（[^）]*）/, '') : unitObj.name);
         html += `<div class="unit-group"><div class="unit-header" id="unit-header-${unit}" onclick="toggleUnit('${unit}')">
             <div class="unit-header-left">
                 <span class="unit-toggle" id="toggle-${unit}">▶</span>
@@ -1708,7 +1738,7 @@ async function renderPractice() {
         </div><div class="chapters-container" id="chapters-${unit}">`;
         for (let ch in filteredChapters) {
             let chMastery = getChapterMastery(unit, ch), chTotal = getChapterTotalQuestions(unit, ch);
-            let chNameDisplay = filteredChapters[ch].name;
+            let chNameDisplay = qChapterName(unit, ch);
             if (isMobile()) {
                 html += `<div class="chapter-item">
                     <span class="chapter-name">${chNameDisplay} (${chTotal} 題)</span>
@@ -2132,15 +2162,18 @@ function updateSettingsUnlockStatus() {
     else if (currentStage === 'star3') needed = Math.ceil(0.8 * advancedTotal) - advancedCorrect;
     else if (currentStage === 'star5') needed = Math.ceil(0.8 * challengeTotal) - challengeCorrect;
     if (needed < 0) needed = 0;
+    let dE = document.getElementById('diff-easy');
     let dM = document.getElementById('diff-medium');
     let dH = document.getElementById('diff-hard');
     let tM = document.getElementById('trial-mode');
     let diffHint = document.getElementById('diffHint');
+    if (dE) dE.innerHTML = `<span class="stars">★</span><span class="label">${diffLabel(0, '1 星')}</span>`;
     if (dM) {
         if (star3Unlocked) {
-            dM.classList.remove('locked'); dM.disabled = false; dM.innerHTML = '<span class="stars">★★★</span><span class="label">3 星</span>';
+            dM.classList.remove('locked'); dM.disabled = false; dM.innerHTML = `<span class="stars">★★★</span><span class="label">${diffLabel(1, '3 星')}</span>`;
         } else {
             dM.classList.add('locked'); dM.disabled = true;
+            dM.innerHTML = `<span class="stars">★★★</span><span class="label">${diffLabel(1, '3 星 🔒')}</span>`;
             if (selectedDifficulty === 1) {
                 selectedDifficulty = 0;
                 document.getElementById('diff-easy').classList.add('active');
@@ -2151,9 +2184,10 @@ function updateSettingsUnlockStatus() {
     }
     if (dH) {
         if (star5Unlocked) {
-            dH.classList.remove('locked'); dH.disabled = false; dH.innerHTML = '<span class="stars">★★★★★</span><span class="label">5 星</span>';
+            dH.classList.remove('locked'); dH.disabled = false; dH.innerHTML = `<span class="stars">★★★★★</span><span class="label">${diffLabel(2, '5 星')}</span>`;
         } else {
             dH.classList.add('locked'); dH.disabled = true;
+            dH.innerHTML = `<span class="stars">★★★★★</span><span class="label">${diffLabel(2, '5 星 🔒')}</span>`;
             if (selectedDifficulty === 2) {
                 selectedDifficulty = 0;
                 document.getElementById('diff-easy').classList.add('active');
@@ -3344,7 +3378,7 @@ function renderDesktopCurrentQuestion() {
     const hasImage = q.imageUrl !== null;
     document.getElementById('desktopQuestionText').innerHTML = q.text;
     document.getElementById('desktopCounter').innerHTML = `${currentQIndex + 1} / ${currentQuestions.length}`;
-    document.getElementById('desktopDifficulty').innerHTML = q.difficulty;
+    document.getElementById('desktopDifficulty').innerHTML = isZhUser() ? diffLabelByDifficulty(q.difficulty) : q.difficulty;
     updateDesktopTimerDisplay();
     updateDesktopSidebarDifficulty();
     const imageArea = document.getElementById('desktopImageArea');
