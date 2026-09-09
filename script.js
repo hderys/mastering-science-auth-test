@@ -35,6 +35,12 @@ let customCount = 10;
 let isSingleQuestionMode = false;
 let singleQuestionSource = null;
 let startTime = null;
+let isReviewMode = false;   // 複習模式：不改 latestStatus、不觸發成就
+let reviewQids = [];         // 複習模式的題目 id 清單（供提交時判斷）
+let reviewLastShownDate = ''; // 每日複習彈窗最後顯示日期
+let isTestMode = false;      // 測驗模式
+let currentTestId = null;    // 進行中的測驗 id
+let currentTestTimeLimit = null; // 測驗限時（秒）
 
 // ==================== 更多資源：影片資料 ====================
 // 格式：{ unit: 單元編號, chapter: 章節編號, id: YouTube影片ID, title: 標題 }
@@ -177,6 +183,8 @@ const ACHIEVEMENT_POINTS = {
     'perfectTranslation': 30,
     'mistakeAvenger': 20,
     'sameMistake': -10,
+    'reviewFirst': 20,
+    'reviewMaster': 50,
 };
 
 function showFirestoreStatus(text, bg, color) {
@@ -340,7 +348,7 @@ async function loadAllStudentsFromFirebase(className) {
     try {
         let query = firebase.firestore().collection('users').where('isTeacher', '==', false);
         if (!isAll && !isS4Group) query = query.where('className', '==', className);
-        if (isS4Group) query = query.where('className', '>=', '4A').where('className', '<=', '4Z');
+        if (isS4Group) query = firebase.firestore().collection('users').where('className', '>=', '4A').where('className', '<=', '4Z');
         const snapshot = await query.get();
         const firebaseStudents = [];
         snapshot.forEach(doc => {
@@ -388,6 +396,7 @@ function saveUserData() {
             translationStats: userData.translationStats || {},
             mistakeTracker: userData.mistakeTracker || {},
             chapterAccuracy: userData.chapterAccuracy || {},
+            reviewStats: userData.reviewStats || {},
             lastLogin: currentUser.lastLogin || new Date().toISOString(),
             lastUpdated: new Date().toISOString()
         });
@@ -412,10 +421,46 @@ function formatLastLogin(isoStr) {
 async function loadUserData() {
     if (!currentUser) return;
     const userId = currentUser.id || currentUser.userId;
+    // 本機可能有較新的練習資料（無論是否離線帳戶）
+    const localRaw = localStorage.getItem(`ms_chem_${userId}`);
+    const localData = localRaw ? JSON.parse(localRaw) : null;
+    const localCount = localData && localData.stats ? (localData.stats.totalQuestionsAnswered || 0) : 0;
+    const localUserRec = findUser(userId);
+    const hadOffline = !!(localUserRec && localUserRec.passwordHash);
     if (firestoreEnabled) {
         try {
             const cloudData = await loadFromFirestore('users', userId);
             if (cloudData) {
+                const cloudCount = (cloudData.stats && cloudData.stats.totalQuestionsAnswered) || 0;
+                // 若本機有練習資料且本機題數 >= 雲端，表示本機較新 → 以本機為準並上傳雲端
+                if (localData && localCount >= cloudCount && localCount > 0) {
+                    userData = localData;
+                    if (!userData.practiceHistory) userData.practiceHistory = [];
+                    if (!userData.achievements) userData.achievements = {};
+                    if (!userData.stats) userData.stats = { totalQuestionsAnswered: 0, totalCorrect: 0, consecutiveCorrect: 0, maxConsecutive: 0, dailyPracticeDates: [], lastAccuracy: null };
+                    if (!userData.stats.dailyPracticeDates) userData.stats.dailyPracticeDates = [];
+                    if (!userData.translationStats) userData.translationStats = { totalAttempted: 0, totalCorrect: 0, consecutiveCorrect: 0, maxConsecutive: 0, perfectRuns: 0, lastAttemptTime: 0, quickCorrectCount: 0 };
+                    if (!userData.mistakeTracker) userData.mistakeTracker = {};
+                    if (!userData.chapterAccuracy) userData.chapterAccuracy = {};
+                    if (!userData.reviewStats) userData.reviewStats = { completedCount: 0, totalAnswered: 0, totalCorrect: 0, lastReviewAt: null };
+                    localStorage.setItem(`ms_chem_${userId}`, JSON.stringify(userData));
+                    syncToFirestore('users', userId, {
+                        latestStatus: userData.latestStatus || {},
+                        allAttempts: userData.allAttempts || [],
+                        favorites: userData.favorites || [],
+                        practiceHistory: userData.practiceHistory || [],
+                        achievements: userData.achievements || {},
+                        stats: userData.stats || {},
+                        translationStats: userData.translationStats || {},
+                        mistakeTracker: userData.mistakeTracker || {},
+                        chapterAccuracy: userData.chapterAccuracy || {},
+                        reviewStats: userData.reviewStats || {},
+                        lastLogin: new Date().toISOString(),
+                        lastUpdated: new Date().toISOString()
+                    });
+                    console.log('✅ 本機離線資料較新，已上傳雲端');
+                    return;
+                }
                 userData = {
                     latestStatus: cloudData.latestStatus || {},
                     allAttempts: cloudData.allAttempts || [],
@@ -425,7 +470,8 @@ async function loadUserData() {
                     stats: cloudData.stats || { totalQuestionsAnswered: 0, totalCorrect: 0, consecutiveCorrect: 0, maxConsecutive: 0, dailyPracticeDates: [], lastAccuracy: null },
                     translationStats: cloudData.translationStats || { totalAttempted: 0, totalCorrect: 0, consecutiveCorrect: 0, maxConsecutive: 0, perfectRuns: 0, lastAttemptTime: 0, quickCorrectCount: 0 },
                     mistakeTracker: cloudData.mistakeTracker || {},
-                    chapterAccuracy: cloudData.chapterAccuracy || {}
+                    chapterAccuracy: cloudData.chapterAccuracy || {},
+                    reviewStats: cloudData.reviewStats || {}
                 };
                 if (!userData.practiceHistory) userData.practiceHistory = [];
                 if (!userData.achievements) userData.achievements = {};
@@ -434,6 +480,7 @@ async function loadUserData() {
                 if (!userData.translationStats) userData.translationStats = { totalAttempted: 0, totalCorrect: 0, consecutiveCorrect: 0, maxConsecutive: 0, perfectRuns: 0, lastAttemptTime: 0, quickCorrectCount: 0 };
                 if (!userData.mistakeTracker) userData.mistakeTracker = {};
                 if (!userData.chapterAccuracy) userData.chapterAccuracy = {};
+                if (!userData.reviewStats) userData.reviewStats = { completedCount: 0, totalAnswered: 0, totalCorrect: 0, lastReviewAt: null };
                 localStorage.setItem(`ms_chem_${userId}`, JSON.stringify(userData));
                 console.log('✅ 從 Firebase 載入數據');
                 return;
@@ -452,6 +499,7 @@ async function loadUserData() {
         if (!userData.translationStats) userData.translationStats = { totalAttempted: 0, totalCorrect: 0, consecutiveCorrect: 0, maxConsecutive: 0, perfectRuns: 0, lastAttemptTime: 0, quickCorrectCount: 0 };
         if (!userData.mistakeTracker) userData.mistakeTracker = {};
         if (!userData.chapterAccuracy) userData.chapterAccuracy = {};
+        if (!userData.reviewStats) userData.reviewStats = { completedCount: 0, totalAnswered: 0, totalCorrect: 0, lastReviewAt: null };
         console.log('✅ 從 localStorage 載入數據');
         if (firestoreEnabled) {
             syncToFirestore('users', userId, {
@@ -1079,22 +1127,7 @@ async function handleGoogleLogin() {
             }
         }
         
-        updateStatusDot('online', `✅ 歡迎 ${existingUser.name}！`, '#d4edda', '#065f46');
-        currentUser = existingUser;
-        
-        // 記錄最後上線時間
-        try {
-            const nowISO = new Date().toISOString();
-            existingUser.lastLogin = nowISO;
-            const db = getUsers();
-            const idx = db.users.findIndex(u => u.userId === currentUser.userId);
-            if (idx !== -1) { db.users[idx].lastLogin = nowISO; saveUsers(db); }
-            if (firestoreEnabled) {
-                firebase.firestore().collection('users').doc(currentUser.userId).set({ lastLogin: nowISO }, { merge: true }).catch(e => console.warn('⚠️ 記錄上線時間失敗:', e.message));
-            }
-        } catch(e) { console.warn('⚠️ 記錄上線時間失敗:', e); }
-        
-        enterMainApp(currentUser);
+        await finalizeLogin(existingUser);
         
     } catch (error) {
         console.error('❌ Google 登入失敗:', error);
@@ -1105,6 +1138,630 @@ async function handleGoogleLogin() {
         } else {
             showLoginError('❌ Google 登入失敗：' + error.message);
         }
+    }
+}
+
+// ===== 登入完成後的共同流程（記錄上線時間 + 進入主程式） =====
+async function finalizeLogin(existingUser) {
+    // 雲端登入成功：確保 firestore 啟用（避免先前離線模式殘留 false 影響儲存）
+    firestoreEnabled = true;
+    updateStatusDot('online', `✅ 歡迎 ${existingUser.name}！`, '#d4edda', '#065f46');
+    currentUser = existingUser;
+
+    // 記錄最後上線時間
+    try {
+        const nowISO = new Date().toISOString();
+        existingUser.lastLogin = nowISO;
+        const db = getUsers();
+        const idx = db.users.findIndex(u => u.userId === currentUser.userId);
+        if (idx !== -1) { db.users[idx].lastLogin = nowISO; saveUsers(db); }
+        if (firestoreEnabled) {
+            firebase.firestore().collection('users').doc(currentUser.userId).set({ lastLogin: nowISO }, { merge: true }).catch(e => console.warn('⚠️ 記錄上線時間失敗:', e.message));
+        }
+    } catch(e) { console.warn('⚠️ 記錄上線時間失敗:', e); }
+
+    // 偵測本機離線帳戶並提示合併（僅雲端登入；離線登入本身就會有離線橫幅引導同步）
+    try {
+        const pendingOffline = findLocalOfflineAccounts(currentUser.userId);
+        if (pendingOffline.length > 0) {
+            // 只要有未合併的，或離線帳戶題數比上次合併時增加（內地又做了新題）→ 提示
+            const needsMerge = pendingOffline.some(a => {
+                if (!a.mergedTo || a.mergedTo !== currentUser.userId) return true;
+                const accData = loadLocalUserData(a.userId);
+                const count = (accData && accData.stats && accData.stats.totalQuestionsAnswered) || 0;
+                return count > (a.lastMergedCount || 0);
+            });
+            if (needsMerge) openMergeModal(pendingOffline);
+        }
+    } catch(e) { console.warn('⚠️ 離線合併偵測失敗:', e.message); }
+
+    enterMainApp(currentUser);
+}
+
+// ===== 本機離線帳戶資料合併到當前雲端帳戶 =====
+// 內地生回港用學校 Google 登入時，自動偵測本機未同步的離線帳戶（如 QQ），詢問是否合併
+function findLocalOfflineAccounts(excludeUserId) {
+    const db = getUsers();
+    return db.users.filter(u => u.passwordHash && u.userId !== excludeUserId);
+}
+
+function mergeUserData(base, incoming) {
+    // latestStatus：同題取「答對」優先
+    const latestStatus = { ...base.latestStatus, ...incoming.latestStatus };
+    for (const k in incoming.latestStatus) {
+        if (incoming.latestStatus[k] === true) latestStatus[k] = true;
+    }
+    // allAttempts：依 qid+timestamp 去重合併
+    const seen = new Set(base.allAttempts.map(a => a.qid));
+    const allAttempts = [...base.allAttempts];
+    for (const a of incoming.allAttempts || []) {
+        if (!seen.has(a.qid)) { allAttempts.push(a); seen.add(a.qid); }
+    }
+    // favorites：併集
+    const favorites = [...new Set([...(base.favorites || []), ...(incoming.favorites || [])])];
+    // practiceHistory：依 id 去重
+    const historySeen = new Set((base.practiceHistory || []).map(h => h.id));
+    const practiceHistory = [...(base.practiceHistory || [])];
+    for (const h of incoming.practiceHistory || []) {
+        if (!historySeen.has(h.id)) { practiceHistory.push(h); historySeen.add(h.id); }
+    }
+    // achievements：併集（unlocked 優先）
+    const achievements = { ...(base.achievements || {}), ...(incoming.achievements || {}) };
+    for (const k in incoming.achievements || {}) {
+        if (incoming.achievements[k] && incoming.achievements[k].unlocked) achievements[k] = incoming.achievements[k];
+    }
+    // stats：合計
+    const stats = { ...(base.stats || {}), ...(incoming.stats || {}) };
+    stats.totalQuestionsAnswered = (base.stats?.totalQuestionsAnswered || 0) + (incoming.stats?.totalQuestionsAnswered || 0);
+    stats.totalCorrect = (base.stats?.totalCorrect || 0) + (incoming.stats?.totalCorrect || 0);
+    stats.consecutiveCorrect = Math.max(base.stats?.consecutiveCorrect || 0, incoming.stats?.consecutiveCorrect || 0);
+    stats.maxConsecutive = Math.max(base.stats?.maxConsecutive || 0, incoming.stats?.maxConsecutive || 0);
+    const daily = [...new Set([...(base.stats?.dailyPracticeDates || []), ...(incoming.stats?.dailyPracticeDates || [])])];
+    stats.dailyPracticeDates = daily;
+    stats.lastAccuracy = incoming.stats?.lastAccuracy ?? base.stats?.lastAccuracy ?? null;
+    // translationStats：合計
+    const ts = { ...(base.translationStats || {}), ...(incoming.translationStats || {}) };
+    ts.totalAttempted = (base.translationStats?.totalAttempted || 0) + (incoming.translationStats?.totalAttempted || 0);
+    ts.totalCorrect = (base.translationStats?.totalCorrect || 0) + (incoming.translationStats?.totalCorrect || 0);
+    ts.consecutiveCorrect = Math.max(base.translationStats?.consecutiveCorrect || 0, incoming.translationStats?.consecutiveCorrect || 0);
+    ts.maxConsecutive = Math.max(base.translationStats?.maxConsecutive || 0, incoming.translationStats?.maxConsecutive || 0);
+    ts.perfectRuns = (base.translationStats?.perfectRuns || 0) + (incoming.translationStats?.perfectRuns || 0);
+    ts.quickCorrectCount = Math.max(base.translationStats?.quickCorrectCount || 0, incoming.translationStats?.quickCorrectCount || 0);
+    ts.lastAttemptTime = Math.max(base.translationStats?.lastAttemptTime || 0, incoming.translationStats?.lastAttemptTime || 0);
+    // mistakeTracker：逐題取較大計數
+    const mistakeTracker = { ...(base.mistakeTracker || {}) };
+    for (const k in incoming.mistakeTracker || {}) {
+        mistakeTracker[k] = Math.max(mistakeTracker[k] || 0, incoming.mistakeTracker[k] || 0);
+    }
+    // chapterAccuracy：併集（取較大）
+    const chapterAccuracy = { ...(base.chapterAccuracy || {}) };
+    for (const k in incoming.chapterAccuracy || {}) {
+        chapterAccuracy[k] = Math.max(chapterAccuracy[k] || 0, incoming.chapterAccuracy[k] || 0);
+    }
+    return {
+        latestStatus, allAttempts, favorites, practiceHistory,
+        achievements, stats, translationStats: ts, mistakeTracker, chapterAccuracy
+    };
+}
+
+function openMergeModal(offlineAccounts) {
+    const overlay = document.createElement('div');
+    overlay.id = 'mergeOfflineOverlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); display:flex; justify-content:center; align-items:center; z-index:999999; backdrop-filter:blur(3px);';
+    const names = offlineAccounts.map(a => `📴 ${a.userId}`).join('<br>');
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:white; border-radius:24px; padding:28px 26px; max-width:420px; width:92%; text-align:center; box-shadow:0 20px 70px rgba(0,0,0,0.35); animation:slideUp 0.3s ease;';
+    modal.innerHTML = `
+        <div style="font-size:2.2rem; margin-bottom:8px;">📥</div>
+        <h3 style="color:#2e0f5a; margin:0 0 8px 0;">偵測到本機離線帳戶</h3>
+        <div style="color:#666; font-size:0.9rem; margin-bottom:14px; line-height:1.7;">
+            你的本機有以下離線練習資料：<br>
+            <b style="color:#4a1d8c;">${names}</b><br>
+            <span style="font-size:0.8rem; color:#888;">要把這些練習進度合併到目前的帳戶嗎？<br>（內地離線做的題、成就、錯題會搬過來）</span>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button id="mergeCancelBtn" style="flex:1; padding:11px 0; border:2px solid #e0d6f5; border-radius:40px; background:white; color:#666; font-size:0.95rem; font-weight:600; cursor:pointer;">稍後再合併</button>
+            <button id="mergeConfirmBtn" style="flex:2; padding:11px 0; border:none; border-radius:40px; background:linear-gradient(135deg,#4a1d8c,#7c3aed); color:white; font-size:0.95rem; font-weight:700; cursor:pointer;">✅ 合併到本帳戶</button>
+        </div>
+        <div id="mergeError" style="color:#dc2626; font-size:0.85rem; margin-top:10px; display:none;"></div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    document.getElementById('mergeCancelBtn').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    document.getElementById('mergeConfirmBtn').addEventListener('click', async function() {
+        const btn = this;
+        btn.disabled = true; btn.textContent = '⏳ 合併中...';
+        try {
+            const result = await mergeOfflineAccounts(offlineAccounts);
+            if (result.success) {
+                alert(`✅ 合併完成！\n\n已把 ${result.accounts} 個離線帳戶的資料合併到目前帳戶。\n\n合併內容：\n${result.summary}\n\n之後在內地仍可用原本的離線帳戶繼續練習，回港登入本帳戶即可再次合併。`);
+                overlay.remove();
+            } else {
+                const err = document.getElementById('mergeError');
+                err.textContent = '❌ 合併失敗：' + result.message;
+                err.style.display = 'block';
+                btn.disabled = false; btn.textContent = '✅ 合併到本帳戶';
+            }
+        } catch(e) {
+            console.error('❌ 合併失敗:', e);
+            const err = document.getElementById('mergeError');
+            err.textContent = '❌ 合併失敗：' + e.message;
+            err.style.display = 'block';
+            btn.disabled = false; btn.textContent = '✅ 合併到本帳戶';
+        }
+    });
+}
+
+async function mergeOfflineAccounts(offlineAccounts) {
+    const db = getUsers();
+    const targetUserId = currentUser.userId;
+    const base = loadLocalUserData(targetUserId);
+    let mergedData = base;
+    let summaryLines = [];
+    for (const acc of offlineAccounts) {
+        const accData = loadLocalUserData(acc.userId);
+        if (!accData) continue;
+        const beforeCount = mergedData.stats?.totalQuestionsAnswered || 0;
+        mergedData = mergeUserData(mergedData, accData);
+        const afterCount = mergedData.stats?.totalQuestionsAnswered || 0;
+        const gained = afterCount - beforeCount;
+        const accAchievements = Object.keys(accData.achievements || {}).filter(k => accData.achievements[k]?.unlocked).length;
+        summaryLines.push(`${acc.userId}：+${gained} 題、${accAchievements} 成就`);
+        // 標記該離線帳戶為已合併（保留本機資料供內地繼續用，記錄合併時的題數）
+        const idx = db.users.findIndex(u => u.userId === acc.userId);
+        if (idx !== -1) {
+            db.users[idx].mergedTo = targetUserId;
+            db.users[idx].lastMergedAt = new Date().toISOString();
+            db.users[idx].lastMergedCount = (accData.stats && accData.stats.totalQuestionsAnswered) || 0;
+        }
+    }
+    saveUsers(db);
+    // 寫入目標帳戶本機 + 雲端
+    saveUserDataWith(mergedData);
+    if (firestoreEnabled) {
+        await syncToFirestore('users', targetUserId, {
+            latestStatus: mergedData.latestStatus || {},
+            allAttempts: mergedData.allAttempts || [],
+            favorites: mergedData.favorites || [],
+            practiceHistory: mergedData.practiceHistory || [],
+            achievements: mergedData.achievements || {},
+            stats: mergedData.stats || {},
+            translationStats: mergedData.translationStats || {},
+            mistakeTracker: mergedData.mistakeTracker || {},
+            chapterAccuracy: mergedData.chapterAccuracy || {},
+            lastLogin: new Date().toISOString(),
+            lastUpdated: new Date().toISOString()
+        });
+    }
+    return { success: true, accounts: offlineAccounts.length, summary: summaryLines.join('\n') };
+}
+
+function loadLocalUserData(userId) {
+    const raw = localStorage.getItem(`ms_chem_${userId}`);
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch(e) { return null; }
+}
+
+function saveUserDataWith(data) {
+    if (!currentUser) return;
+    const userId = currentUser.id || currentUser.userId;
+    localStorage.setItem(`ms_chem_${userId}`, JSON.stringify(data));
+    userData = data;
+}
+
+// ===== 電郵／密碼登入（內地生或無 Google 帳戶者使用） =====
+function getEmailLoginInputs() {
+    return {
+        email: (document.getElementById('emailLoginInput') || {}).value || '',
+        password: (document.getElementById('emailLoginPassword') || {}).value || ''
+    };
+}
+
+async function handleEmailLogin() {
+    clearLoginError();
+    const { email, password } = getEmailLoginInputs();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showLoginError('⚠️ 請輸入有效的電郵地址'); return; }
+    if (!password) { showLoginError('⚠️ 請輸入密碼'); return; }
+    updateStatusDot('connecting', '⏳ 連線中...', '#fef3c7', '#7c5a00');
+    try {
+        await withTimeout(firebase.auth().signInWithEmailAndPassword(email.trim(), password), 8000);
+        const userId = email.trim().toLowerCase();
+        const existingUser = await withTimeout(findUserAcrossDevices(userId), 8000);
+        if (!existingUser) {
+            // 理論上不應發生（註冊時會建立），但保險：補建使用者
+            await firebase.auth().signOut();
+            showLoginError('⚠️ 找不到帳戶資料，請先註冊');
+            return;
+        }
+        // 雲端登入成功：拉取老師可能設定的欄位（approved 批准）併回本機帳戶
+        try {
+            const cloudDoc = await firebase.firestore().collection('users').doc(userId).get();
+            if (cloudDoc.exists) {
+                const cd = cloudDoc.data();
+                if (cd.approved === true) existingUser.approved = true;
+                const db = getUsers();
+                const idx = db.users.findIndex(u => u.userId === userId);
+                if (idx !== -1) {
+                    db.users[idx].approved = (db.users[idx].approved === true || cd.approved === true) ? true : false;
+                    saveUsers(db);
+                    existingUser = db.users[idx];
+                }
+            }
+        } catch(e) { console.warn('⚠️ 讀取雲端使用者設定失敗:', e.message); }
+        await finalizeLogin(existingUser);
+    } catch (error) {
+        console.error('❌ 電郵登入失敗:', error);
+        if (isOfflineNetworkError(error)) {
+            // 內地連不上 Firebase：改用本機離線登入
+            const ok = await offlineLogin(email.trim().toLowerCase(), password);
+            if (ok) return;
+        }
+        // 雲端無此帳戶但本機有離線帳戶：這是離線建立的帳戶，改用本機登入
+        // 注意：新版 Firebase SDK 對 email 不存在／密碼錯誤統一回 auth/invalid-credential，需一併處理
+        if ((error.code === 'auth/user-not-found' || error.code === 'auth/too-many-requests' || error.code === 'auth/invalid-credential') && findUser(email.trim().toLowerCase()) && findUser(email.trim().toLowerCase()).passwordHash) {
+            const ok = await offlineLogin(email.trim().toLowerCase(), password);
+            if (ok) return;
+        }
+        updateStatusDot('offline', '❌ 登入失敗', '#f8d7da', '#7f1d1d');
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+            showLoginError('❌ 電郵或密碼錯誤，請重試或先註冊');
+        } else if (error.code === 'auth/invalid-email') {
+            showLoginError('❌ 電郵格式不正確');
+        } else {
+            showLoginError('❌ 登入失敗：' + error.message);
+        }
+    }
+}
+
+async function handleEmailRegister() {
+    clearLoginError();
+    const { email, password } = getEmailLoginInputs();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showLoginError('⚠️ 請輸入有效的電郵地址'); return; }
+    if (!password || password.length < 6) { showLoginError('⚠️ 密碼至少 6 位'); return; }
+    updateStatusDot('connecting', '⏳ 註冊中...', '#fef3c7', '#7c5a00');
+    try {
+        const userId = email.trim().toLowerCase();
+        // 檢查是否已有學習紀錄
+        const existing = await withTimeout(findUserAcrossDevices(userId), 8000);
+        if (existing) {
+            showLoginError('⚠️ 此電郵已註冊，請直接登入');
+            return;
+        }
+        await withTimeout(firebase.auth().createUserWithEmailAndPassword(email.trim(), password), 8000);
+        const isTeacher = isTeacherEmail(userId);
+        let name, className = null, studentId = null;
+        if (isTeacher) {
+            const emailPrefix = userId.split('@')[0];
+            name = emailPrefix.toUpperCase();
+            const teacherLang = await showLanguagePrompt();
+            const newUser = await createUser(name, className, studentId, userId, isTeacher, emailPrefix.toUpperCase(), teacherLang);
+            await finalizeLogin(newUser);
+        } else {
+            const userInfo = await showCustomPrompt();
+            if (!userInfo) {
+                await firebase.auth().signOut();
+                updateStatusDot('offline', '❌ 註冊取消', '#f8d7da', '#7f1d1d');
+                return;
+            }
+            name = userInfo.name || userId;
+            className = userInfo.className;
+            studentId = userInfo.studentId;
+            const language = userInfo.language || 'en';
+            const newUser = await createUser(name, className, studentId, userId, isTeacher, null, language);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            await finalizeLogin(newUser);
+        }
+    } catch (error) {
+        console.error('❌ 電郵註冊失敗:', error);
+        if (isOfflineNetworkError(error)) {
+            // 內地連不上 Firebase：改用本機離線註冊
+            const ok = await offlineRegister(email.trim().toLowerCase(), password);
+            if (ok) return;
+        }
+        updateStatusDot('offline', '❌ 註冊失敗', '#f8d7da', '#7f1d1d');
+        if (error.code === 'auth/email-already-in-use') {
+            showLoginError('⚠️ 此電郵已註冊，請直接登入');
+        } else if (error.code === 'auth/weak-password') {
+            showLoginError('⚠️ 密碼太弱，至少 6 位');
+        } else if (error.code === 'auth/invalid-email') {
+            showLoginError('⚠️ 電郵格式不正確');
+        } else {
+            showLoginError('❌ 註冊失敗：' + error.message);
+        }
+    }
+}
+
+// ===== 離線模式（內地連不上 Firebase 時使用） =====
+function isOfflineNetworkError(error) {
+    return error && (error.code === 'auth/network-request-failed'
+        || /network|timeout|unreachable|INTERNET_DISCONNECTED/i.test(error.message || ''));
+}
+
+// 給 Firebase 呼叫加超時：內地被牆時連線會卡很久，超過 ms 即判定為離線
+function withTimeout(promise, ms) {
+    return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => {
+            const err = new Error('timeout');
+            err.code = 'auth/network-request-failed';
+            err.message = 'Network request timed out';
+            reject(err);
+        }, ms))
+    ]);
+}
+
+async function sha256(text) {
+    try {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch(e) {
+        // 極舊瀏覽器不支援 crypto.subtle：退而求其次用簡單 hash
+        let h = 0;
+        for (let i = 0; i < text.length; i++) { h = (h * 31 + text.charCodeAt(i)) >>> 0; }
+        return 'fallback-' + h.toString(16);
+    }
+}
+
+async function offlineLogin(userId, password) {
+    const local = findUser(userId);
+    if (!local || !local.passwordHash) {
+        showLoginError('⚠️ 無法連線雲端，且本機未有此帳戶的離線資料。請回港後再試，或確認電郵正確。');
+        return false;
+    }
+    const hash = await sha256(password);
+    if (local.passwordHash && local.passwordHash !== hash) {
+        showLoginError('⚠️ 離線模式密碼錯誤（此密碼僅用於本機登入）');
+        return false;
+    }
+    firestoreEnabled = false;
+    currentUser = local;
+    console.log('✅ 離線登入成功:', userId);
+    showOfflineBanner();
+    // 記錄本機登入時間（不寫雲端）
+    const nowISO = new Date().toISOString();
+    local.lastLogin = nowISO;
+    const db = getUsers();
+    const idx = db.users.findIndex(u => u.userId === userId);
+    if (idx !== -1) { db.users[idx].lastLogin = nowISO; saveUsers(db); }
+    enterMainApp(local);
+    return true;
+}
+
+async function offlineRegister(userId, password) {
+    const existing = findUser(userId);
+    if (existing) {
+        showLoginError('⚠️ 此電郵在本機已有帳戶，請直接登入');
+        return false;
+    }
+    const isTeacher = isTeacherEmail(userId);
+    if (isTeacher) {
+        showLoginError('⚠️ 離線模式不支援教師帳戶，請回港後以學校電郵註冊');
+        return false;
+    }
+    const userInfo = await showCustomPrompt();
+    if (!userInfo) {
+        updateStatusDot('offline', '❌ 註冊取消', '#f8d7da', '#7f1d1d');
+        return false;
+    }
+    const passwordHash = await sha256(password);
+    const db = getUsers();
+    const user = {
+        userId: userId,
+        name: userInfo.name || userId,
+        className: userInfo.className,
+        studentId: userInfo.studentId,
+        language: userInfo.language || 'en',
+        teacherCode: '',
+        isTeacher: false,
+        isOffline: true,
+        passwordHash: passwordHash,
+        managedClasses: [],
+        createdAt: new Date().toISOString(),
+        latestStatus: {},
+        allAttempts: [],
+        favorites: [],
+        practiceHistory: [],
+        achievements: {},
+        stats: { totalQuestionsAnswered: 0, totalCorrect: 0 },
+        translationStats: { totalAttempted: 0, totalCorrect: 0, consecutiveCorrect: 0, maxConsecutive: 0, perfectRuns: 0, lastAttemptTime: 0, quickCorrectCount: 0 },
+        mistakeTracker: {},
+        chapterAccuracy: {}
+    };
+    db.users.push(user);
+    saveUsers(db);
+    firestoreEnabled = false;
+    currentUser = user;
+    console.log('✅ 離線註冊成功:', userId);
+    alert(`✅ 已建立離線帳戶（未連線雲端）！
+
+👤 ${user.name}
+📚 班別：${user.className}
+
+📴 【離線模式使用指引】
+1. 在內地：直接練習即可，進度會儲存在這部裝置
+2. 回港後：按主程式頂部的「🔄 同步到雲端」黃色橫幅
+3. 輸入同一組電郵＋密碼 → 進度上傳雲端
+4. 之後在學校用「✉️ 電郵登入」＋同一組電郵密碼登入
+5. 放學回內地會自動轉離線模式，繼續練習
+6. 第二天回校再按「🔄 同步到雲端」即可
+
+⚠️ 請記住你的電郵和密碼，日後同步/登入都需要用同一組。`);
+    showOfflineBanner();
+    enterMainApp(user);
+    return true;
+}
+
+// 顯示離線模式提示橫幅（主程式頂部）
+function showOfflineBanner() {
+    const mainApp = document.getElementById('mainApp');
+    if (!mainApp) return;
+    let banner = document.getElementById('offlineSyncBanner');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'offlineSyncBanner';
+        banner.style.cssText = 'background:#fef3c7; border:2px solid #f59e0b; border-radius:12px; padding:10px 14px; margin-bottom:10px; font-size:0.85rem; color:#78350f; display:flex; align-items:center; gap:10px; flex-wrap:wrap;';
+        mainApp.insertBefore(banner, mainApp.firstChild);
+    }
+    banner.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; width:100%;">
+            <span style="font-size:1.1rem;">📴</span>
+            <div style="flex:1; min-width:200px;">
+                <div style="font-weight:700; color:#92400e;">離線模式（未連線雲端）</div>
+                <div style="font-size:0.78rem; color:#78350f; margin-top:2px; line-height:1.5;">
+                    進度只儲存在<b>此裝置</b>。<br>
+                    💡 換裝置或換瀏覽器會看不到此處的進度！回港後請先按「🔄 同步到雲端」上傳。
+                </div>
+            </div>
+            <button onclick="openOfflineSyncModal()" style="margin-left:auto; padding:7px 16px; border:none; border-radius:40px; background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-weight:700; cursor:pointer; font-size:0.85rem; box-shadow:0 2px 8px rgba(217,119,6,0.4);">🔄 同步到雲端</button>
+        </div>
+    `;
+}
+
+function openOfflineSyncModal() {
+    const overlay = document.createElement('div');
+    overlay.id = 'offlineSyncOverlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:999999;';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:white; border-radius:24px; padding:28px; max-width:400px; width:90%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+    modal.innerHTML = `
+        <div style="font-size:2rem; margin-bottom:6px;">🔄</div>
+        <h3 style="color:#2e0f5a; margin:0 0 4px 0;">同步到雲端</h3>
+        <p style="color:#888; font-size:0.85rem; margin:0 0 16px 0;">輸入密碼建立雲端帳戶，並上傳本機進度。<br>（回港連線正常後使用）</p>
+        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; padding:10px 12px; font-size:0.78rem; color:#0c4a6e; text-align:left; margin-bottom:14px; line-height:1.6;">
+            📴 同步後：在學校用「✉️ 電郵登入」＋同一組密碼登入即可；<br>
+            放學回內地會自動轉離線模式繼續練習，<br>
+            第二天回校再按此同步，進度不會丟失。
+        </div>
+        <div style="margin-bottom:12px; text-align:left;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">✉️ 電郵</label>
+            <input id="offlineSyncEmail" value="${currentUser.userId}" readonly style="width:100%; padding:10px 14px; border-radius:12px; border:2px solid #e0d6f5; font-size:0.95rem; background:#f0edf8; outline:none;">
+        </div>
+        <div style="margin-bottom:16px; text-align:left;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">🔒 密碼</label>
+            <input id="offlineSyncPassword" type="password" placeholder="請輸入密碼" style="width:100%; padding:10px 14px; border-radius:12px; border:2px solid #e0d6f5; font-size:0.95rem; outline:none;">
+        </div>
+        <div id="offlineSyncError" style="color:#dc2626; font-size:0.85rem; margin-bottom:12px; display:none;"></div>
+        <div style="display:flex; gap:10px;">
+            <button id="offlineSyncCancel" style="flex:1; padding:10px 0; border:2px solid #e0d6f5; border-radius:40px; background:white; color:#666; font-size:0.95rem; font-weight:600; cursor:pointer;">取消</button>
+            <button id="offlineSyncConfirm" style="flex:2; padding:10px 0; border:none; border-radius:40px; background:linear-gradient(135deg,#4a1d8c,#7c3aed); color:white; font-size:0.95rem; font-weight:600; cursor:pointer;">✅ 同步</button>
+        </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    const errEl = document.getElementById('offlineSyncError');
+    const pwdInput = document.getElementById('offlineSyncPassword');
+    setTimeout(() => pwdInput.focus(), 100);
+    document.getElementById('offlineSyncCancel').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    document.getElementById('offlineSyncConfirm').addEventListener('click', async function() {
+        const password = pwdInput.value;
+        if (!password) { errEl.textContent = '⚠️ 請輸入密碼'; errEl.style.display = 'block'; return; }
+        errEl.style.display = 'none';
+        document.getElementById('offlineSyncConfirm').disabled = true;
+        document.getElementById('offlineSyncConfirm').textContent = '⏳ 同步中...';
+        const ok = await performOfflineSync(currentUser.userId, password);
+        if (ok) { overlay.remove(); }
+        else {
+            document.getElementById('offlineSyncConfirm').disabled = false;
+            document.getElementById('offlineSyncConfirm').textContent = '✅ 同步';
+        }
+    });
+}
+
+async function performOfflineSync(userId, password) {
+    try {
+        // 嘗試登入雲端；若帳戶不存在則建立
+        try {
+            await firebase.auth().signInWithEmailAndPassword(userId, password);
+        } catch (e) {
+            // 新版 Firebase SDK 對「email 不存在／密碼錯」統一回 auth/invalid-credential
+            // 雲端無此帳戶（離線帳戶從未同步過）時應建立雲端帳戶
+            if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential') {
+                try {
+                    await firebase.auth().createUserWithEmailAndPassword(userId, password);
+                } catch (e2) {
+                    // 建立失敗：可能是電郵已存在（雲端真有帳戶但密碼不同）
+                    if (e2.code === 'auth/email-already-in-use') {
+                        throw { code: 'auth/wrong-password', message: '此電郵雲端已有帳戶，但密碼不正確。請輸入離線註冊時相同的密碼。' };
+                    }
+                    throw e2;
+                }
+            } else {
+                throw e;
+            }
+        }
+        firestoreEnabled = true;
+        const db = getUsers();
+        const localUser = db.users.find(u => u.userId === userId);
+        if (!localUser) { alert('❌ 找不到本機帳戶資料'); return false; }
+        // 上傳本機 userData
+        const rawData = localStorage.getItem(`ms_chem_${userId}`);
+        const userDataObj = rawData ? JSON.parse(rawData) : {};
+        await syncToFirestore('users', userId, {
+            latestStatus: userDataObj.latestStatus || {},
+            allAttempts: userDataObj.allAttempts || [],
+            favorites: userDataObj.favorites || [],
+            practiceHistory: userDataObj.practiceHistory || [],
+            achievements: userDataObj.achievements || {},
+            stats: userDataObj.stats || {},
+            translationStats: userDataObj.translationStats || {},
+            mistakeTracker: userDataObj.mistakeTracker || {},
+            chapterAccuracy: userDataObj.chapterAccuracy || {},
+            lastLogin: new Date().toISOString(),
+            lastUpdated: new Date().toISOString()
+        });
+        // 更新使用者資料（移除離線標記，寫入雲端；密碼 hash 僅存本機不傳雲端）
+        const cloudUser = { ...localUser };
+        delete cloudUser.passwordHash;
+        delete cloudUser.isOffline;
+        cloudUser.lastLogin = new Date().toISOString();
+        await firebase.firestore().collection('users').doc(userId).set(cloudUser, { merge: true });
+        // 下載雲端中老師可能設定的欄位（如 approved 批准狀態），併回本機帳戶
+        try {
+            const cloudDoc = await firebase.firestore().collection('users').doc(userId).get();
+            if (cloudDoc.exists) {
+                const cd = cloudDoc.data();
+                if (cd.approved === true) cloudUser.approved = true;
+                if (cd.className) cloudUser.className = cd.className;
+                if (cd.language) cloudUser.language = cd.language;
+                if (cd.studentId) cloudUser.studentId = cd.studentId;
+            }
+        } catch(e) { console.warn('⚠️ 讀取雲端使用者設定失敗:', e.message); }
+        // 本機保留 passwordHash，供日後內地離線登入
+        const localKeep = { ...cloudUser, passwordHash: localUser.passwordHash };
+        db.users[db.users.findIndex(u => u.userId === userId)] = localKeep;
+        saveUsers(db);
+        currentUser = localKeep;
+        // 移除離線橫幅
+        const banner = document.getElementById('offlineSyncBanner');
+        if (banner) banner.remove();
+        alert('✅ 同步完成！本機進度已上傳雲端，日後可在任何裝置登入使用。');
+        enterMainApp(cloudUser);
+        return true;
+    } catch (error) {
+        console.error('❌ 同步失敗:', error);
+        const errEl = document.getElementById('offlineSyncError');
+        if (errEl) {
+            if (isOfflineNetworkError(error)) errEl.textContent = '⚠️ 仍無法連線雲端（可能身處內地），請回港後再試';
+            else if (error.code === 'auth/email-already-in-use') errEl.textContent = '⚠️ 此電郵雲端已有帳戶，請直接用「電郵登入」登入';
+            else errEl.textContent = '❌ 同步失敗：' + error.message;
+            errEl.style.display = 'block';
+        }
+        return false;
+    }
+}
+
+async function handleEmailForgot() {
+    clearLoginError();
+    const email = (document.getElementById('emailLoginInput') || {}).value || '';
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showLoginError('⚠️ 請先輸入電郵地址，再按「忘記密碼」'); return; }
+    try {
+        await firebase.auth().sendPasswordResetEmail(email.trim());
+        alert('✅ 重設密碼郵件已寄出，請檢查信箱（含垃圾郵件）');
+    } catch (error) {
+        console.error('❌ 發送重置信失敗:', error);
+        showLoginError('❌ 發送失敗：' + error.message);
     }
 }
 
@@ -1125,6 +1782,7 @@ function enterMainApp(user) {
         setupTabs();
         document.querySelector('.tab[data-tab="practice"]')?.click();
         setupLogout();
+        setTimeout(() => maybeShowDailyReview(), 600);
     });
 }
 
@@ -1132,6 +1790,7 @@ function setupTabs() {
     const tabs = document.querySelectorAll('.tab');
     const panels = {
         practice: document.getElementById('practicePanel'),
+        test: document.getElementById('testPanel'),
         learning: document.getElementById('learningPanel'),
         pinned: document.getElementById('pinnedPanel'),
         achievements: document.getElementById('achievementsPanel'),
@@ -1178,6 +1837,7 @@ function setupTabs() {
             if (target === 'pinned') renderPinned();
             if (target === 'achievements') renderAchievements();
             if (target === 'resources') renderResources();
+            if (target === 'test') renderTestList();
             if (target === 'teacher') renderTeacherPanel();
         };
         tab.addEventListener('click', tab._clickHandler);
@@ -1307,7 +1967,9 @@ function processAchievementQueue() {
         'collector': '📚 收藏家',
         'weekChallenge': '📅 一週挑戰',
         'blankPaper': '📄 交白卷',
-        'downwardTrend': '📉 下滑趨勢'
+        'downwardTrend': '📉 下滑趨勢',
+        'reviewFirst': '🔁 溫故知新',
+        'reviewMaster': '🧠 錯題複習王',
     };
     const achievementName = isChapterAchievement ? (item.chapterName || item.name) : (titleMap[item.name] || item.name);
     const pointsText = item.points > 0 ? `🏆 +${item.points} 積分` : (item.points < 0 ? `⚠️ ${item.points} 積分` : '');
@@ -1531,7 +2193,7 @@ function checkAndUnlockAchievements(unit, chapter, accuracy, questionCount, isPe
     saveUserData();
 }
 
-function addPracticeHistory(unit, chapter, difficultyName, questionCount, correctCount, accuracy, mode, timeSpentPercent, consecutiveCorrectCount, isBlankPaper, timeSpentSeconds) {
+function addPracticeHistory(unit, chapter, difficultyName, questionCount, correctCount, accuracy, mode, timeSpentPercent, consecutiveCorrectCount, isBlankPaper, timeSpentSeconds, skipAchievements) {
     let now = new Date(), date = now.toISOString().slice(0, 10), time = now.toTimeString().slice(0, 5);
     let unitObj = window.ALL_UNITS[unit];
     let unitName = unitObj ? unitObj.name : unit;
@@ -1549,7 +2211,7 @@ function addPracticeHistory(unit, chapter, difficultyName, questionCount, correc
     let isSpeed = timeSpentPercent <= 50 && accuracy >= 70;
     saveUserData();
     let newUnlocks = [];
-    checkAndUnlockAchievements(unit, chapter, accuracy, questionCount, accuracy === 100 && questionCount >= 10, selectedCount === 36, isSpeed, totalQuestions, newUnlocks, consecutiveCorrectCount, isBlankPaper, previousAccuracy);
+    if (!skipAchievements) checkAndUnlockAchievements(unit, chapter, accuracy, questionCount, accuracy === 100 && questionCount >= 10, selectedCount === 36, isSpeed, totalQuestions, newUnlocks, consecutiveCorrectCount, isBlankPaper, previousAccuracy);
     if (newUnlocks.length > 0) {
         setTimeout(() => {
             for (let i = 0; i < newUnlocks.length; i++) {
@@ -1577,7 +2239,7 @@ function calculateTotalPoints(achievements) {
 
 async function calculateClassRank(userId, userPoints) {
     if (!currentUser || !currentUser.className) return { rank: 0, total: 0 };
-    const className = currentUser.className;
+    const className = groupClassName(currentUser.className, currentUser.language);
     const allStudents = await loadAllStudentsFromFirebase(className);
     if (allStudents.length === 0) return { rank: 0, total: 0 };
     const classmates = [];
@@ -1717,6 +2379,308 @@ function toggleCollapsible(id) {
     }
 }
 
+// ===== 老師端：測驗管理 =====
+async function renderSubtabTests(className) {
+    const container = document.getElementById('subtab-tests');
+    if (!container) return;
+    const tests = await loadAllTests();
+    let html = `
+        <h3 style="margin-bottom:8px;">📝 測驗管理</h3>
+        <div style="margin-bottom:12px;">
+            <button onclick="openCreateTestModal()" style="padding:8px 18px; border:none; border-radius:40px; background:linear-gradient(135deg,#4a1d8c,#7c3aed); color:white; font-weight:600; cursor:pointer;">➕ 建立測驗</button>
+        </div>`;
+    if (tests.length === 0) {
+        html += `<div class="card" style="text-align:center; color:#999; padding:20px;">尚未建立任何測驗</div>`;
+    } else {
+        html += `<div class="card" style="padding:0.8rem;">
+            <table class="wrong-table" style="font-size:0.8rem;">
+                <thead><tr><th>測驗</th><th>班級</th><th>題數</th><th>截止</th><th>作答數</th><th>操作</th></tr></thead>
+                <tbody>`;
+        for (const t of tests) {
+            const doneCount = t.results ? Object.keys(t.results).length : 0;
+            const classText = (t.classNames || []).join('、');
+            const deadlineText = t.deadline ? new Date(t.deadline).toLocaleString('zh-HK') : '無';
+            html += `
+                <tr>
+                    <td style="font-weight:600;">${t.name}</td>
+                    <td>${classText}</td>
+                    <td>${t.questionCount}</td>
+                    <td>${deadlineText}</td>
+                    <td style="font-weight:600; color:#4a1d8c;">${doneCount}</td>
+                    <td>
+                        <button onclick="showTestDetail('${t.id}')" style="font-size:0.7rem; padding:3px 10px; border:none; border-radius:20px; background:#f0edf8; color:#4a1d8c; cursor:pointer; margin-right:4px;">📊 監測</button>
+                        <button onclick="exportTestCSV('${t.id}')" style="font-size:0.7rem; padding:3px 10px; border:none; border-radius:20px; background:#fef3c7; color:#92400e; cursor:pointer;">📥 匯出</button>
+                    </td>
+                </tr>`;
+        }
+        html += `</tbody></table></div>`;
+    }
+    container.innerHTML = html;
+}
+
+function getQuestionById(qid) {
+    for (let u in window.ALL_UNITS) for (let c in window.ALL_UNITS[u].chapters) {
+        const q = window.ALL_UNITS[u].chapters[c].questions.find(qq => qq.id === qid);
+        if (q) return q;
+    }
+    return null;
+}
+
+function getQuestionShort(qid) {
+    const q = getQuestionById(qid);
+    if (!q) return qid;
+    const t = q.text.replace(/<br>/g, ' ').replace(/<[^>]+>/g, '');
+    return t.length > 40 ? t.substring(0, 40) + '...' : t;
+}
+
+function openCreateTestModal() {
+    const overlay = document.createElement('div');
+    overlay.id = 'createTestOverlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:999999; backdrop-filter:blur(3px);';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:white; border-radius:24px; padding:26px; max-width:520px; width:94%; max-height:88vh; overflow-y:auto; box-shadow:0 20px 70px rgba(0,0,0,0.35);';
+    let chOptions = '';
+    for (let u in window.ALL_UNITS) {
+        const unitObj = window.ALL_UNITS[u];
+        chOptions += `<optgroup label="${unitObj.name}">`;
+        for (let c in unitObj.chapters) {
+            chOptions += `<option value="${u}_${c}">${unitObj.chapters[c].name}（${unitObj.chapters[c].questions.length} 題）</option>`;
+        }
+        chOptions += `</optgroup>`;
+    }
+    modal.innerHTML = `
+        <h3 style="color:#2e0f5a; margin:0 0 4px 0;">➕ 建立測驗</h3>
+        <p style="color:#888; font-size:0.8rem; margin:0 0 14px 0;">所有學生做同一份題目，公平比較</p>
+        <div style="margin-bottom:12px;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">📝 測驗名稱</label>
+            <input id="ctName" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;" placeholder="例如：Ch5-7 測驗">
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">📚 適用班級</label>
+            <select id="ctClass" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
+                <option value="__all__">全部班級</option>
+                <option value="S4(中)">S4(中)</option>
+                <option value="S4(Eng)">S4(Eng)</option>
+                ${Array.from(document.querySelectorAll('#teacherClassSelector option')).filter(o => o.value !== '__all__').map(o => `<option value="${o.value}">${o.value}</option>`).join('')}
+            </select>
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">📖 章節範圍</label>
+            <select id="ctChapter" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
+                <option value="__all__">全部章節</option>
+                ${chOptions}
+            </select>
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">🎯 難度</label>
+            <select id="ctDiff" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
+                <option value="__all__">全部難度</option>
+                <option value="1">✅ 基礎</option>
+                <option value="2">📈 進階</option>
+                <option value="3">🔥 挑戰</option>
+            </select>
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">🔢 題數</label>
+            <select id="ctCount" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
+                <option value="10">10 題</option>
+                <option value="20">20 題</option>
+                <option value="30">30 題</option>
+                <option value="__all__">全部</option>
+            </select>
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">⏰ 截止日期（可留空＝無截止）</label>
+            <input type="datetime-local" id="ctDeadline" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">⏱️ 限時（分鐘，可留空＝不限時）</label>
+            <input type="number" id="ctTimeLimit" min="1" placeholder="例如：20" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">🔄 作答規則</label>
+            <select id="ctRule" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
+                <option value="once">只能做一次</option>
+                <option value="best">可重做，取最高分</option>
+                <option value="last">可重做，取最後一次</option>
+            </select>
+        </div>
+        <div style="margin-bottom:10px;">
+            <label style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:0.85rem; color:#2e0f5a;">
+                <input type="checkbox" id="ctManualSelect"> 🖐️ 逐題挑選（不打勾＝系統自動抽題）
+            </label>
+            <div id="ctManualArea" style="display:none; margin-top:8px; max-height:200px; overflow-y:auto; border:1px solid #e9e4f5; border-radius:10px; padding:8px;">
+                <div id="ctManualList"></div>
+            </div>
+        </div>
+        <div id="ctError" style="color:#dc2626; font-size:0.85rem; margin-bottom:10px; display:none;"></div>
+        <div style="display:flex; gap:10px;">
+            <button id="ctCancelBtn" style="flex:1; padding:11px 0; border:2px solid #e0d6f5; border-radius:40px; background:white; color:#666; font-size:0.95rem; font-weight:600; cursor:pointer;">取消</button>
+            <button id="ctCreateBtn" style="flex:2; padding:11px 0; border:none; border-radius:40px; background:linear-gradient(135deg,#4a1d8c,#7c3aed); color:white; font-size:0.95rem; font-weight:700; cursor:pointer;">✅ 建立測驗</button>
+        </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    document.getElementById('ctCancelBtn').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    document.getElementById('ctManualSelect').addEventListener('change', function() {
+        document.getElementById('ctManualArea').style.display = this.checked ? 'block' : 'none';
+        if (this.checked) renderManualSelectList();
+    });
+    document.getElementById('ctCreateBtn').addEventListener('click', async function() {
+        const err = document.getElementById('ctError');
+        const name = document.getElementById('ctName').value.trim();
+        if (!name) { err.textContent = '⚠️ 請輸入測驗名稱'; err.style.display = 'block'; return; }
+        const classVal = document.getElementById('ctClass').value;
+        const chVal = document.getElementById('ctChapter').value;
+        const diffVal = document.getElementById('ctDiff').value;
+        const countVal = document.getElementById('ctCount').value;
+        const deadlineVal = document.getElementById('ctDeadline').value;
+        const timeLimitVal = document.getElementById('ctTimeLimit').value;
+        const ruleVal = document.getElementById('ctRule').value;
+        const manual = document.getElementById('ctManualSelect').checked;
+        let questions = [];
+        if (manual) {
+            questions = Array.from(document.querySelectorAll('#ctManualList input:checked')).map(cb => cb.value);
+        } else {
+            let pool = [];
+            for (let u in window.ALL_UNITS) for (let c in window.ALL_UNITS[u].chapters) {
+                if (chVal !== '__all__' && `${u}_${c}` !== chVal) continue;
+                for (const q of window.ALL_UNITS[u].chapters[c].questions) {
+                    if (diffVal !== '__all__' && q.difficulty_level !== parseInt(diffVal)) continue;
+                    if (q.difficulty_level === 0) continue;
+                    pool.push(q.id);
+                }
+            }
+            if (pool.length === 0) { err.textContent = '⚠️ 此條件下沒有可用題目'; err.style.display = 'block'; return; }
+            const count = countVal === '__all__' ? pool.length : parseInt(countVal);
+            questions = shuffleArray(pool).slice(0, count);
+        }
+        if (questions.length === 0) { err.textContent = '⚠️ 請選擇題目'; err.style.display = 'block'; return; }
+        const classNames = classVal === '__all__' ? ['S4(中)', 'S4(Eng)'] : [classVal];
+        const testData = {
+            name, classNames, questionCount: questions.length, questions,
+            deadline: deadlineVal ? new Date(deadlineVal).toISOString() : null,
+            timeLimit: timeLimitVal ? parseInt(timeLimitVal) : null,
+            attemptRule: ruleVal, createdBy: currentUser.userId, createdAt: new Date().toISOString(),
+            results: {}
+        };
+        const id = await createTestInFirestore(testData);
+        if (id) {
+            alert(`✅ 測驗「${name}」已建立！共 ${questions.length} 題，派發給 ${classNames.join('、')}`);
+            overlay.remove();
+            renderSubtabTests();
+        }
+    });
+}
+
+function renderManualSelectList() {
+    const list = document.getElementById('ctManualList');
+    const chVal = document.getElementById('ctChapter').value;
+    const diffVal = document.getElementById('ctDiff').value;
+    let html = '';
+    for (let u in window.ALL_UNITS) for (let c in window.ALL_UNITS[u].chapters) {
+        if (chVal !== '__all__' && `${u}_${c}` !== chVal) continue;
+        for (const q of window.ALL_UNITS[u].chapters[c].questions) {
+            if (diffVal !== '__all__' && q.difficulty_level !== parseInt(diffVal)) continue;
+            if (q.difficulty_level === 0) continue;
+            const short = q.text.replace(/<br>/g, ' ').replace(/<[^>]+>/g, '');
+            html += `<label style="display:flex; align-items:flex-start; gap:6px; padding:4px; font-size:0.75rem; cursor:pointer; border-bottom:1px solid #f0edf8;">
+                <input type="checkbox" value="${q.id}" style="margin-top:2px;"> <span>${short.length > 70 ? short.substring(0,70)+'...' : short}</span>
+            </label>`;
+        }
+    }
+    list.innerHTML = html || '<div style="color:#999; font-size:0.8rem;">此條件下無題目</div>';
+}
+
+async function showTestDetail(testId) {
+    if (!firestoreEnabled) { alert('⚠️ 需連線雲端'); return; }
+    let test = null;
+    try {
+        const doc = await firebase.firestore().collection('tests').doc(testId).get();
+        if (doc.exists) test = { id: doc.id, ...doc.data() };
+    } catch(e) { alert('❌ 讀取失敗'); return; }
+    if (!test) { alert('❌ 找不到測驗'); return; }
+    const results = test.results || {};
+    const studentIds = Object.keys(results);
+    const overlay = document.createElement('div');
+    overlay.id = 'testDetailOverlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:999999; backdrop-filter:blur(3px);';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:white; border-radius:24px; padding:24px; max-width:720px; width:94%; max-height:88vh; overflow-y:auto; box-shadow:0 20px 70px rgba(0,0,0,0.35);';
+    let scoreRows = '';
+    for (const sid of studentIds) {
+        const r = results[sid];
+        scoreRows += `<tr><td>${sid}</td><td style="font-weight:600; color:#4a1d8c;">${r.score}/${r.total}</td><td>${new Date(r.submittedAt).toLocaleString('zh-HK')}</td></tr>`;
+    }
+    let qStats = '';
+    for (const qid of test.questions) {
+        let correctCount = 0;
+        for (const sid of studentIds) {
+            const ans = results[sid].answers[qid];
+            if (ans && ans.correct) correctCount++;
+        }
+        const pct = studentIds.length > 0 ? Math.round(correctCount / studentIds.length * 100) : 0;
+        qStats += `<tr>
+            <td>${getQuestionShort(qid)}</td>
+            <td style="font-weight:600; color:${pct >= 70 ? '#10b981' : (pct >= 40 ? '#f59e0b' : '#dc2626')};">${correctCount}/${studentIds.length}（${pct}%）</td>
+        </tr>`;
+    }
+    modal.innerHTML = `
+        <h3 style="color:#2e0f5a; margin:0 0 4px 0;">📊 ${test.name}</h3>
+        <p style="color:#888; font-size:0.8rem; margin:0 0 12px 0;">作答 ${studentIds.length} 人 / 共 ${test.questionCount} 題</p>
+        <div style="margin-bottom:14px;">
+            <div style="font-weight:700; color:#2e0f5a; margin-bottom:6px;">👥 學生成績</div>
+            <table class="wrong-table" style="font-size:0.78rem;">
+                <thead><tr><th>學生</th><th>得分</th><th>提交時間</th></tr></thead>
+                <tbody>${scoreRows || '<tr><td colspan="3" style="color:#999;">尚無人作答</td></tr>'}</tbody>
+            </table>
+        </div>
+        <div>
+            <div style="font-weight:700; color:#2e0f5a; margin-bottom:6px;">📖 每題答對統計</div>
+            <table class="wrong-table" style="font-size:0.78rem;">
+                <thead><tr><th>題目</th><th>答對</th></tr></thead>
+                <tbody>${qStats || '<tr><td colspan="2" style="color:#999;">尚無人作答</td></tr>'}</tbody>
+            </table>
+        </div>
+        <div style="margin-top:16px; text-align:center;">
+            <button onclick="document.getElementById('testDetailOverlay').remove()" style="background:#4a1d8c; color:white; border:none; padding:8px 32px; border-radius:40px; cursor:pointer;">關閉</button>
+        </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
+
+async function exportTestCSV(testId) {
+    if (!firestoreEnabled) { alert('⚠️ 需連線雲端'); return; }
+    let test = null;
+    try {
+        const doc = await firebase.firestore().collection('tests').doc(testId).get();
+        if (doc.exists) test = { id: doc.id, ...doc.data() };
+    } catch(e) { alert('❌ 讀取失敗'); return; }
+    if (!test) { alert('❌ 找不到測驗'); return; }
+    const results = test.results || {};
+    const header = ['學生', '得分', '總分', ...test.questions.map(qid => getQuestionShort(qid))];
+    const matrix = [header];
+    for (const sid in results) {
+        const r = results[sid];
+        const row = [sid, r.score, r.total];
+        for (const qid of test.questions) {
+            const ans = r.answers[qid];
+            row.push(ans ? (ans.correct ? '✓' : `✗(${ans.chosen || '未答'})`) : '未作答');
+        }
+        matrix.push(row);
+    }
+    const csv = matrix.map(r => r.join(',')).join('\n');
+    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `測驗_${test.name}_${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
 function isMobile() {
     return window.innerWidth <= 640;
 }
@@ -1840,7 +2804,7 @@ async function renderPractice() {
             let qs = window.ALL_UNITS[unit].chapters[chapter].questions;
             for (let q of qs) delete userData.latestStatus[q.id];
             userData.allAttempts = userData.allAttempts.filter(att => !qs.some(q => q.id === att.qid));
-            saveUserData(); renderPractice(); renderMyMistakes(); renderPastMistakes(); renderPinned(); renderHistory(); renderAchievements(); updateSettingsUnlockStatus();
+            saveUserData(); renderPractice(); renderMyMistakes(); renderMyMistakes('learning'); renderPastMistakes(); renderPastMistakes('learning'); renderPinned(); renderHistory(); renderAchievements(); updateSettingsUnlockStatus();
         }
     }));
 }
@@ -2346,7 +3310,7 @@ function renderPastMistakes(targetPanel) {
     else container = document.getElementById('pastMistakesPanel');
     if (!container) return;
     if (Object.keys(pastByChapter).length === 0) { container.innerHTML = '<div class="card">📭 尚無錯題歷程</div>'; return; }
-    let html = '<div class="card"><h3>錯題歷程</h3>';
+    let html = '<div class="card"><h3>錯題歷程</h3><div style="margin-bottom:8px;"><button class="btn btn-small" onclick="openReviewModal()" style="font-size:0.75rem; padding:4px 12px; background:linear-gradient(135deg,#4a1d8c,#7c3aed); color:white; border:none; border-radius:40px; cursor:pointer;">🗓️ 開始複習（測考前溫習）</button></div>';
     for (let ch in pastByChapter) {
         html += `<div class="mistake-chapter-group"><div class="mistake-chapter-header" onclick="toggleMistakeChapter('${ch}','past')"><span>📖 ${pastByChapter[ch][0].chapterName}</span><span class="unit-toggle" id="past-toggle-${ch}">▶</span></div><div class="mistake-questions" id="past-${ch}">`;
         for (let q of pastByChapter[ch]) {
@@ -2363,6 +3327,189 @@ function renderPastMistakes(targetPanel) {
     container.innerHTML = html;
     attachMistakeEvents();
     attachRemoveEvents();
+}
+
+// ===== 錯題複習（測前溫習） =====
+function getWrongQids() {
+    const s = new Set();
+    for (let att of userData.allAttempts) if (!att.isCorrect) s.add(att.qid);
+    return s;
+}
+
+function getAllWrongQuestions() {
+    const wrongQids = getWrongQids();
+    const list = [];
+    for (let u in window.ALL_UNITS) {
+        for (let c in window.ALL_UNITS[u].chapters) {
+            for (let q of window.ALL_UNITS[u].chapters[c].questions) {
+                if (wrongQids.has(q.id)) list.push({ ...q, unit: u, chapter: c, chapterName: window.ALL_UNITS[u].chapters[c].name });
+            }
+        }
+    }
+    return list;
+}
+
+function openReviewModal() {
+    const wrongList = getAllWrongQuestions();
+    if (wrongList.length === 0) { alert('🎉 目前沒有錯題可複習！'); return; }
+    // 依章節分組選項
+    const chapterGroups = {};
+    for (const q of wrongList) {
+        const key = `${q.unit}_${q.chapter}`;
+        if (!chapterGroups[key]) chapterGroups[key] = { name: q.chapterName, count: 0 };
+        chapterGroups[key].count++;
+    }
+    const overlay = document.createElement('div');
+    overlay.id = 'reviewOverlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); display:flex; justify-content:center; align-items:center; z-index:999999; backdrop-filter:blur(3px);';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:white; border-radius:24px; padding:26px; max-width:420px; width:92%; max-height:86vh; overflow-y:auto; box-shadow:0 20px 70px rgba(0,0,0,0.35);';
+    modal.innerHTML = `
+        <h3 style="color:#2e0f5a; margin:0 0 4px 0;">🗓️ 錯題複習</h3>
+        <p style="color:#888; font-size:0.8rem; margin:0 0 14px 0;">從錯題歷程挑選題目溫習。複習不會移除錯題、不影響進度。</p>
+        <div style="margin-bottom:12px;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">📖 章節</label>
+            <select id="reviewChapterSelect" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
+                <option value="__all__">全部章節（${wrongList.length} 題）</option>
+                ${Object.entries(chapterGroups).map(([k, g]) => `<option value="${k}">${g.name}（${g.count} 題）</option>`).join('')}
+            </select>
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">🎯 難度</label>
+            <select id="reviewDifficultySelect" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
+                <option value="__all__">全部難度</option>
+                <option value="0">🌐 翻譯題</option>
+                <option value="1">✅ 基礎</option>
+                <option value="2">📈 進階</option>
+                <option value="3">🔥 挑戰</option>
+            </select>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">🔢 數量</label>
+            <select id="reviewCountSelect" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
+                <option value="10">10 題</option>
+                <option value="20">20 題</option>
+                <option value="__all__">全部</option>
+            </select>
+        </div>
+        <div id="reviewError" style="color:#dc2626; font-size:0.85rem; margin-bottom:10px; display:none;"></div>
+        <div style="display:flex; gap:10px;">
+            <button id="reviewCancelBtn" style="flex:1; padding:11px 0; border:2px solid #e0d6f5; border-radius:40px; background:white; color:#666; font-size:0.95rem; font-weight:600; cursor:pointer;">取消</button>
+            <button id="reviewStartBtn" style="flex:2; padding:11px 0; border:none; border-radius:40px; background:linear-gradient(135deg,#4a1d8c,#7c3aed); color:white; font-size:0.95rem; font-weight:700; cursor:pointer;">📖 開始複習</button>
+        </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    document.getElementById('reviewCancelBtn').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    document.getElementById('reviewStartBtn').addEventListener('click', function() {
+        const chVal = document.getElementById('reviewChapterSelect').value;
+        const diffVal = document.getElementById('reviewDifficultySelect').value;
+        const countVal = document.getElementById('reviewCountSelect').value;
+        let pool = wrongList;
+        if (chVal !== '__all__') {
+            const [u, c] = chVal.split('_');
+            pool = pool.filter(q => q.unit === u && q.chapter === c);
+        }
+        if (diffVal !== '__all__') {
+            const dl = parseInt(diffVal);
+            pool = pool.filter(q => q.difficulty_level === dl);
+        }
+        if (pool.length === 0) {
+            const err = document.getElementById('reviewError');
+            err.textContent = '⚠️ 此篩選下沒有錯題';
+            err.style.display = 'block';
+            return;
+        }
+        const count = countVal === '__all__' ? pool.length : parseInt(countVal);
+        const selected = shuffleArray(pool).slice(0, count);
+        overlay.remove();
+        startReviewPractice(selected);
+    });
+}
+
+function startReviewPractice(questions) {
+    if (questions.length === 0) { alert('沒有可複習的題目'); return; }
+    currentQuestions = questions.map(q => localizeQuestion(q));
+    currentOptionsMapping = currentQuestions.map(q => {
+        if (q.sf === 0) {
+            let letters = ['A', 'B', 'C', 'D'], map = {};
+            for (let i = 0; i < 4; i++) { let optText = q.options[i].substring(3); map[letters[i]] = optText; }
+            return { letterToText: map, correctLetter: q.correct };
+        } else {
+            let texts = q.options.map(opt => opt.replace(/^[A-D]\.\s*/, '')), shuffled = shuffleArray([...texts]), letters = ['A', 'B', 'C', 'D'], map = {};
+            for (let i = 0; i < 4; i++) map[letters[i]] = shuffled[i];
+            let correctText = q.options.find(opt => opt.startsWith(q.correct)).replace(/^[A-D]\.\s*/, ''), correctLetter = null;
+            for (let [l, t] of Object.entries(map)) if (t === correctText) { correctLetter = l; break; }
+            return { letterToText: map, correctLetter: correctLetter };
+        }
+    });
+    currentAnswers = new Array(currentQuestions.length).fill(null);
+    currentQIndex = 0;
+    isTrialMode = false;
+    isSingleQuestionMode = false;
+    isReviewMode = true;
+    reviewQids = currentQuestions.map(q => q.id);
+    currentUnit = null;
+    currentChapter = null;
+    selectedCount = currentQuestions.length;
+    let timePerQuestion = 90;
+    timeRemaining = currentQuestions.length * timePerQuestion;
+    updateDesktopTimerDisplay();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        if (timeRemaining <= 0) submitDesktopAll();
+        else { timeRemaining--; updateDesktopTimerDisplay(); }
+    }, 1000);
+    if (blinkInterval) { clearInterval(blinkInterval); blinkInterval = null; }
+    const submitBtn = document.getElementById('desktopSubmitBtn');
+    if (submitBtn) submitBtn.style.animation = '';
+    document.getElementById('settingsModal').style.display = 'none';
+    document.getElementById('explainModal').style.display = 'none';
+    document.getElementById('resultModal').style.display = 'none';
+    startTime = Date.now();
+    if (isIPhone() && !isLandscape()) { showIPhoneOrientationPrompt(); return; }
+    forceLandscapeAndFullscreen().then(() => { showDesktopQuizModal(); });
+}
+
+// 每日自動彈出複習提醒（登入載入後呼叫）
+function maybeShowDailyReview() {
+    if (!currentUser || currentUser.isTeacher) return;
+    reviewLastShownDate = (userData.reviewStats && userData.reviewStats.lastShownDate) || '';
+    const wrongList = getAllWrongQuestions();
+    if (wrongList.length < 5) return;  // 少於 5 題不打斷
+    const today = new Date().toISOString().slice(0, 10);
+    if (reviewLastShownDate === today) return;  // 今天已彈過
+    const overlay = document.createElement('div');
+    overlay.id = 'dailyReviewOverlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); display:flex; justify-content:center; align-items:center; z-index:999999; backdrop-filter:blur(3px);';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:white; border-radius:24px; padding:26px; max-width:400px; width:92%; text-align:center; box-shadow:0 20px 70px rgba(0,0,0,0.35); animation:slideUp 0.3s ease;';
+    modal.innerHTML = `
+        <div style="font-size:2.2rem; margin-bottom:8px;">📋</div>
+        <h3 style="color:#2e0f5a; margin:0 0 6px 0;">每日錯題複習</h3>
+        <p style="color:#666; font-size:0.9rem; margin:0 0 16px 0; line-height:1.6;">
+            你有 <b style="color:#4a1d8c;">${wrongList.length}</b> 道錯題等待複習。<br>
+            <span style="font-size:0.8rem; color:#888;">測考前溫習錯題，記憶更牢固！</span>
+        </p>
+        <div style="display:flex; gap:10px;">
+            <button id="dailyReviewLaterBtn" style="flex:1; padding:11px 0; border:2px solid #e0d6f5; border-radius:40px; background:white; color:#666; font-size:0.95rem; font-weight:600; cursor:pointer;">稍後</button>
+            <button id="dailyReviewStartBtn" style="flex:2; padding:11px 0; border:none; border-radius:40px; background:linear-gradient(135deg,#4a1d8c,#7c3aed); color:white; font-size:0.95rem; font-weight:700; cursor:pointer;">📖 開始複習</button>
+        </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    reviewLastShownDate = today;
+    if (!userData.reviewStats) userData.reviewStats = { completedCount: 0, totalAnswered: 0, totalCorrect: 0, lastReviewAt: null };
+    userData.reviewStats.lastShownDate = today;
+    saveUserData();
+    document.getElementById('dailyReviewLaterBtn').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    document.getElementById('dailyReviewStartBtn').addEventListener('click', function() {
+        overlay.remove();
+        const selected = shuffleArray(wrongList).slice(0, Math.min(10, wrongList.length));
+        startReviewPractice(selected);
+    });
 }
 
 function renderPinned() {
@@ -2435,6 +3582,203 @@ function attachRemoveEvents() {
     }));
 }
 
+// ===== 測驗模式：資料層 =====
+async function createTestInFirestore(testData) {
+    if (!firestoreEnabled) { alert('⚠️ 需連線雲端才能建立測驗'); return null; }
+    try {
+        const ref = await firebase.firestore().collection('tests').add(testData);
+        return ref.id;
+    } catch(e) {
+        console.error('❌ 建立測驗失敗:', e);
+        alert('❌ 建立測驗失敗：' + e.message);
+        return null;
+    }
+}
+
+async function loadTestsForClass(className) {
+    if (!firestoreEnabled) return [];
+    try {
+        const snapshot = await firebase.firestore().collection('tests').where('classNames', 'array-contains', className).get();
+        const tests = [];
+        snapshot.forEach(doc => tests.push({ id: doc.id, ...doc.data() }));
+        return tests;
+    } catch(e) {
+        console.warn('⚠️ 載入測驗失敗:', e.message);
+        return [];
+    }
+}
+
+async function loadAllTests() {
+    if (!firestoreEnabled) return [];
+    try {
+        const snapshot = await firebase.firestore().collection('tests').get();
+        const tests = [];
+        snapshot.forEach(doc => tests.push({ id: doc.id, ...doc.data() }));
+        return tests;
+    } catch(e) {
+        console.warn('⚠️ 載入全部測驗失敗:', e.message);
+        return [];
+    }
+}
+
+async function submitTestResult(testId, studentId, result) {
+    if (!firestoreEnabled) return false;
+    try {
+        const ref = firebase.firestore().collection('tests').doc(testId);
+        await ref.set({ results: { [studentId]: result } }, { merge: true });
+        return true;
+    } catch(e) {
+        console.error('❌ 提交測驗結果失敗:', e);
+        return false;
+    }
+}
+
+// ===== 學生端：測驗列表 =====
+async function renderTestList() {
+    const container = document.getElementById('testPanel');
+    if (!container) return;
+    if (currentUser.isTeacher) { container.innerHTML = '<div class="card">📝 測驗頁面供學生使用，老師請到後台「測驗管理」</div>'; return; }
+    const className = groupClassName(currentUser.className, currentUser.language);
+    const tests = await loadTestsForClass(className);
+    if (tests.length === 0) {
+        container.innerHTML = '<div class="card">📝 目前沒有派發的測驗</div>';
+        return;
+    }
+    const now = new Date();
+    let html = `<div class="card"><h3>📝 測驗</h3><p style="color:#888; font-size:0.8rem;">老師派發的測驗，大家做同一份題目，公平比較</p>`;
+    for (const t of tests) {
+        const deadline = t.deadline ? new Date(t.deadline) : null;
+        const expired = deadline && now > deadline;
+        const myResult = t.results && t.results[currentUser.userId];
+        const statusColor = expired ? '#dc2626' : (myResult ? '#10b981' : '#4a1d8c');
+        const statusText = expired ? '已截止' : (myResult ? `已完成 ${myResult.score}/${myResult.total}` : '待作答');
+        const deadlineText = deadline ? `截止：${format(deadline, 'yyyy-MM-dd HH:mm')}` : '無截止日期';
+        const timeText = t.timeLimit ? `限時：${t.timeLimit} 分鐘` : '不限時';
+        html += `
+            <div style="border:1px solid #e9e4f5; border-radius:14px; padding:12px; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                    <span style="font-weight:700; color:#2e0f5a;">📝 ${t.name}</span>
+                    <span style="font-size:0.75rem; font-weight:600; color:${statusColor};">${statusText}</span>
+                </div>
+                <div style="font-size:0.78rem; color:#666; margin-top:4px;">
+                    ${t.questionCount} 題 · ${deadlineText} · ${timeText}
+                </div>
+                <div style="margin-top:8px;">
+                    ${myResult || expired
+                        ? `<button class="btn btn-small" disabled style="opacity:0.5; cursor:not-allowed; font-size:0.75rem; padding:4px 12px;">${expired ? '已截止' : '已完成'}</button>`
+                        : `<button class="btn btn-small" onclick="startTest('${t.id}')" style="font-size:0.75rem; padding:4px 12px; background:linear-gradient(135deg,#4a1d8c,#7c3aed); color:white; border:none; border-radius:40px; cursor:pointer;">▶ 開始測驗</button>`}
+                </div>
+            </div>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// 開始測驗
+async function startTest(testId) {
+    if (!firestoreEnabled) { alert('⚠️ 需連線雲端才能進行測驗'); return; }
+    let test = null;
+    try {
+        const doc = await firebase.firestore().collection('tests').doc(testId).get();
+        if (doc.exists) test = { id: doc.id, ...doc.data() };
+    } catch(e) { console.error('❌ 讀取測驗失敗:', e); alert('❌ 讀取測驗失敗'); return; }
+    if (!test) { alert('❌ 找不到測驗'); return; }
+    // 檢查截止
+    const now = new Date();
+    if (test.deadline && now > new Date(test.deadline)) { alert('⏰ 此測驗已截止'); renderTestList(); return; }
+    // 檢查作答規則
+    const myResult = test.results && test.results[currentUser.userId];
+    if (myResult && test.attemptRule !== 'best' && test.attemptRule !== 'last') {
+        alert('⚠️ 你已完成此測驗，不可重做');
+        return;
+    }
+    // 取得題目（依固定清單）
+    const questions = [];
+    for (const qid of test.questions) {
+        let found = null;
+        for (let u in window.ALL_UNITS) for (let c in window.ALL_UNITS[u].chapters) {
+            const q = window.ALL_UNITS[u].chapters[c].questions.find(qq => qq.id === qid);
+            if (q) { found = q; break; }
+        }
+        if (found) questions.push(found);
+    }
+    if (questions.length === 0) { alert('⚠️ 測驗題目無法載入'); return; }
+    currentTestId = testId;
+    currentTestTimeLimit = test.timeLimit ? test.timeLimit * 60 : null;
+    startTestQuestions(questions);
+}
+
+// 測驗作答流程（全螢幕，限時）
+function startTestQuestions(questions) {
+    currentQuestions = questions.map(q => localizeQuestion(q));
+    currentOptionsMapping = currentQuestions.map(q => {
+        if (q.sf === 0) {
+            let letters = ['A', 'B', 'C', 'D'], map = {};
+            for (let i = 0; i < 4; i++) { let optText = q.options[i].substring(3); map[letters[i]] = optText; }
+            return { letterToText: map, correctLetter: q.correct };
+        } else {
+            let texts = q.options.map(opt => opt.replace(/^[A-D]\.\s*/, '')), shuffled = shuffleArray([...texts]), letters = ['A', 'B', 'C', 'D'], map = {};
+            for (let i = 0; i < 4; i++) map[letters[i]] = shuffled[i];
+            let correctText = q.options.find(opt => opt.startsWith(q.correct)).replace(/^[A-D]\.\s*/, ''), correctLetter = null;
+            for (let [l, t] of Object.entries(map)) if (t === correctText) { correctLetter = l; break; }
+            return { letterToText: map, correctLetter: correctLetter };
+        }
+    });
+    currentAnswers = new Array(currentQuestions.length).fill(null);
+    currentQIndex = 0;
+    isTrialMode = false;
+    isSingleQuestionMode = false;
+    isReviewMode = false;
+    isTestMode = true;
+    currentUnit = null;
+    currentChapter = null;
+    selectedCount = currentQuestions.length;
+    timeRemaining = currentTestTimeLimit || (currentQuestions.length * 90);
+    updateDesktopTimerDisplay();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        if (timeRemaining <= 0) submitTest();
+        else { timeRemaining--; updateDesktopTimerDisplay(); }
+    }, 1000);
+    if (blinkInterval) { clearInterval(blinkInterval); blinkInterval = null; }
+    const submitBtn = document.getElementById('desktopSubmitBtn');
+    if (submitBtn) submitBtn.style.animation = '';
+    document.getElementById('settingsModal').style.display = 'none';
+    document.getElementById('explainModal').style.display = 'none';
+    document.getElementById('resultModal').style.display = 'none';
+    startTime = Date.now();
+    if (isIPhone() && !isLandscape()) { showIPhoneOrientationPrompt(); return; }
+    forceLandscapeAndFullscreen().then(() => { showDesktopQuizModal(); });
+}
+
+// 提交測驗
+async function submitTest() {
+    if (timerInterval) clearInterval(timerInterval);
+    if (!currentTestId) { submitDesktopAll(); return; }
+    // 計算結果
+    let score = 0;
+    const answers = {};
+    for (let i = 0; i < currentQuestions.length; i++) {
+        const q = currentQuestions[i];
+        const map = currentOptionsMapping[i];
+        const chosen = currentAnswers[i];
+        const isCorrect = chosen === map.correctLetter;
+        if (isCorrect) score++;
+        answers[q.id] = { chosen: chosen || null, correct: isCorrect };
+    }
+    const myUserId = currentUser.userId || currentUser.id;
+    const result = { score, total: currentQuestions.length, answers, submittedAt: new Date().toISOString() };
+    const ok = await submitTestResult(currentTestId, myUserId, result);
+    if (ok) alert(`📝 測驗已提交！得分：${score}/${currentQuestions.length}`);
+    else alert(`📝 測驗已提交（本機記錄），但雲端同步失敗`);
+    isTestMode = false;
+    currentTestId = null;
+    document.getElementById('desktopQuizModal').style.display = 'none';
+    exitFullscreenMode();
+    renderTestList();
+    renderPractice();
+}
+
 // ===== 更多資源：依章節分類顯示影片 =====
 function renderResources() {
     const container = document.getElementById('resourcesPanel');
@@ -2455,20 +3799,40 @@ function renderResources() {
     <div class="card" style="margin-bottom:0.8rem; padding:0.8rem;">
         <div style="font-weight:700; color:#2e0f5a; margin-bottom:0.5rem; font-size:0.9rem;">🧪 網上互動練習</div>
         <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <a href="https://chemistry-kit.pages.dev/ch1.html?lang=zh" target="_blank" rel="noopener" style="flex:1; min-width:180px; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:#f5f0fb; text-decoration:none; color:#333; border-left:4px solid #3b82f6;">
+                <span style="font-size:1.3rem;">⚗️</span>
+                <span style="font-size:0.85rem; font-weight:600;">儀器與標籤<br><span style="font-weight:400; color:#888;">Apparatus &amp; Labels · Ch.1</span></span>
+                <span style="margin-left:auto; color:#3b82f6; font-size:0.7rem;">前往 ↗</span>
+            </a>
+            <a href="https://chemistry-kit.pages.dev/ch2.html?lang=zh" target="_blank" rel="noopener" style="flex:1; min-width:180px; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:#f5f0fb; text-decoration:none; color:#333; border-left:4px solid #06b6d4;">
+                <span style="font-size:1.3rem;">🔬</span>
+                <span style="font-size:0.85rem; font-weight:600;">特性、變化與分類<br><span style="font-weight:400; color:#888;">Properties &amp; Changes · Ch.2</span></span>
+                <span style="margin-left:auto; color:#06b6d4; font-size:0.7rem;">前往 ↗</span>
+            </a>
+            <a href="https://chemistry-kit.pages.dev/ch5.html?lang=zh" target="_blank" rel="noopener" style="flex:1; min-width:180px; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:#f5f0fb; text-decoration:none; color:#333; border-left:4px solid #8b5cf6;">
+                <span style="font-size:1.3rem;">⚛️</span>
+                <span style="font-size:0.85rem; font-weight:600;">原子與周期表<br><span style="font-weight:400; color:#888;">Atoms &amp; Periodic Table · Ch.5/6</span></span>
+                <span style="margin-left:auto; color:#8b5cf6; font-size:0.7rem;">前往 ↗</span>
+            </a>
             <a href="https://chemistry-kit.pages.dev/ions.html?lang=zh" target="_blank" rel="noopener" style="flex:1; min-width:180px; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:#f5f0fb; text-decoration:none; color:#333; border-left:4px solid #4a1d8c;">
                 <span style="font-size:1.3rem;">🧪</span>
                 <span style="font-size:0.85rem; font-weight:600;">離子與化合物<br><span style="font-weight:400; color:#888;">Ionic Compounds · Ch.7</span></span>
                 <span style="margin-left:auto; color:#4a1d8c; font-size:0.7rem;">前往 ↗</span>
+            </a>
+            <a href="https://chemistry-kit.pages.dev/structure.html?lang=zh" target="_blank" rel="noopener" style="flex:1; min-width:180px; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:#f5f0fb; text-decoration:none; color:#333; border-left:4px solid #0d9488;">
+                <span style="font-size:1.3rem;">🏗️</span>
+                <span style="font-size:0.85rem; font-weight:600;">結構<br><span style="font-weight:400; color:#888;">Structure · Ch.9</span></span>
+                <span style="margin-left:auto; color:#0d9488; font-size:0.7rem;">前往 ↗</span>
             </a>
             <a href="https://chemistry-kit.pages.dev/rxn.html?lang=zh" target="_blank" rel="noopener" style="flex:1; min-width:180px; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:#f5f0fb; text-decoration:none; color:#333; border-left:4px solid #b45309;">
                 <span style="font-size:1.3rem;">⚙️</span>
                 <span style="font-size:0.85rem; font-weight:600;">金屬反應<br><span style="font-weight:400; color:#888;">Metal Reactions · Ch.11</span></span>
                 <span style="margin-left:auto; color:#b45309; font-size:0.7rem;">前往 ↗</span>
             </a>
-            <a href="https://chemistry-kit.pages.dev/structure.html?lang=zh" target="_blank" rel="noopener" style="flex:1; min-width:180px; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:#f5f0fb; text-decoration:none; color:#333; border-left:4px solid #0d9488;">
-                <span style="font-size:1.3rem;">🏗️</span>
-                <span style="font-size:0.85rem; font-weight:600;">結構<br><span style="font-weight:400; color:#888;">Structure · Ch.9</span></span>
-                <span style="margin-left:auto; color:#0d9488; font-size:0.7rem;">前往 ↗</span>
+            <a href="https://chemistry-kit.pages.dev/detective.html?lang=zh" target="_blank" rel="noopener" style="flex:1; min-width:180px; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:#f5f0fb; text-decoration:none; color:#333; border-left:4px solid #7c3aed;">
+                <span style="font-size:1.3rem;">🕵️</span>
+                <span style="font-size:0.85rem; font-weight:600;">偵探訓練<br><span style="font-weight:400; color:#888;">Analytical Chemistry</span></span>
+                <span style="margin-left:auto; color:#7c3aed; font-size:0.7rem;">前往 ↗</span>
             </a>
         </div>
     </div>`;
@@ -2513,7 +3877,7 @@ async function renderAchievements() {
     let rankInfo = await calculateClassRank(currentUser.id, totalPoints);
     let rankListHtml = '', podiumHtml = '';
     try {
-        const className = currentUser.className;
+        const className = groupClassName(currentUser.className, currentUser.language);
         const allStudents = await loadAllStudentsFromFirebase(className);
         const rankedStudents = [...allStudents].sort((a, b) => {
             const aPoints = calculateTotalPoints(a.achievements || {});
@@ -2610,7 +3974,7 @@ async function renderAchievements() {
         }
     } catch(e) { console.warn('⚠️ 生成頒獎臺失敗:', e); }
     try {
-        const className = currentUser.className;
+        const className = groupClassName(currentUser.className, currentUser.language);
         const allStudents = await loadAllStudentsFromFirebase(className);
         const rankedStudents = [...allStudents].sort((a, b) => {
             const aPoints = calculateTotalPoints(a.achievements || {});
@@ -2686,6 +4050,8 @@ async function renderAchievements() {
         { id: 'mistakeEraser', name: '錯題剋星', icon: '🗑️', unlocked: userData.achievements.mistakeEraser?.unlocked || false, date: userData.achievements.mistakeEraser?.date || null, desc: '從錯題本清除50道錯題', points: ACHIEVEMENT_POINTS.mistakeEraser, isPenalty: false },
         { id: 'collector', name: '收藏家', icon: '📚', unlocked: userData.achievements.collector?.unlocked || false, date: userData.achievements.collector?.date || null, desc: '收藏50道題目', points: ACHIEVEMENT_POINTS.collector, isPenalty: false },
         { id: 'weekChallenge', name: '一週挑戰', icon: '📅', unlocked: userData.achievements.weekChallenge?.unlocked || false, date: userData.achievements.weekChallenge?.date || null, desc: '連續7天完成至少一次練習', points: ACHIEVEMENT_POINTS.weekChallenge, isPenalty: false },
+        { id: 'reviewFirst', name: '溫故知新', icon: '🔁', unlocked: userData.achievements.reviewFirst?.unlocked || false, date: userData.achievements.reviewFirst?.date || null, desc: '完成第一次錯題複習', points: ACHIEVEMENT_POINTS.reviewFirst, isPenalty: false },
+        { id: 'reviewMaster', name: '錯題複習王', icon: '🧠', unlocked: userData.achievements.reviewMaster?.unlocked || false, date: userData.achievements.reviewMaster?.date || null, desc: '累積完成 100 題錯題複習', points: ACHIEVEMENT_POINTS.reviewMaster, isPenalty: false },
         { id: 'blankPaper', name: '交白卷', icon: '📄', unlocked: userData.achievements.blankPaper?.unlocked || false, date: userData.achievements.blankPaper?.date || null, desc: '提交空白答案卷', points: ACHIEVEMENT_POINTS.blankPaper, isPenalty: true },
         { id: 'downwardTrend', name: '下滑趨勢', icon: '📉', unlocked: userData.achievements.downwardTrend?.unlocked || false, date: userData.achievements.downwardTrend?.date || null, desc: '連續兩次正確率下降超過20%', points: ACHIEVEMENT_POINTS.downwardTrend, isPenalty: true },
         { id: 'firstTranslation', name: '初試譯聲', icon: '🗣️', unlocked: userData.achievements.firstTranslation?.unlocked || false, date: userData.achievements.firstTranslation?.date || null, desc: '完成第 1 題翻譯題', points: ACHIEVEMENT_POINTS.firstTranslation, isPenalty: false },
@@ -2781,7 +4147,28 @@ async function renderAchievements() {
 
 // ===== 老師：全班成就統計 =====
 async function renderTeacherAchievements(container) {
-    const allStudents = await loadAllStudentsFromFirebase('__all__');
+    const allRawStudents = await loadAllStudentsFromFirebase('__all__');
+    // 成就分頁的班級下拉：全部 + 歸組班級（與後台一致）
+    if (!window.__achClass) window.__achClass = '__all__';
+    const rawClasses = new Set(allRawStudents.map(s => displayClassOf(s)).filter(Boolean));
+    const s4First = ['S4(中)', 'S4(Eng)'].filter(c => rawClasses.has(c));
+    const otherClasses = [...rawClasses].filter(c => !s4First.includes(c)).sort();
+    const achClassOptions = ['__all__', ...s4First, ...otherClasses];
+    if (!achClassOptions.includes(window.__achClass)) window.__achClass = '__all__';
+    const achLabel = c => c === '__all__' ? '全部班級' : c;
+    const allStudents = window.__achClass === '__all__'
+        ? allRawStudents
+        : allRawStudents.filter(s => displayClassOf(s) === window.__achClass);
+    const achFilterHtml = `
+        <div class="card teacher-settings" style="margin-bottom:0.7rem; padding:0.7rem 0.9rem;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <label style="font-size:12px; font-weight:500; color:#2e0f5a;">📚 成就班級：</label>
+                <select id="teacherAchClassSelector" style="padding:4px 10px; border-radius:16px; border:2px solid #e0d6f5; font-size:13px; background:white;">
+                    ${achClassOptions.map(c => `<option value="${c}" ${c === window.__achClass ? 'selected' : ''}>${achLabel(c)}</option>`).join('')}
+                </select>
+                <span style="font-size:11px; color:#888;">${allStudents.length} 位學生</span>
+            </div>
+        </div>`;
     const achDefs = [
         { id: 'firstPractice', name: '初試啼聲', icon: '🎯', desc: '完成第一次練習' },
         { id: 'tenQuestions', name: '十題達人', icon: '📝', desc: '累積完成100題' },
@@ -2796,6 +4183,8 @@ async function renderTeacherAchievements(container) {
         { id: 'mistakeEraser', name: '錯題剋星', icon: '🗑️', desc: '從錯題本清除50道錯題' },
         { id: 'collector', name: '收藏家', icon: '📚', desc: '收藏50道題目' },
         { id: 'weekChallenge', name: '一週挑戰', icon: '📅', desc: '連續7天完成至少一次練習' },
+        { id: 'reviewFirst', name: '溫故知新', icon: '🔁', desc: '完成第一次錯題複習' },
+        { id: 'reviewMaster', name: '錯題複習王', icon: '🧠', desc: '累積完成 100 題錯題複習' },
         { id: 'firstTranslation', name: '初試譯聲', icon: '🗣️', desc: '完成第 1 題翻譯題' },
         { id: 'livingDictionary', name: '活字典', icon: '📖', desc: '累積完成 100 題翻譯題' },
         { id: 'translationMaster', name: '翻譯大師', icon: '📚', desc: '累積完成 300 題翻譯題' },
@@ -2853,7 +4242,7 @@ async function renderTeacherAchievements(container) {
             const displayOrder = [1, 0, 2];
             podiumHtml = `
                 <div class="podium-wrapper">
-                    <div class="podium-title"><strong>🏆</strong> · 全校榮譽榜</div>
+                    <div class="podium-title"><strong>🏆</strong> · 榮譽榜</div>
                     <div class="podium-container">
             `;
             for (const idx of displayOrder) {
@@ -2899,7 +4288,7 @@ async function renderTeacherAchievements(container) {
             // 完整排名列表
             rankListHtml = `
                 <div class="card" style="padding:0.8rem; margin-top:0.6rem;">
-                    <div style="font-weight:700; color:#2e0f5a; margin-bottom:0.5rem;">📊 全部學生積分榜</div>
+                    <div style="font-weight:700; color:#2e0f5a; margin-bottom:0.5rem;">📊 積分榜</div>
                     <div style="overflow-x:auto;">`;
             let listRank = 1, prevPoints = null;
             rankedWithPoints.forEach((s, index) => {
@@ -2921,8 +4310,8 @@ async function renderTeacherAchievements(container) {
     let html = podiumHtml;
     if (rankListHtml) html += rankListHtml;
     html += `<div style="margin:0.8rem 0 0.5rem 0;">
-        <h3 style="margin:0; color:#2e0f5a;">🏆 全班成就統計</h3>
-        <p style="color:#888; font-size:0.8rem; margin:4px 0 0 0;">所有學生的成就解鎖情況（點擊可查看名單）</p>
+        <h3 style="margin:0; color:#2e0f5a;">🏆 成就統計</h3>
+        <p style="color:#888; font-size:0.8rem; margin:4px 0 0 0;">學生的成就解鎖情況（點擊可查看名單）</p>
     </div>
     <div class="card" style="padding:0.8rem;">
         <div style="font-weight:700; color:#2e0f5a; margin-bottom:0.5rem; font-size:0.9rem;">🎯 特殊成就</div>
@@ -2961,25 +4350,32 @@ async function renderTeacherAchievements(container) {
             for (const t of ['star1', 'star3', 'star5', 'trial']) {
                 const names = { star1: '一星完成', star3: '三星解鎖', star5: '五星解鎖', trial: '試煉完成' };
                 const icons = { star1: '✅', star3: '🔥', star5: '💎', trial: '⚔️' };
-                chapterDefs.push({ key: `${u}_${ch}_${t}`, name: `${unitObj.chapters[ch].name} · ${names[t]}`, icon: icons[t] });
+                chapterDefs.push({ key: `${u}_${ch}`, type: t, name: `${unitObj.chapters[ch].name} · ${names[t]}`, icon: icons[t] });
             }
         }
     }
     for (const def of chapterDefs) {
         let count = 0;
         for (const s of allStudents) {
-            const a = (s.achievements || {})[def.key];
-            if (a && a.unlocked) count++;
+            const chAch = (s.achievements || {})[def.key];
+            if (chAch && chAch[def.type] && chAch[def.type].unlocked) count++;
         }
         const displayName = def.name.replace(/'/g, "\\'");
         html += `<tr>
-            <td style="padding:6px; border-bottom:1px solid #f0edf8; cursor:pointer;" onclick="showAchievementEarners('${def.key}', '${displayName}')"><span style="margin-right:6px;">${def.icon}</span>${def.name} <span style="font-size:0.6rem; color:#999;">（點擊看獲取者）</span></td>
+            <td style="padding:6px; border-bottom:1px solid #f0edf8; cursor:pointer;" onclick="showAchievementEarners('${def.key}_${def.type}', '${displayName}')"><span style="margin-right:6px;">${def.icon}</span>${def.name} <span style="font-size:0.6rem; color:#999;">（點擊看獲取者）</span></td>
             <td style="padding:6px; border-bottom:1px solid #f0edf8; text-align:center; font-weight:600; color:${count > 0 ? '#10b981' : '#999'};">${count}</td>
         </tr>`;
     }
     html += `</tbody></table></div>`;
     
-    container.innerHTML = html;
+    container.innerHTML = achFilterHtml + html;
+    const achSelector = document.getElementById('teacherAchClassSelector');
+    if (achSelector) {
+        achSelector.onchange = function() {
+            window.__achClass = this.value;
+            renderTeacherAchievements(container);
+        };
+    }
 }
 
 // ===== 顯示學生已獲得的成就 =====
@@ -3012,6 +4408,8 @@ async function showStudentAchievements(userId) {
         { id: 'mistakeEraser', name: '錯題剋星', icon: '🗑️' },
         { id: 'collector', name: '收藏家', icon: '📚' },
         { id: 'weekChallenge', name: '一週挑戰', icon: '📅' },
+        { id: 'reviewFirst', name: '溫故知新', icon: '🔁' },
+        { id: 'reviewMaster', name: '錯題複習王', icon: '🧠' },
         { id: 'firstTranslation', name: '初試譯聲', icon: '🗣️' },
         { id: 'livingDictionary', name: '活字典', icon: '📖' },
         { id: 'translationMaster', name: '翻譯大師', icon: '📚' },
@@ -3079,8 +4477,9 @@ async function showStudentAchievements(userId) {
 // ===== 查看誰已獲得某成就（學生只看同班，老師看全部） =====
 async function showAchievementEarners(achKey, displayName) {
     const isTeacher = currentUser && currentUser.isTeacher;
-    // 載入所有學生（學生載入同班，老師載入全部）
-    const students = await loadAllStudentsFromFirebase(isTeacher ? '__all__' : (currentUser.className || '__all__'));
+    // 載入所有學生（學生載入同班，老師依成就分頁所選班級；未選則全部）
+    const achClass = isTeacher ? (window.__achClass || '__all__') : (groupClassName(currentUser.className, currentUser.language) || '__all__');
+    const students = await loadAllStudentsFromFirebase(achClass);
     
     // 取得所有學生（含當前使用者資料，確保從 Firestore 讀最新）
     const earners = [];
@@ -3299,7 +4698,9 @@ function toggleFavorite(qid) {
     saveUserData();
     renderPinned();
     renderMyMistakes();
+    renderMyMistakes('learning');
     renderPastMistakes();
+    renderPastMistakes('learning');
 }
 
 function showPeriodicTable() { openToolWindow('periodic'); }
@@ -3506,6 +4907,11 @@ function updateDesktopPeriodicButton() {
 }
 
 function submitDesktopAll() {
+    // 測驗模式：直接提交（限時到自動呼叫，或學生按提交）
+    if (isTestMode && currentTestId) {
+        submitTest();
+        return;
+    }
     let answeredCount = currentAnswers.filter(a => a !== null && a !== undefined).length;
     let unansweredCount = currentQuestions.length - answeredCount;
     if (unansweredCount > 0) {
@@ -3612,7 +5018,25 @@ function continueSubmitDesktopAll() {
     }
     userData.stats.consecutiveCorrect = consecutiveCorrect;
     if (consecutiveCorrect > (userData.stats.maxConsecutive || 0)) userData.stats.maxConsecutive = consecutiveCorrect;
-    recordBatch(batch);
+    // 複習模式：不記錄 latestStatus（保留錯題在歷程），但記錄作答次數供成就統計
+    if (isReviewMode) {
+        if (!userData.reviewStats) userData.reviewStats = { completedCount: 0, totalAnswered: 0, totalCorrect: 0, lastReviewAt: null };
+        userData.reviewStats.totalAnswered += correctCount + (currentQuestions.length - correctCount);
+        userData.reviewStats.totalCorrect += correctCount;
+        userData.reviewStats.lastReviewAt = new Date().toISOString();
+        // 複習成就
+        const completedRuns = userData.reviewStats.completedCount + 1;
+        userData.reviewStats.completedCount = completedRuns;
+        if (completedRuns >= 1 && !userData.achievements.reviewFirst) {
+            userData.achievements.reviewFirst = { unlocked: true, date: new Date().toISOString().slice(0,10), progress: 1, target: 1 };
+        }
+        if (userData.reviewStats.totalAnswered >= 100 && !userData.achievements.reviewMaster) {
+            userData.achievements.reviewMaster = { unlocked: true, date: new Date().toISOString().slice(0,10), progress: userData.reviewStats.totalAnswered, target: 100 };
+        }
+        saveUserData();
+    } else {
+        recordBatch(batch);
+    }
     let accuracy = Math.round(correctCount / currentQuestions.length * 100);
     let diffName = selectedDifficulty == 0 ? "★ 1星" : (selectedDifficulty == 1 ? "★★★ 3星" : "★★★★★ 5星");
     let mode = isTrialMode ? 'trial' : 'normal';
@@ -3632,10 +5056,21 @@ function continueSubmitDesktopAll() {
             else alert('❌ 答錯了！再試一次吧！');
         }
         recordBatch(batch);
-        addPracticeHistory(currentUnit, currentChapter, '單題練習', 1, isCorrectSingle ? 1 : 0, isCorrectSingle ? 100 : 0, 'single', 0, consecutiveCorrect, isBlankPaper, timeSpentSeconds);
-        renderMyMistakes(); renderPastMistakes(); renderPinned(); renderHistory(); renderAchievements();
+        addPracticeHistory(currentUnit, currentChapter, '單題練習', 1, isCorrectSingle ? 1 : 0, isCorrectSingle ? 100 : 0, 'single', 0, consecutiveCorrect, isBlankPaper, timeSpentSeconds, true);
+        renderMyMistakes(); renderMyMistakes('learning'); renderPastMistakes(); renderPastMistakes('learning'); renderPinned(); renderHistory(); renderAchievements();
         document.getElementById('desktopQuizModal').style.display = 'none';
         exitFullscreenMode();
+        return;
+    }
+    if (isReviewMode) {
+        addPracticeHistory(currentUnit, currentChapter, '錯題複習', currentQuestions.length, correctCount, accuracy, 'review', timeSpent, consecutiveCorrect, isBlankPaper, timeSpentSeconds, true);
+        isReviewMode = false;
+        reviewQids = [];
+        lastResults = results;
+        document.getElementById('desktopQuizModal').style.display = 'none';
+        exitFullscreenMode();
+        setTimeout(function() { displayResults(results); }, 100);
+        renderPractice(); renderMyMistakes(); renderMyMistakes('learning'); renderPastMistakes(); renderPastMistakes('learning'); renderPinned(); renderHistory(); renderAchievements(); updateSettingsUnlockStatus();
         return;
     }
     addPracticeHistory(currentUnit, currentChapter, diffName, currentQuestions.length, correctCount, accuracy, mode, timeSpent, consecutiveCorrect, isBlankPaper, timeSpentSeconds);
@@ -3645,13 +5080,13 @@ function continueSubmitDesktopAll() {
         showDSEResult(accuracy, correctCount, currentQuestions.length);
         document.getElementById('desktopQuizModal').style.display = 'none';
         exitFullscreenMode();
-        renderPractice(); renderMyMistakes(); renderPastMistakes(); renderPinned(); renderHistory(); renderAchievements(); updateSettingsUnlockStatus();
+        renderPractice(); renderMyMistakes(); renderMyMistakes('learning'); renderPastMistakes(); renderPastMistakes('learning'); renderPinned(); renderHistory(); renderAchievements(); updateSettingsUnlockStatus();
         return;
     }
     document.getElementById('desktopQuizModal').style.display = 'none';
     exitFullscreenMode();
     setTimeout(function() { displayResults(results); }, 100);
-    renderPractice(); renderMyMistakes(); renderPastMistakes(); renderPinned(); renderHistory(); renderAchievements(); updateSettingsUnlockStatus();
+    renderPractice(); renderMyMistakes(); renderMyMistakes('learning'); renderPastMistakes(); renderPastMistakes('learning'); renderPinned(); renderHistory(); renderAchievements(); updateSettingsUnlockStatus();
 }
 
 function showQuizModal() { showDesktopQuizModal(); }
@@ -3881,7 +5316,7 @@ function unlockAll() {
     for (let q of qs) userData.latestStatus[q.id] = true;
     saveUserData();
     updateSettingsUnlockStatus();
-    renderPractice(); renderMyMistakes(); renderPastMistakes(); renderPinned(); renderHistory(); renderAchievements();
+    renderPractice(); renderMyMistakes(); renderMyMistakes('learning'); renderPastMistakes(); renderPastMistakes('learning'); renderPinned(); renderHistory(); renderAchievements();
     alert('🔓 所有難度已解鎖！');
 }
 
@@ -3937,6 +5372,7 @@ async function renderTeacherPanel() {
                 <button class="sub-tab" data-subtab="lastlogin" onclick="switchSubtab('lastlogin', '${currentClass}')">🕐 最後上線</button>
                 <button class="sub-tab" data-subtab="rank" onclick="switchSubtab('rank', '${currentClass}')">🏆 成就排名</button>
                 <button class="sub-tab" data-subtab="chapters" onclick="switchSubtab('chapters', '${currentClass}')">📖 章節管理</button>
+                <button class="sub-tab" data-subtab="tests" onclick="switchSubtab('tests', '${currentClass}')">📝 測驗管理</button>
             </div>
             <div class="subtab-select-wrapper mobile-select">
                 <select id="subtabSelector" class="subtab-select" onchange="switchSubtab(this.value, '${currentClass}')">
@@ -3946,6 +5382,7 @@ async function renderTeacherPanel() {
                     <option value="lastlogin">🕐 最後上線</option>
                     <option value="rank">🏆 成就排名</option>
                     <option value="chapters">📖 章節管理</option>
+                    <option value="tests">📝 測驗管理</option>
                 </select>
             </div>
         </div>
@@ -3956,6 +5393,7 @@ async function renderTeacherPanel() {
         <div id="subtab-lastlogin" class="subtab-content" style="display:none;"></div>
         <div id="subtab-rank" class="subtab-content" style="display:none;"></div>
         <div id="subtab-chapters" class="subtab-content" style="display:none;"></div>
+        <div id="subtab-tests" class="subtab-content" style="display:none;"></div>
     `;
     container.innerHTML = html;
     bindTeacherEvents();
@@ -3985,6 +5423,7 @@ function renderSubtab(subtabId, className) {
         case 'lastlogin': renderSubtabLastLogin(className); break;
         case 'rank': renderSubtabRank(className); break;
         case 'chapters': renderSubtabChapters(className); break;
+        case 'tests': renderSubtabTests(className); break;
     }
 }
 
@@ -4208,55 +5647,73 @@ async function renderSubtabWrong(className) {
     
     const students = await loadAllStudentsFromFirebase(className);
     
-    const wrongCount = {};
+    // 統計每題的錯誤人數 + 答錯者名單
+    const wrongInfo = {};  // qid -> { count, students: [names] }
     for (const s of students) {
         const attempts = s.allAttempts || [];
         for (const att of attempts) {
             if (!att.isCorrect) {
-                wrongCount[att.qid] = (wrongCount[att.qid] || 0) + 1;
+                if (!wrongInfo[att.qid]) wrongInfo[att.qid] = { count: 0, students: [] };
+                wrongInfo[att.qid].count++;
+                const nm = s.name || s.userId;
+                if (!wrongInfo[att.qid].students.includes(nm)) wrongInfo[att.qid].students.push(nm);
             }
         }
     }
     
-    const sortedWrong = Object.entries(wrongCount).sort((a, b) => b[1] - a[1]);
+    // 依章節分組
+    const byChapter = {};  // `${u}_${c}` -> { name, qids: [{qid, count, students}] }
+    for (let u in window.ALL_UNITS) {
+        for (let c in window.ALL_UNITS[u].chapters) {
+            const chQ = window.ALL_UNITS[u].chapters[c].questions;
+            const chKey = `${u}_${c}`;
+            const entries = [];
+            for (const q of chQ) {
+                if (wrongInfo[q.id]) entries.push({ qid: q.id, text: q.text, count: wrongInfo[q.id].count, students: wrongInfo[q.id].students });
+            }
+            if (entries.length > 0) {
+                entries.sort((a, b) => b.count - a.count);
+                if (!byChapter[chKey]) byChapter[chKey] = { name: window.ALL_UNITS[u].chapters[c].name, entries: [] };
+                byChapter[chKey].entries = entries;
+            }
+        }
+    }
     
     let html = `<h3 style="margin-bottom:8px;">❌ 錯題統計（${className}）</h3>`;
     
-    if (sortedWrong.length === 0) {
+    if (Object.keys(byChapter).length === 0) {
         html += `<div style="text-align:center; color:#999; padding:20px 0;">🎉 全班沒有錯題！繼續保持！</div>`;
     } else {
-        let qTexts = {};
-        for (let u in window.ALL_UNITS) {
-            for (let c in window.ALL_UNITS[u].chapters) {
-                for (let q of window.ALL_UNITS[u].chapters[c].questions) {
-                    qTexts[q.id] = q.text;
-                }
-            }
-        }
-        html += `<div style="overflow-x:auto;">
-            <table class="wrong-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>題目</th>
-                        <th>錯誤人數</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-        let rank = 1;
-        for (const [qid, count] of sortedWrong) {
-            const text = qTexts[qid] || qid;
-            const shortText = text.length > 60 ? text.substring(0, 60) + '...' : text;
+        html += `<div style="font-size:0.75rem; color:#888; margin-bottom:10px;">按章節顯示每題的錯誤人數及答錯學生（點擊章節可展開/收合）</div>`;
+        for (const chKey in byChapter) {
+            const ch = byChapter[chKey];
+            const totalWrong = ch.entries.reduce((sum, e) => sum + e.count, 0);
             html += `
-                <tr>
-                    <td>${rank}</td>
-                    <td>${shortText}</td>
-                    <td style="font-weight:600; color:#dc2626;">${count} 人</td>
-                </tr>
-            `;
-            rank++;
+                <div class="card" style="margin-bottom:0.6rem; padding:0.6rem;">
+                    <div class="collapsible-header" onclick="toggleCollapsible('wc-${chKey}')">
+                        <span style="font-weight:600; font-size:0.85rem;">📘 ${ch.name} <span style="color:#999; font-size:0.7rem;">(${ch.entries.length} 題答錯 · ${totalWrong} 人次)</span></span>
+                        <span class="collapse-arrow">▼</span>
+                    </div>
+                    <div class="collapsible-content collapsed" id="wc-${chKey}" style="padding-top:4px;">
+                        <table class="wrong-table" style="font-size:0.75rem;">
+                            <thead><tr><th>#</th><th>題目</th><th>錯誤人數</th><th>答錯學生</th></tr></thead>
+                            <tbody>`;
+            let rank = 1;
+            for (const e of ch.entries) {
+                const shortText = e.text.length > 70 ? e.text.substring(0, 70) + '...' : e.text;
+                html += `
+                    <tr>
+                        <td>${rank}</td>
+                        <td>${shortText}</td>
+                        <td style="font-weight:600; color:#dc2626;">${e.count} 人</td>
+                        <td style="font-size:0.7rem; color:#555;">${e.students.join('、')}</td>
+                    </tr>`;
+                rank++;
+            }
+            html += `</tbody></table>
+                    </div>
+                </div>`;
         }
-        html += `</tbody></table></div>`;
     }
     
     container.innerHTML = html;
@@ -4596,24 +6053,25 @@ async function openEditNameModal(userId) {
         const newName = nameInput.value.trim();
         const newClass = classInput ? classInput.value.trim().toUpperCase() : '';
         const newStudentId = idInput ? idInput.value.trim() : '';
-        const isTeacherEdit = user.isTeacher || false;
+        const isOperatorTeacher = (currentUser && currentUser.isTeacher) || false;
+        const isTeacherTarget = user.isTeacher || false;
         if (!newName) {
             errorEl.textContent = '⚠️ 請填寫姓名';
             errorEl.style.display = 'block';
             return;
         }
-        // 老師豁免班別/學號
-        if (!isTeacherEdit && !newClass) {
+        // 老師帳戶豁免班別/學號；老師操作時班別可填任意值（如 VIP）
+        if (!isTeacherTarget && !newClass) {
             errorEl.textContent = '⚠️ 請填寫班別';
             errorEl.style.display = 'block';
             return;
         }
-        if (!isTeacherEdit && !/^[1-9][0-9]?[A-Z]$/.test(newClass)) {
+        if (!isTeacherTarget && !isOperatorTeacher && !/^[1-9][0-9]?[A-Z]$/.test(newClass)) {
             errorEl.textContent = '⚠️ 班別格式錯誤：請填「數字+字母」（例如 3A、4C、4D）';
             errorEl.style.display = 'block';
             return;
         }
-        if (!isTeacherEdit && !newStudentId) {
+        if (!isTeacherTarget && !newStudentId) {
             errorEl.textContent = '⚠️ 請填寫學號';
             errorEl.style.display = 'block';
             return;
@@ -4709,10 +6167,12 @@ async function showStudentDetail(userId) {
         for (let ch in window.ALL_UNITS[u].chapters) {
             const questions = window.ALL_UNITS[u].chapters[ch].questions;
             let correct = 0;
+            // 該章節按難度拆解
+            const chDiff = { 0: { done: 0, total: 0 }, 1: { done: 0, total: 0 }, 2: { done: 0, total: 0 }, 3: { done: 0, total: 0 } };
             for (const q of questions) {
-                if (studentData.latestStatus && studentData.latestStatus[q.id] === true) {
-                    correct++;
-                }
+                if (studentData.latestStatus && studentData.latestStatus[q.id] === true) correct++;
+                const dl = q.difficulty_level;
+                if (chDiff[dl]) { chDiff[dl].total++; if (studentData.latestStatus && studentData.latestStatus[q.id] === true) chDiff[dl].done++; }
             }
             const progress = questions.length > 0 ? Math.round(correct / questions.length * 100) : 0;
             chapterProgress.push({
@@ -4721,7 +6181,8 @@ async function showStudentDetail(userId) {
                 chapterNum: parseInt(ch),
                 progress: progress,
                 total: questions.length,
-                correct: correct
+                correct: correct,
+                diff: chDiff
             });
         }
     }
@@ -4744,6 +6205,8 @@ async function showStudentDetail(userId) {
         { id: 'mistakeEraser', name: '錯題剋星', icon: '🗑️', unlocked: achievements.mistakeEraser?.unlocked || false },
         { id: 'collector', name: '收藏家', icon: '📚', unlocked: achievements.collector?.unlocked || false },
         { id: 'weekChallenge', name: '一週挑戰', icon: '📅', unlocked: achievements.weekChallenge?.unlocked || false },
+        { id: 'reviewFirst', name: '溫故知新', icon: '🔁', unlocked: achievements.reviewFirst?.unlocked || false },
+        { id: 'reviewMaster', name: '錯題複習王', icon: '🧠', unlocked: achievements.reviewMaster?.unlocked || false },
     ];
     
     for (const ach of specialAchievements) {
@@ -4811,19 +6274,30 @@ async function showStudentDetail(userId) {
                 </div>
                 
                 <div style="margin-bottom:16px;">
-                    <h3 style="font-size:0.9rem; color:#2e0f5a; margin-bottom:6px;">📖 章節進度</h3>
-                    <div style="max-height:200px; overflow-y:auto;">
-                        ${chapterProgress.map(ch => `
-                            <div style="display:flex; align-items:center; gap:8px; padding:3px 0;">
-                                <span style="font-size:0.7rem; color:#888; min-width:40px;">Ch.${ch.chapterNum}</span>
-                                <span style="font-size:0.7rem; flex:1;">${ch.chapterName}</span>
-                                <div style="width:80px; height:6px; background:#ddd; border-radius:10px; overflow:hidden;">
-                                    <div style="height:100%; width:${ch.progress}%; background:${ch.progress >= 80 ? '#10b981' : (ch.progress >= 40 ? '#f59e0b' : '#dc2626')}; border-radius:10px;"></div>
-                                </div>
-                                <span style="font-size:0.6rem; color:#888; min-width:35px;">${ch.progress}%</span>
-                            </div>
-                        `).join('')}
+                    <h3 style="font-size:0.9rem; color:#2e0f5a; margin-bottom:6px;">📖 章節進度（含難度拆解）</h3>
+                    <div style="max-height:300px; overflow-y:auto;">
+                        ${chapterProgress.map(ch => {
+                            const dRows = [0, 1, 2, 3].map(dl => {
+                                const s = ch.diff[dl];
+                                if (!s || s.total === 0) return '';
+                                const color = s.done >= s.total * 0.7 ? '#10b981' : (s.done >= s.total * 0.4 ? '#f59e0b' : '#dc2626');
+                                return `<span style="font-size:0.62rem; color:${color}; margin-right:8px;">${dl === 0 ? '🌐' : dl === 1 ? '✅' : dl === 2 ? '📈' : '🔥'} ${s.done}/${s.total}</span>`;
+                            }).join('');
+                            return `
+                                <div style="padding:5px 0; border-bottom:1px solid #f0edf8;">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <span style="font-size:0.7rem; color:#888; min-width:40px;">Ch.${ch.chapterNum}</span>
+                                        <span style="font-size:0.7rem; flex:1;">${ch.chapterName}</span>
+                                        <div style="width:80px; height:6px; background:#ddd; border-radius:10px; overflow:hidden;">
+                                            <div style="height:100%; width:${ch.progress}%; background:${ch.progress >= 80 ? '#10b981' : (ch.progress >= 40 ? '#f59e0b' : '#dc2626')}; border-radius:10px;"></div>
+                                        </div>
+                                        <span style="font-size:0.6rem; color:#888; min-width:35px;">${ch.progress}%</span>
+                                    </div>
+                                    <div style="padding-left:48px; margin-top:2px;">${dRows}</div>
+                                </div>`;
+                        }).join('')}
                     </div>
+                    <div style="font-size:0.65rem; color:#888; margin-top:4px;">每章下方顯示翻譯/基礎/進階/挑戰完成數，看出學生卡在哪一課</div>
                 </div>
                 
                 <div style="margin-bottom:16px;">
@@ -4842,21 +6316,38 @@ async function showStudentDetail(userId) {
                 <div>
                     <h3 style="font-size:0.9rem; color:#2e0f5a; margin-bottom:6px;">❌ 錯題本 (${wrongQuestions.length} 題)</h3>
                     ${wrongQuestions.length === 0 ? '<div style="color:#999; font-size:0.7rem;">🎉 沒有錯題！</div>' : ''}
-                    <div style="max-height:100px; overflow-y:auto; font-size:0.7rem;">
-                        ${wrongQuestions.slice(0, 5).map(q => {
-                            // 找該題最後一次錯誤的答案
-                            const wrongAtts = (studentData.allAttempts || []).filter(a => a.qid === q.id && !a.isCorrect);
-                            const lastWrong = wrongAtts[wrongAtts.length - 1];
-                            let choseText = '';
-                            if (lastWrong && lastWrong.userLetter) {
-                                const letters = ['A', 'B', 'C', 'D'];
-                                const li = letters.indexOf(lastWrong.userLetter);
-                                if (li !== -1 && q.options[li]) choseText = `<div style="color:#dc2626; padding-left:6px;">✗ 選了 ${lastWrong.userLetter}：${q.options[li].replace(/^[A-D]\.\s*/, '')}</div>`;
-                                else choseText = `<div style="color:#dc2626; padding-left:6px;">✗ 選了 ${lastWrong.userLetter}</div>`;
+                    <div style="max-height:220px; overflow-y:auto; font-size:0.7rem;">
+                        ${(() => {
+                            // 依章節分組顯示全部錯題
+                            const grouped = {};
+                            for (let u in window.ALL_UNITS) {
+                                for (let c in window.ALL_UNITS[u].chapters) {
+                                    const chQ = window.ALL_UNITS[u].chapters[c].questions.filter(q => wrongQuestions.some(w => w.id === q.id));
+                                    if (chQ.length > 0) {
+                                        if (!grouped[`${u}_${c}`]) grouped[`${u}_${c}`] = { name: window.ALL_UNITS[u].chapters[c].name, questions: [] };
+                                        grouped[`${u}_${c}`].questions = chQ;
+                                    }
+                                }
                             }
-                            return `<div style="padding:2px 0; border-bottom:1px solid #f0edf8;">${q.text}${choseText}</div>`;
-                        }).join('')}
-                        ${wrongQuestions.length > 5 ? `<div style="color:#999; font-size:0.6rem;">+${wrongQuestions.length - 5} 更多錯題</div>` : ''}
+                            let gHtml = '';
+                            for (const gKey in grouped) {
+                                const g = grouped[gKey];
+                                gHtml += `<div style="font-weight:700; color:#2e0f5a; margin:6px 0 3px 0;">📖 ${g.name} (${g.questions.length} 題)</div>`;
+                                for (const q of g.questions) {
+                                    const wrongAtts = (studentData.allAttempts || []).filter(a => a.qid === q.id && !a.isCorrect);
+                                    const lastWrong = wrongAtts[wrongAtts.length - 1];
+                                    let choseText = '';
+                                    if (lastWrong && lastWrong.userLetter) {
+                                        const letters = ['A', 'B', 'C', 'D'];
+                                        const li = letters.indexOf(lastWrong.userLetter);
+                                        if (li !== -1 && q.options[li]) choseText = `<div style="color:#dc2626; padding-left:6px;">✗ 選了 ${lastWrong.userLetter}：${q.options[li].replace(/^[A-D]\.\s*/, '')}</div>`;
+                                        else choseText = `<div style="color:#dc2626; padding-left:6px;">✗ 選了 ${lastWrong.userLetter}</div>`;
+                                    }
+                                    gHtml += `<div style="padding:2px 0; border-bottom:1px solid #f0edf8;">${q.text}${choseText}</div>`;
+                                }
+                            }
+                            return gHtml;
+                        })()}
                     </div>
                 </div>
                 
