@@ -2394,22 +2394,27 @@ async function renderSubtabTests(className) {
     } else {
         html += `<div class="card" style="padding:0.8rem;">
             <table class="wrong-table" style="font-size:0.8rem;">
-                <thead><tr><th>測驗</th><th>班級</th><th>題數</th><th>截止</th><th>作答數</th><th>操作</th></tr></thead>
+                <thead><tr><th>測驗</th><th>狀態</th><th>班級</th><th>題數</th><th>截止</th><th>作答數</th><th>操作</th></tr></thead>
                 <tbody>`;
         for (const t of tests) {
             const doneCount = t.results ? Object.keys(t.results).length : 0;
             const classText = (t.classNames || []).join('、');
             const deadlineText = t.deadline ? new Date(t.deadline).toLocaleString('zh-HK') : '無';
+            const statusText = t.status === 'draft' ? '📄 草稿' : (t.status === 'scheduled' ? '⏰ 排期' : '✅ 已發佈');
+            const statusColor = t.status === 'draft' ? '#888' : (t.status === 'scheduled' ? '#b45309' : '#10b981');
             html += `
                 <tr>
                     <td style="font-weight:600;">${t.name}</td>
+                    <td style="font-weight:600; color:${statusColor};">${statusText}</td>
                     <td>${classText}</td>
                     <td>${t.questionCount}</td>
                     <td>${deadlineText}</td>
                     <td style="font-weight:600; color:#4a1d8c;">${doneCount}</td>
                     <td>
                         <button onclick="showTestDetail('${t.id}')" style="font-size:0.7rem; padding:3px 10px; border:none; border-radius:20px; background:#f0edf8; color:#4a1d8c; cursor:pointer; margin-right:4px;">📊 監測</button>
-                        <button onclick="exportTestCSV('${t.id}')" style="font-size:0.7rem; padding:3px 10px; border:none; border-radius:20px; background:#fef3c7; color:#92400e; cursor:pointer;">📥 匯出</button>
+                        <button onclick="exportTestCSV('${t.id}')" style="font-size:0.7rem; padding:3px 10px; border:none; border-radius:20px; background:#fef3c7; color:#92400e; cursor:pointer; margin-right:4px;">📥 匯出</button>
+                        ${t.status !== 'published' ? `<button onclick="publishTest('${t.id}')" style="font-size:0.7rem; padding:3px 10px; border:none; border-radius:20px; background:#d4edda; color:#065f46; cursor:pointer; margin-right:4px;">▶ 發佈</button>` : ''}
+                        <button onclick="deleteTest('${t.id}')" style="font-size:0.7rem; padding:3px 10px; border:none; border-radius:20px; background:#f8d7da; color:#7f1d1d; cursor:pointer;">🗑️ 刪除</button>
                     </td>
                 </tr>`;
         }
@@ -2459,9 +2464,11 @@ function openCreateTestModal() {
             <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">📚 適用班級</label>
             <select id="ctClass" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
                 <option value="__all__">全部班級</option>
-                <option value="S4(中)">S4(中)</option>
-                <option value="S4(Eng)">S4(Eng)</option>
-                ${Array.from(document.querySelectorAll('#teacherClassSelector option')).filter(o => o.value !== '__all__').map(o => `<option value="${o.value}">${o.value}</option>`).join('')}
+                ${(() => {
+                    const opts = Array.from(document.querySelectorAll('#teacherClassSelector option')).filter(o => o.value !== '__all__').map(o => `<option value="${o.value}">${o.value}</option>`);
+                    if (opts.length > 0) return opts.join('');
+                    return '<option value="S4(中)">S4(中)</option><option value="S4(Eng)">S4(Eng)</option>';
+                })()}
             </select>
         </div>
         <div style="margin-bottom:12px;">
@@ -2472,22 +2479,22 @@ function openCreateTestModal() {
             </select>
         </div>
         <div style="margin-bottom:12px;">
-            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">🎯 難度</label>
-            <select id="ctDiff" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
-                <option value="__all__">全部難度</option>
-                <option value="1">✅ 基礎</option>
-                <option value="2">📈 進階</option>
-                <option value="3">🔥 挑戰</option>
-            </select>
-        </div>
-        <div style="margin-bottom:12px;">
-            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">🔢 題數</label>
-            <select id="ctCount" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
-                <option value="10">10 題</option>
-                <option value="20">20 題</option>
-                <option value="30">30 題</option>
-                <option value="__all__">全部</option>
-            </select>
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">🎯 各難度題數（留空＝不取該難度）</label>
+            <div style="display:flex; gap:8px;">
+                <div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:8px;">
+                    <div style="font-size:0.72rem; color:#15803d; font-weight:600; margin-bottom:4px;">✅ 基礎</div>
+                    <input type="number" id="ctCountBasic" min="0" placeholder="0" style="width:100%; padding:6px 8px; border:1px solid #bbf7d0; border-radius:8px; font-size:0.9rem;">
+                </div>
+                <div style="flex:1; background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:8px;">
+                    <div style="font-size:0.72rem; color:#b45309; font-weight:600; margin-bottom:4px;">📈 進階</div>
+                    <input type="number" id="ctCountAdv" min="0" placeholder="0" style="width:100%; padding:6px 8px; border:1px solid #fde68a; border-radius:8px; font-size:0.9rem;">
+                </div>
+                <div style="flex:1; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:8px;">
+                    <div style="font-size:0.72rem; color:#b91c1c; font-weight:600; margin-bottom:4px;">🔥 挑戰</div>
+                    <input type="number" id="ctCountCha" min="0" placeholder="0" style="width:100%; padding:6px 8px; border:1px solid #fecaca; border-radius:8px; font-size:0.9rem;">
+                </div>
+            </div>
+            <div style="font-size:0.68rem; color:#888; margin-top:4px;">例如：基礎 3 + 進階 4 + 挑戰 2 ＝ 9 題。留空全部＝自動平均抽 10 題</div>
         </div>
         <div style="margin-bottom:12px;">
             <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">⏰ 截止日期（可留空＝無截止）</label>
@@ -2504,6 +2511,17 @@ function openCreateTestModal() {
                 <option value="best">可重做，取最高分</option>
                 <option value="last">可重做，取最後一次</option>
             </select>
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">📅 發佈</label>
+            <select id="ctPublishMode" onchange="document.getElementById('ctPublishTimeWrap').style.display = this.value === 'scheduled' ? 'block' : 'none';" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
+                <option value="now">立即發佈</option>
+                <option value="draft">存為草稿（稍後發佈）</option>
+                <option value="scheduled">排期發佈（指定時間）</option>
+            </select>
+            <div id="ctPublishTimeWrap" style="display:none; margin-top:6px;">
+                <input type="datetime-local" id="ctPublishTime" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
+            </div>
         </div>
         <div style="margin-bottom:10px;">
             <label style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:0.85rem; color:#2e0f5a;">
@@ -2533,8 +2551,9 @@ function openCreateTestModal() {
         if (!name) { err.textContent = '⚠️ 請輸入測驗名稱'; err.style.display = 'block'; return; }
         const classVal = document.getElementById('ctClass').value;
         const chVal = document.getElementById('ctChapter').value;
-        const diffVal = document.getElementById('ctDiff').value;
-        const countVal = document.getElementById('ctCount').value;
+        const basicN = parseInt(document.getElementById('ctCountBasic').value) || 0;
+        const advN = parseInt(document.getElementById('ctCountAdv').value) || 0;
+        const chaN = parseInt(document.getElementById('ctCountCha').value) || 0;
         const deadlineVal = document.getElementById('ctDeadline').value;
         const timeLimitVal = document.getElementById('ctTimeLimit').value;
         const ruleVal = document.getElementById('ctRule').value;
@@ -2543,31 +2562,49 @@ function openCreateTestModal() {
         if (manual) {
             questions = Array.from(document.querySelectorAll('#ctManualList input:checked')).map(cb => cb.value);
         } else {
-            let pool = [];
+            // 依章節收集各難度的題目池
+            const pools = { 1: [], 2: [], 3: [] };
             for (let u in window.ALL_UNITS) for (let c in window.ALL_UNITS[u].chapters) {
                 if (chVal !== '__all__' && `${u}_${c}` !== chVal) continue;
                 for (const q of window.ALL_UNITS[u].chapters[c].questions) {
-                    if (diffVal !== '__all__' && q.difficulty_level !== parseInt(diffVal)) continue;
                     if (q.difficulty_level === 0) continue;
-                    pool.push(q.id);
+                    if (pools[q.difficulty_level]) pools[q.difficulty_level].push(q.id);
                 }
             }
-            if (pool.length === 0) { err.textContent = '⚠️ 此條件下沒有可用題目'; err.style.display = 'block'; return; }
-            const count = countVal === '__all__' ? pool.length : parseInt(countVal);
-            questions = shuffleArray(pool).slice(0, count);
+            // 若未填任何題數 → 平均抽 10 題
+            if (basicN === 0 && advN === 0 && chaN === 0) {
+                const all = [...pools[1], ...pools[2], ...pools[3]];
+                if (all.length === 0) { err.textContent = '⚠️ 此章節下沒有可用題目'; err.style.display = 'block'; return; }
+                questions = shuffleArray(all).slice(0, 10);
+            } else {
+                const counts = { 1: basicN, 2: advN, 3: chaN };
+                for (const dl of [1, 2, 3]) {
+                    const n = counts[dl];
+                    if (n > 0) {
+                        if (pools[dl].length < n) { err.textContent = `⚠️ 章節下基礎/進階/挑戰題不足（${dl === 1 ? '基礎' : dl === 2 ? '進階' : '挑戰'}需 ${n} 題，只有 ${pools[dl].length} 題）`; err.style.display = 'block'; return; }
+                        questions = questions.concat(shuffleArray(pools[dl]).slice(0, n));
+                    }
+                }
+            }
         }
         if (questions.length === 0) { err.textContent = '⚠️ 請選擇題目'; err.style.display = 'block'; return; }
         const classNames = classVal === '__all__' ? ['S4(中)', 'S4(Eng)'] : [classVal];
+        const publishMode = document.getElementById('ctPublishMode').value;
+        const publishTimeVal = document.getElementById('ctPublishTime').value;
+        const status = publishMode === 'now' ? 'published' : (publishMode === 'draft' ? 'draft' : 'scheduled');
         const testData = {
             name, classNames, questionCount: questions.length, questions,
             deadline: deadlineVal ? new Date(deadlineVal).toISOString() : null,
             timeLimit: timeLimitVal ? parseInt(timeLimitVal) : null,
             attemptRule: ruleVal, createdBy: currentUser.userId, createdAt: new Date().toISOString(),
+            status: status,
+            publishTime: publishMode === 'scheduled' && publishTimeVal ? new Date(publishTimeVal).toISOString() : null,
             results: {}
         };
         const id = await createTestInFirestore(testData);
         if (id) {
-            alert(`✅ 測驗「${name}」已建立！共 ${questions.length} 題，派發給 ${classNames.join('、')}`);
+            const statusText = status === 'draft' ? '已存為草稿' : (status === 'scheduled' ? '已排期發佈' : '已發佈');
+            alert(`✅ 測驗「${name}」已建立（${statusText}）！共 ${questions.length} 題，派發給 ${classNames.join('、')}`);
             overlay.remove();
             renderSubtabTests();
         }
@@ -2577,20 +2614,54 @@ function openCreateTestModal() {
 function renderManualSelectList() {
     const list = document.getElementById('ctManualList');
     const chVal = document.getElementById('ctChapter').value;
-    const diffVal = document.getElementById('ctDiff').value;
     let html = '';
     for (let u in window.ALL_UNITS) for (let c in window.ALL_UNITS[u].chapters) {
         if (chVal !== '__all__' && `${u}_${c}` !== chVal) continue;
         for (const q of window.ALL_UNITS[u].chapters[c].questions) {
-            if (diffVal !== '__all__' && q.difficulty_level !== parseInt(diffVal)) continue;
             if (q.difficulty_level === 0) continue;
             const short = q.text.replace(/<br>/g, ' ').replace(/<[^>]+>/g, '');
-            html += `<label style="display:flex; align-items:flex-start; gap:6px; padding:4px; font-size:0.75rem; cursor:pointer; border-bottom:1px solid #f0edf8;">
-                <input type="checkbox" value="${q.id}" style="margin-top:2px;"> <span>${short.length > 70 ? short.substring(0,70)+'...' : short}</span>
-            </label>`;
+            const diffBadge = q.difficulty_level === 1 ? '<span style="color:#15803d;">✅</span>' : q.difficulty_level === 2 ? '<span style="color:#b45309;">📈</span>' : '<span style="color:#b91c1c;">🔥</span>';
+            const hasImg = q.imageUrl ? '<span style="color:#4a1d8c;">🖼️</span>' : '';
+            html += `<div style="display:flex; align-items:center; gap:6px; padding:4px; font-size:0.75rem; border-bottom:1px solid #f0edf8;">
+                <input type="checkbox" value="${q.id}" style="margin-top:0;"> <span>${diffBadge} ${hasImg} ${short.length > 60 ? short.substring(0,60)+'...' : short}</span>
+                <button onclick="previewQuestion('${q.id}')" style="margin-left:auto; font-size:0.68rem; padding:2px 8px; border:none; border-radius:12px; background:#eef2ff; color:#4338ca; cursor:pointer;">👁️ 查看</button>
+            </div>`;
         }
     }
     list.innerHTML = html || '<div style="color:#999; font-size:0.8rem;">此條件下無題目</div>';
+}
+
+// 逐題挑選：預覽題目（含圖片與選項）
+function previewQuestion(qid) {
+    const q = getQuestionById(qid);
+    if (!q) { alert('找不到題目'); return; }
+    const overlay = document.createElement('div');
+    overlay.id = 'questionPreviewOverlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:9999999; backdrop-filter:blur(3px);';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:white; border-radius:20px; padding:24px; max-width:560px; width:94%; max-height:88vh; overflow-y:auto; box-shadow:0 20px 70px rgba(0,0,0,0.35);';
+    let imgHtml = '';
+    if (q.imageUrl) {
+        imgHtml = `<div style="text-align:center; margin:10px 0;"><img src="${q.imageUrl}" style="max-width:100%; max-height:40vh; border-radius:10px; object-fit:contain;"></div>`;
+    }
+    modal.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span style="font-weight:700; color:#2e0f5a;">👁️ 題目預覽</span>
+            <button onclick="document.getElementById('questionPreviewOverlay').remove()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#888;">✕</button>
+        </div>
+        <div style="font-size:0.9rem; color:#333; line-height:1.6;">${q.text}</div>
+        ${imgHtml}
+        <div style="margin-top:10px; font-size:0.85rem;">
+            ${q.options.map((opt, i) => `<div style="padding:6px 10px; border:1px solid #e9e4f5; border-radius:8px; margin-bottom:4px;"><b>${String.fromCharCode(65+i)}.</b> ${opt.replace(/^[A-D]\.\s*/, '')}</div>`).join('')}
+        </div>
+        <div style="margin-top:12px; font-size:0.8rem; color:#10b981;"><b>✓ 正確答案：${q.correct}. ${q.options.find(o => o.startsWith(q.correct)).replace(/^[A-D]\.\s*/, '')}</b></div>
+        <div style="margin-top:14px; text-align:center;">
+            <button onclick="document.getElementById('questionPreviewOverlay').remove()" style="background:#4a1d8c; color:white; border:none; padding:7px 28px; border-radius:40px; cursor:pointer;">關閉</button>
+        </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 
 async function showTestDetail(testId) {
@@ -2679,6 +2750,34 @@ async function exportTestCSV(testId) {
     link.download = `測驗_${test.name}_${new Date().toISOString().slice(0,10)}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
+}
+
+// 發佈測驗（草稿/排期 → 立即發佈）
+async function publishTest(testId) {
+    if (!confirm('確定立即發佈此測驗？學生將可看到並作答。')) return;
+    if (!firestoreEnabled) { alert('⚠️ 需連線雲端'); return; }
+    try {
+        await firebase.firestore().collection('tests').doc(testId).update({ status: 'published', publishTime: new Date().toISOString() });
+        alert('✅ 測驗已發佈！');
+        renderSubtabTests();
+    } catch(e) {
+        console.error('❌ 發佈失敗:', e);
+        alert('❌ 發佈失敗：' + e.message);
+    }
+}
+
+// 刪除測驗
+async function deleteTest(testId) {
+    if (!confirm('⚠️ 確定刪除此測驗？所有作答紀錄將一併刪除，且無法復原！')) return;
+    if (!firestoreEnabled) { alert('⚠️ 需連線雲端'); return; }
+    try {
+        await firebase.firestore().collection('tests').doc(testId).delete();
+        alert('🗑️ 測驗已刪除');
+        renderSubtabTests();
+    } catch(e) {
+        console.error('❌ 刪除失敗:', e);
+        alert('❌ 刪除失敗：' + e.message);
+    }
 }
 
 function isMobile() {
@@ -3645,8 +3744,18 @@ async function renderTestList() {
         return;
     }
     const now = new Date();
+    // 只顯示已發佈或已到排期時間的測驗
+    const visibleTests = tests.filter(t => {
+        if (t.status === 'draft') return false;
+        if (t.status === 'scheduled' && t.publishTime && now < new Date(t.publishTime)) return false;
+        return true;
+    });
+    if (visibleTests.length === 0) {
+        container.innerHTML = '<div class="card">📝 目前沒有派發的測驗</div>';
+        return;
+    }
     let html = `<div class="card"><h3>📝 測驗</h3><p style="color:#888; font-size:0.8rem;">老師派發的測驗，大家做同一份題目，公平比較</p>`;
-    for (const t of tests) {
+    for (const t of visibleTests) {
         const deadline = t.deadline ? new Date(t.deadline) : null;
         const expired = deadline && now > deadline;
         const myResult = t.results && t.results[currentUser.userId];
