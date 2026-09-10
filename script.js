@@ -6514,12 +6514,12 @@ async function showStudentDetail(userId) {
     }
     
     let chapterProgress = [];
+    // 中文班學生：跳過翻譯題
+    const isZhStudent = studentData.language === 'zh';
     for (let u in window.ALL_UNITS) {
         for (let ch in window.ALL_UNITS[u].chapters) {
             const questions = window.ALL_UNITS[u].chapters[ch].questions;
             let correct = 0;
-            // 中文班學生：跳過翻譯題
-            const isZhStudent = studentData.language === 'zh';
             // 該章節按難度拆解
             const chDiff = { 0: { done: 0, total: 0 }, 1: { done: 0, total: 0 }, 2: { done: 0, total: 0 }, 3: { done: 0, total: 0 } };
             for (const q of questions) {
