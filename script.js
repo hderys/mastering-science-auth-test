@@ -1783,6 +1783,7 @@ function enterMainApp(user) {
         document.querySelector('.tab[data-tab="practice"]')?.click();
         setupLogout();
         setTimeout(() => maybeShowDailyReview(), 600);
+        setTimeout(() => refreshTestTabNotice(), 800);
     });
 }
 
@@ -2471,6 +2472,14 @@ function openCreateTestModal() {
                 })()}
             </select>
         </div>
+        <div style="margin-bottom:10px;">
+            <label style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:0.85rem; color:#2e0f5a;">
+                <input type="checkbox" id="ctManualSelect"> 🖐️ 逐題挑選（不打勾＝系統自動抽題）
+            </label>
+            <div id="ctManualArea" style="display:none; margin-top:8px; max-height:220px; overflow-y:auto; border:1px solid #e9e4f5; border-radius:10px; padding:8px;">
+                <div id="ctManualList"></div>
+            </div>
+        </div>
         <div style="margin-bottom:12px;">
             <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">📖 章節範圍</label>
             <select id="ctChapter" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
@@ -2478,7 +2487,7 @@ function openCreateTestModal() {
                 ${chOptions}
             </select>
         </div>
-        <div style="margin-bottom:12px;">
+        <div id="ctCountWrap" style="margin-bottom:12px;">
             <label style="display:block; font-weight:600; font-size:0.85rem; color:#2e0f5a; margin-bottom:4px;">🎯 各難度題數（留空＝不取該難度）</label>
             <div style="display:flex; gap:8px;">
                 <div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:8px;">
@@ -2523,14 +2532,6 @@ function openCreateTestModal() {
                 <input type="datetime-local" id="ctPublishTime" style="width:100%; padding:9px 12px; border-radius:10px; border:2px solid #e0d6f5; font-size:0.9rem;">
             </div>
         </div>
-        <div style="margin-bottom:10px;">
-            <label style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:0.85rem; color:#2e0f5a;">
-                <input type="checkbox" id="ctManualSelect"> 🖐️ 逐題挑選（不打勾＝系統自動抽題）
-            </label>
-            <div id="ctManualArea" style="display:none; margin-top:8px; max-height:200px; overflow-y:auto; border:1px solid #e9e4f5; border-radius:10px; padding:8px;">
-                <div id="ctManualList"></div>
-            </div>
-        </div>
         <div id="ctError" style="color:#dc2626; font-size:0.85rem; margin-bottom:10px; display:none;"></div>
         <div style="display:flex; gap:10px;">
             <button id="ctCancelBtn" style="flex:1; padding:11px 0; border:2px solid #e0d6f5; border-radius:40px; background:white; color:#666; font-size:0.95rem; font-weight:600; cursor:pointer;">取消</button>
@@ -2543,6 +2544,7 @@ function openCreateTestModal() {
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
     document.getElementById('ctManualSelect').addEventListener('change', function() {
         document.getElementById('ctManualArea').style.display = this.checked ? 'block' : 'none';
+        document.getElementById('ctCountWrap').style.display = this.checked ? 'none' : 'block';
         if (this.checked) renderManualSelectList();
     });
     document.getElementById('ctCreateBtn').addEventListener('click', async function() {
@@ -2611,9 +2613,22 @@ function openCreateTestModal() {
     });
 }
 
-function renderManualSelectList() {
+async function renderManualSelectList() {
     const list = document.getElementById('ctManualList');
     const chVal = document.getElementById('ctChapter').value;
+    const classVal = document.getElementById('ctClass').value;
+    // 載入該班學生的錯題統計（每題錯誤人數）
+    let wrongCount = {};
+    try {
+        const className = classVal === '__all__' ? '__all__' : classVal;
+        const students = await loadAllStudentsFromFirebase(className);
+        for (const s of students) {
+            const attempts = s.allAttempts || [];
+            for (const att of attempts) {
+                if (!att.isCorrect) wrongCount[att.qid] = (wrongCount[att.qid] || 0) + 1;
+            }
+        }
+    } catch(e) { console.warn('⚠️ 載入錯題統計失敗:', e); }
     let html = '';
     for (let u in window.ALL_UNITS) for (let c in window.ALL_UNITS[u].chapters) {
         if (chVal !== '__all__' && `${u}_${c}` !== chVal) continue;
@@ -2621,9 +2636,14 @@ function renderManualSelectList() {
             if (q.difficulty_level === 0) continue;
             const short = q.text.replace(/<br>/g, ' ').replace(/<[^>]+>/g, '');
             const diffBadge = q.difficulty_level === 1 ? '<span style="color:#15803d;">✅</span>' : q.difficulty_level === 2 ? '<span style="color:#b45309;">📈</span>' : '<span style="color:#b91c1c;">🔥</span>';
-            const hasImg = q.imageUrl ? '<span style="color:#4a1d8c;">🖼️</span>' : '';
+            // (c) 標記公開考試題目：<2005 CE> 等標籤
+            const examMatch = q.text.match(/<((19|20)\d\d)[^>]*?(CE|DSE|HKCEE|HKALE|AL)[^>]*>/i);
+            const examBadge = examMatch ? `<span style="font-size:0.62rem; background:#fef3c7; color:#92400e; padding:1px 6px; border-radius:8px; font-weight:600;">${examMatch[1]} ${examMatch[3].toUpperCase()}</span>` : '';
+            // (b) 該班錯題統計
+            const wc = wrongCount[q.id] || 0;
+            const wrongBadge = wc > 0 ? `<span style="font-size:0.62rem; background:#fee2e2; color:#b91c1c; padding:1px 6px; border-radius:8px; font-weight:600;">${wc} 人錯</span>` : '';
             html += `<div style="display:flex; align-items:center; gap:6px; padding:4px; font-size:0.75rem; border-bottom:1px solid #f0edf8;">
-                <input type="checkbox" value="${q.id}" style="margin-top:0;"> <span>${diffBadge} ${hasImg} ${short.length > 60 ? short.substring(0,60)+'...' : short}</span>
+                <input type="checkbox" value="${q.id}" style="margin-top:0;"> <span>${diffBadge} ${examBadge} ${wrongBadge} ${short.length > 50 ? short.substring(0,50)+'...' : short}</span>
                 <button onclick="previewQuestion('${q.id}')" style="margin-left:auto; font-size:0.68rem; padding:2px 8px; border:none; border-radius:12px; background:#eef2ff; color:#4338ca; cursor:pointer;">👁️ 查看</button>
             </div>`;
         }
@@ -3732,11 +3752,45 @@ async function submitTestResult(testId, studentId, result) {
     }
 }
 
-// ===== 學生端：測驗列表 =====
+// ===== 測驗列表（學生：待作答；老師：答題狀況） =====
 async function renderTestList() {
     const container = document.getElementById('testPanel');
     if (!container) return;
-    if (currentUser.isTeacher) { container.innerHTML = '<div class="card">📝 測驗頁面供學生使用，老師請到後台「測驗管理」</div>'; return; }
+    // 老師：顯示測驗答題狀況（等同後台測驗管理）
+    if (currentUser.isTeacher) {
+        const tests = await loadAllTests();
+        if (tests.length === 0) {
+            container.innerHTML = '<div class="card">📝 尚未建立任何測驗。請到「🧑🏫 老師後台 → 📝 測驗管理」建立。</div>';
+            return;
+        }
+        let html = `<div class="card"><h3>📝 測驗答題狀況</h3><p style="color:#888; font-size:0.8rem;">各測驗的學生作答進度與成績</p>`;
+        for (const t of tests) {
+            const results = t.results || {};
+            const doneCount = Object.keys(results).length;
+            const classText = (t.classNames || []).join('、');
+            let scoreSummary = '';
+            const scores = Object.values(results).map(r => r.score);
+            if (scores.length > 0) {
+                const avg = Math.round(scores.reduce((a,b) => a+b, 0) / scores.length * 10) / 10;
+                scoreSummary = `· 平均 ${avg} 分`;
+            }
+            html += `
+                <div style="border:1px solid #e9e4f5; border-radius:14px; padding:12px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                        <span style="font-weight:700; color:#2e0f5a;">📝 ${t.name}</span>
+                        <span style="font-size:0.75rem; color:#4a1d8c; font-weight:600;">${doneCount} 人已作答 ${scoreSummary}</span>
+                    </div>
+                    <div style="font-size:0.78rem; color:#666; margin-top:4px;">班級：${classText} · ${t.questionCount} 題</div>
+                    <div style="margin-top:8px;">
+                        <button onclick="showTestDetail('${t.id}')" style="font-size:0.75rem; padding:4px 12px; border:none; border-radius:20px; background:#f0edf8; color:#4a1d8c; cursor:pointer;">📊 監測</button>
+                        <button onclick="exportTestCSV('${t.id}')" style="font-size:0.75rem; padding:4px 12px; border:none; border-radius:20px; background:#fef3c7; color:#92400e; cursor:pointer; margin-left:6px;">📥 匯出</button>
+                    </div>
+                </div>`;
+        }
+        html += '</div>';
+        container.innerHTML = html;
+        return;
+    }
     const className = groupClassName(currentUser.className, currentUser.language);
     const tests = await loadTestsForClass(className);
     if (tests.length === 0) {
@@ -3763,10 +3817,12 @@ async function renderTestList() {
         const statusText = expired ? '已截止' : (myResult ? `已完成 ${myResult.score}/${myResult.total}` : '待作答');
         const deadlineText = deadline ? `截止：${format(deadline, 'yyyy-MM-dd HH:mm')}` : '無截止日期';
         const timeText = t.timeLimit ? `限時：${t.timeLimit} 分鐘` : '不限時';
+        const pending = !myResult && !expired;
+        const cardClass = pending ? 'test-card-pending' : '';
         html += `
-            <div style="border:1px solid #e9e4f5; border-radius:14px; padding:12px; margin-bottom:10px;">
+            <div class="${cardClass}" style="border:1px solid #e9e4f5; border-radius:14px; padding:12px; margin-bottom:10px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                    <span style="font-weight:700; color:#2e0f5a;">📝 ${t.name}</span>
+                    <span style="font-weight:700; color:#2e0f5a;">📝 ${t.name} ${pending ? '<span style="font-size:0.7rem; color:#dc2626;">🔔 待作答</span>' : ''}</span>
                     <span style="font-size:0.75rem; font-weight:600; color:${statusColor};">${statusText}</span>
                 </div>
                 <div style="font-size:0.78rem; color:#666; margin-top:4px;">
@@ -3781,6 +3837,50 @@ async function renderTestList() {
     }
     html += '</div>';
     container.innerHTML = html;
+    // 更新測驗 tab 閃爍提示（有待作答測驗時）
+    const testTab = document.querySelector('.tab[data-tab="test"]');
+    if (testTab) {
+        const hasPending = visibleTests.some(t => {
+            const myResult = t.results && t.results[currentUser.userId];
+            const dl = t.deadline ? new Date(t.deadline) : null;
+            return !myResult && !(dl && now > dl);
+        });
+        if (hasPending) {
+            testTab.classList.add('test-tab-notice');
+            testTab.textContent = '📝 測驗 🔔';
+        } else {
+            testTab.classList.remove('test-tab-notice');
+            testTab.textContent = '📝 測驗';
+        }
+    }
+}
+
+// 進入主程式時：若有待作答測驗，讓測驗 tab 閃爍
+async function refreshTestTabNotice() {
+    if (!currentUser || currentUser.isTeacher) return;
+    const className = groupClassName(currentUser.className, currentUser.language);
+    const tests = await loadTestsForClass(className);
+    const now = new Date();
+    const visibleTests = tests.filter(t => {
+        if (t.status === 'draft') return false;
+        if (t.status === 'scheduled' && t.publishTime && now < new Date(t.publishTime)) return false;
+        return true;
+    });
+    const hasPending = visibleTests.some(t => {
+        const myResult = t.results && t.results[currentUser.userId];
+        const dl = t.deadline ? new Date(t.deadline) : null;
+        return !myResult && !(dl && now > dl);
+    });
+    const testTab = document.querySelector('.tab[data-tab="test"]');
+    if (testTab) {
+        if (hasPending) {
+            testTab.classList.add('test-tab-notice');
+            testTab.textContent = '📝 測驗 🔔';
+        } else {
+            testTab.classList.remove('test-tab-notice');
+            testTab.textContent = '📝 測驗';
+        }
+    }
 }
 
 // 開始測驗
