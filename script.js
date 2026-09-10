@@ -349,7 +349,7 @@ async function loadAllStudentsFromFirebase(className) {
         let query = firebase.firestore().collection('users').where('isTeacher', '==', false);
         if (!isAll && !isS4Group) query = query.where('className', '==', className);
         if (isS4Group) query = firebase.firestore().collection('users').where('className', '>=', '4A').where('className', '<=', '4Z');
-        const snapshot = await query.get();
+        const snapshot = await withTimeout(query.get(), 8000);
         const firebaseStudents = [];
         snapshot.forEach(doc => {
             const u = doc.data();
@@ -2507,9 +2507,28 @@ function openCreateTestModal() {
             </div>
             <div id="ctManualArea" style="display:none; margin-top:8px;">
                 <div style="margin-bottom:8px; font-size:0.75rem; color:#666;">
-                    篩選：
-                    <label style="margin-right:8px;"><input type="checkbox" id="ctFilterExam"> 只顯示公開考試題</label>
-                    <label><input type="checkbox" id="ctSortByWrong" checked> 按該班錯題人數排序</label>
+                    <div style="margin-bottom:5px;">
+                        篩選：
+                        <label style="margin-right:8px;"><input type="checkbox" id="ctFilterExam"> 只顯示公開考試題</label>
+                        <label style="margin-right:8px;"><input type="checkbox" id="ctSortByWrong" checked> 按該班錯題人數排序</label>
+                    </div>
+                    <div>
+                        公開考試題年份：
+                        <select id="ctExamYear" style="font-size:0.75rem; padding:2px 6px; border-radius:8px; border:1px solid #e0d6f5;">
+                            <option value="__all__">全部年份</option>
+                            ${(() => {
+                                const years = new Set();
+                                for (let u in window.ALL_UNITS) for (let c in window.ALL_UNITS[u].chapters) {
+                                    for (const q of window.ALL_UNITS[u].chapters[c].questions) {
+                                        const m = q.text.match(/<(19|20)\d\d[^>]*?(CE|DSE|HKCEE|HKALE|AL)[^>]*>/i);
+                                        if (m) years.add(m[0].replace(/[^0-9]/g, '').slice(0, 4));
+                                    }
+                                }
+                                return [...years].sort().reverse().map(y => `<option value="${y}">${y} 年</option>`).join('');
+                            })()}
+                        </select>
+                        <label style="margin-left:8px;"><input type="checkbox" id="ctSortByYear"> 按年份排列</label>
+                    </div>
                 </div>
                 <div id="ctManualListWrap" style="max-height:220px; overflow-y:auto; border:1px solid #e9e4f5; border-radius:10px; padding:8px;">
                     <div id="ctManualList"></div>
@@ -2517,18 +2536,22 @@ function openCreateTestModal() {
             </div>
             <div id="ctCountWrap" style="margin-top:8px;">
                 <div style="font-size:0.85rem; font-weight:600; color:#2e0f5a; margin-bottom:4px;">🎯 各難度題數（留空＝不取該難度）</div>
-                <div style="display:flex; gap:8px;">
+                <div style="display:flex; gap:8px; align-items:stretch;">
                 <div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:8px;">
-                    <div style="font-size:0.72rem; color:#15803d; font-weight:600; margin-bottom:4px;">✅ 基礎</div>
+                    <div style="font-size:0.72rem; color:#15803d; font-weight:600; margin-bottom:4px;">✅ 基礎<br><span style="font-weight:400; color:#888;">Basic</span></div>
                     <input type="number" id="ctCountBasic" min="0" placeholder="0" style="width:100%; padding:6px 8px; border:1px solid #bbf7d0; border-radius:8px; font-size:0.9rem;">
                 </div>
                 <div style="flex:1; background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:8px;">
-                    <div style="font-size:0.72rem; color:#b45309; font-weight:600; margin-bottom:4px;">📈 進階</div>
+                    <div style="font-size:0.72rem; color:#b45309; font-weight:600; margin-bottom:4px;">📈 進階<br><span style="font-weight:400; color:#888;">Advanced</span></div>
                     <input type="number" id="ctCountAdv" min="0" placeholder="0" style="width:100%; padding:6px 8px; border:1px solid #fde68a; border-radius:8px; font-size:0.9rem;">
                 </div>
                 <div style="flex:1; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:8px;">
-                    <div style="font-size:0.72rem; color:#b91c1c; font-weight:600; margin-bottom:4px;">🔥 挑戰</div>
+                    <div style="font-size:0.72rem; color:#b91c1c; font-weight:600; margin-bottom:4px;">🔥 挑戰<br><span style="font-weight:400; color:#888;">Challenge</span></div>
                     <input type="number" id="ctCountCha" min="0" placeholder="0" style="width:100%; padding:6px 8px; border:1px solid #fecaca; border-radius:8px; font-size:0.9rem;">
+                </div>
+                <div style="flex:1; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:10px; padding:8px; display:flex; flex-direction:column; justify-content:center; align-items:center; min-width:60px;">
+                    <div style="font-size:0.72rem; color:#4a1d8c; font-weight:600; margin-bottom:4px;">🔢 總數</div>
+                    <div id="ctCountTotal" style="font-size:1.2rem; font-weight:700; color:#4a1d8c;">0</div>
                 </div>
             </div>
             <div style="font-size:0.68rem; color:#888; margin-top:4px;">例如：基礎 3 + 進階 4 + 挑戰 2 ＝ 9 題。留空全部＝自動平均抽 10 題</div>
@@ -2584,6 +2607,19 @@ function openCreateTestModal() {
             countWrap.style.display = 'block';
         }
     }
+    // 各難度題數總數自動計算
+    function ctUpdateTotal() {
+        const b = parseInt(document.getElementById('ctCountBasic').value) || 0;
+        const a = parseInt(document.getElementById('ctCountAdv').value) || 0;
+        const c = parseInt(document.getElementById('ctCountCha').value) || 0;
+        const totalEl = document.getElementById('ctCountTotal');
+        if (totalEl) totalEl.textContent = b + a + c;
+    }
+    ['ctCountBasic', 'ctCountAdv', 'ctCountCha'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', ctUpdateTotal);
+    });
+    ctUpdateTotal();
     document.querySelectorAll('input[name="ctSelectMode"]').forEach(rb => {
         rb.addEventListener('change', function() {
             document.querySelectorAll('input[name="ctSelectMode"]').forEach(r => {
@@ -2611,6 +2647,8 @@ function openCreateTestModal() {
     // 篩選
     document.getElementById('ctFilterExam').addEventListener('change', renderManualSelectList);
     document.getElementById('ctSortByWrong').addEventListener('change', renderManualSelectList);
+    document.getElementById('ctSortByYear').addEventListener('change', renderManualSelectList);
+    document.getElementById('ctExamYear').addEventListener('change', renderManualSelectList);
     document.getElementById('ctCreateBtn').addEventListener('click', async function() {
         const err = document.getElementById('ctError');
         const name = document.getElementById('ctName').value.trim();
@@ -2685,6 +2723,8 @@ async function renderManualSelectList() {
     const classVal = document.getElementById('ctClass').value;
     const filterExam = document.getElementById('ctFilterExam') ? document.getElementById('ctFilterExam').checked : false;
     const sortByWrong = document.getElementById('ctSortByWrong') ? document.getElementById('ctSortByWrong').checked : true;
+    const sortByYear = document.getElementById('ctSortByYear') ? document.getElementById('ctSortByYear').checked : false;
+    const examYear = document.getElementById('ctExamYear') ? document.getElementById('ctExamYear').value : '__all__';
     // 章節多選
     const chSet = new Set(Array.from(document.querySelectorAll('.ct-chapter:checked')).map(cb => cb.value));
     // 載入該班學生的錯題統計（每題錯誤人數）
@@ -2708,18 +2748,25 @@ async function renderManualSelectList() {
             const examMatch = q.text.match(/<((19|20)\d\d)[^>]*?(CE|DSE|HKCEE|HKALE|AL)[^>]*>/i);
             const isExam = !!examMatch;
             if (filterExam && !isExam) continue;
+            if (examYear !== '__all__' && (!examMatch || !examMatch[1] || examMatch[1] !== examYear)) continue;
             items.push({ q, wc: wrongCount[q.id] || 0, isExam, examMatch });
         }
     }
-    // 排序：依錯題人數（大→小）；同數時考試題優先
-    if (sortByWrong) {
+    // 排序：按年份（新→舊）或錯題人數（大→小）
+    if (sortByYear) {
+        items.sort((a, b) => {
+            const ay = a.examMatch ? parseInt(a.examMatch[1]) : -1;
+            const by = b.examMatch ? parseInt(b.examMatch[1]) : -1;
+            return (by - ay) || (b.wc - a.wc);
+        });
+    } else if (sortByWrong) {
         items.sort((a, b) => (b.wc - a.wc) || (b.isExam ? 1 : 0) - (a.isExam ? 1 : 0));
     }
     let html = '';
     for (const it of items) {
         const q = it.q;
         const short = q.text.replace(/<br>/g, ' ').replace(/<[^>]+>/g, '');
-        const diffBadge = q.difficulty_level === 1 ? '<span style="color:#15803d;">✅</span>' : q.difficulty_level === 2 ? '<span style="color:#b45309;">📈</span>' : '<span style="color:#b91c1c;">🔥</span>';
+        const diffBadge = q.difficulty_level === 1 ? '<span style="font-size:0.62rem; background:#f0fdf4; color:#15803d; padding:1px 5px; border-radius:8px;">✅ 基礎</span>' : q.difficulty_level === 2 ? '<span style="font-size:0.62rem; background:#fffbeb; color:#b45309; padding:1px 5px; border-radius:8px;">📈 進階</span>' : '<span style="font-size:0.62rem; background:#fef2f2; color:#b91c1c; padding:1px 5px; border-radius:8px;">🔥 挑戰</span>';
         const examBadge = it.examMatch ? `<span style="font-size:0.62rem; background:#fef3c7; color:#92400e; padding:1px 6px; border-radius:8px; font-weight:600;">${it.examMatch[1]} ${it.examMatch[3].toUpperCase()}</span>` : '';
         const wrongBadge = it.wc > 0 ? `<span style="font-size:0.62rem; background:#fee2e2; color:#b91c1c; padding:1px 6px; border-radius:8px; font-weight:600;">${it.wc} 人錯</span>` : '';
         html += `<div style="display:flex; align-items:center; gap:6px; padding:4px; font-size:0.75rem; border-bottom:1px solid #f0edf8;">
@@ -6416,7 +6463,7 @@ async function showStudentDetail(userId) {
     
     if (firestoreEnabled) {
         try {
-            const cloudData = await loadFromFirestore('users', userId);
+            const cloudData = await withTimeout(loadFromFirestore('users', userId), 8000);
             if (cloudData) {
                 studentData = cloudData;
                 user = cloudData;
