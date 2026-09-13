@@ -151,7 +151,6 @@
 
 <script>
 // 元素數據：H 至 Kr（原子序 1 至 36）
-// shells: 每層電子數
 const elements = [
   {z:1,  sym:'H',  name:'氫',   shells:[1]},
   {z:2,  sym:'He', name:'氦',   shells:[2]},
@@ -210,7 +209,6 @@ function randomElement() {
 
 function drawShells() {
   const stage = document.getElementById('stage');
-  // 移除舊的電子層
   stage.querySelectorAll('.shell, .shell-label').forEach(el => el.remove());
 
   const numShells = currentElement.shells.length;
@@ -260,7 +258,6 @@ function dragStart(e) {
   e.dataTransfer.setData('text/plain', '');
 }
 
-// 讓電子層和原子核可以接收拖放
 document.addEventListener('DOMContentLoaded', () => {
   const stage = document.getElementById('stage');
   stage.addEventListener('dragover', e => e.preventDefault());
@@ -273,11 +270,10 @@ function handleDrop(e) {
 
   const stage = document.getElementById('stage');
   const rect = stage.getBoundingClientRect();
-  const x = e.clientX - rect.left - 250; // 相對中心
+  const x = e.clientX - rect.left - 250;
   const y = e.clientY - rect.top - 250;
   const dist = Math.sqrt(x * x + y * y);
 
-  // 找出最近的電子層
   let closestShell = -1;
   let minDiff = Infinity;
   shellRadii.forEach((r, i) => {
@@ -287,7 +283,6 @@ function handleDrop(e) {
 
   if (closestShell === -1) return;
 
-  // 將電子放到該層的圓周上
   const radius = shellRadii[closestShell];
   const angle = Math.atan2(y, x);
   const ex = 250 + radius * Math.cos(angle) - 9;
@@ -297,9 +292,10 @@ function handleDrop(e) {
   draggedElectron.style.left = ex + 'px';
   draggedElectron.style.top = ey + 'px';
   draggedElectron.dataset.shell = closestShell;
+  draggedElectron.classList.remove('pool-electron');
+  draggedElectron.classList.add('electron');
   stage.appendChild(draggedElectron);
 
-  // 重新綁定拖拉
   draggedElectron.addEventListener('dragstart', dragStart);
   draggedElectron = null;
 }
@@ -322,23 +318,24 @@ function checkAnswer() {
 
   const stage = document.getElementById('stage');
   const placed = stage.querySelectorAll('.electron');
+  const correct = currentElement.shells;
+
+  const counts = new Array(correct.length).fill(0);
+  placed.forEach(el => {
+    const s = parseInt(el.dataset.shell);
+    if (!isNaN(s) && s >= 0 && s < correct.length) counts[s]++;
+  });
+
+  const totalPlaced = counts.reduce((a, b) => a + b, 0);
   const totalNeeded = currentElement.z;
 
-  if (placed.length < totalNeeded) {
+  if (totalPlaced < totalNeeded) {
     document.getElementById('feedback').textContent =
-      '還有 ' + (totalNeeded - placed.length) + ' 粒電子未放置！';
+      '還有 ' + (totalNeeded - totalPlaced) + ' 粒電子未放置！';
     document.getElementById('feedback').className = 'partial';
     return;
   }
 
-  // 統計每層的電子數
-  const counts = new Array(currentElement.shells.length).fill(0);
-  placed.forEach(el => {
-    const s = parseInt(el.dataset.shell);
-    if (!isNaN(s)) counts[s]++;
-  });
-
-  const correct = currentElement.shells;
   let allCorrect = true;
   for (let i = 0; i < correct.length; i++) {
     if (counts[i] !== correct[i]) { allCorrect = false; break; }
